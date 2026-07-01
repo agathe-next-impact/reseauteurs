@@ -1,0 +1,60 @@
+# llms.txt — RÉSEAUTEURS
+# Format : https://llmstxt.org/
+# Site : https://reseauteurs.fr
+
+> RÉSEAUTEURS est la plateforme nationale du networking qui rassemble
+> les réseauteurs, les événements business et les réseaux d'affaires en France.
+
+## La plateforme
+
+RÉSEAUTEURS regroupe en un seul endroit trois entités complémentaires :
+
+- **Réseauteurs** : professionnels qui fréquentent des réseaux d'affaires (BNI, DCF, CJD,
+  Rotary, Cafés Business, Dynabuy, Réseau Entreprendre, CPME, Medef…). Inscription gratuite.
+- **Événements business** : afterworks, petits-déjeuners, conférences, réunions de réseau —
+  géolocalisés, datés, rattachés à un réseau organisateur. Lien d'inscription externe.
+- **Réseaux d'affaires** : marques nationales et chapitres locaux organisés en deux niveaux.
+
+Le site est une **couche de visibilité neutre** superposée à l'écosystème du networking.
+Il ne remplace aucun réseau ; il les rassemble.
+
+## Structure des réseaux (hiérarchie deux niveaux)
+
+Les réseaux sont organisés en **deux niveaux** :
+
+1. **Réseau national** — la marque (ex. BNI France, DCF National, CJD France).
+   Fiche publique : /reseau/<slug-national>
+   Un réseau national peut créer des chapitres locaux et publier des événements
+   via un abonnement annuel (partenaire).
+
+2. **Réseau local** (chapitre / section) — une implantation géographique rattachée
+   à une marque nationale (ex. BNI Clermont-Ferrand, DCF Bordeaux, CJD Lyon).
+   Fiche publique : /reseau/<slug-local>
+   Contient sa propre géolocalisation (centroïde ville), ses réseauteurs membres
+   et ses événements.
+
+Un réseauteur s'affilie à des **chapitres locaux** spécifiques (pas à la marque abstraite).
+Son appartenance nationale est dérivée automatiquement (parent du/des chapitres fréquentés).
+
+## URLs importantes
+
+- `/` : page d'accueil (3 piliers : réseauteurs, événements, réseaux)
+- `/reseauteurs` : annuaire et carte des réseauteurs (filtres : ville, secteur, réseau, badge)
+- `/reseaux` : annuaire des réseaux d'affaires (nationaux et chapitres locaux)
+- `/evenements` : agenda et carte des prochains événements networking
+- `/reseau/<slug>` : fiche publique d'un réseau (national ou local)
+- `/reseauteur/<prenom-nom>` : fiche publique d'un réseauteur (SSR, opt-out RGPD respecté)
+- `/evenement/<slug>` : fiche publique d'un événement
+- `/partenaires` : annonceurs partenaires de la plateforme
+
+## Modèle d'accès
+
+- Visiteur (sans compte) : accès libre à toutes les fiches et cartes.
+- Réseauteur (compte gratuit) : fiche publique et marqueur sur la carte.
+- Réseau partenaire (abonnement annuel) : fiche nationale enrichie, chapitres locaux,
+  droit de publier des événements.
+- Annonceur partenaire (abonnement) : logo en page d'accueil et page Partenaires.
+
+## Contact
+
+contact@reseauteurs.fr

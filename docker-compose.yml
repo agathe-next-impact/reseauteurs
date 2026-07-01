@@ -1,0 +1,41 @@
+# Docker optionnel pour le developpement local.
+# La production utilise Neon, mais ce service fournit PostgreSQL + PostGIS localement.
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: reseauteurs
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d reseauteurs']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  payload:
+    image: node:20-alpine
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/home/node/app
+      - node_modules:/home/node/app/node_modules
+    working_dir: /home/node/app/
+    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
+    env_file:
+      - .env.local
+    environment:
+      DATABASE_URI: postgresql://postgres:dev@postgres:5432/reseauteurs
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  node_modules:
+  postgres_data:

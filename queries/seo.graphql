@@ -1,0 +1,220 @@
+# SEO queries exposed by Payload GraphQL (/api/graphql).
+# Tested on `@payloadcms/next` 3.80 — fields auto-derived from the
+# collection configs in src/collections/ + the shared `seo` group.
+
+# ----- Fiche revendeur SEO -----
+query FournisseurSeoBySlug($slug: String!) {
+  Fournisseurs(
+    where: { slug: { equals: $slug }, statut: { equals: publiee } }
+    limit: 1
+  ) {
+    docs {
+      id
+      slug
+      raisonSociale
+      ville
+      adresse
+      codePostal
+      latitude
+      longitude
+      description
+      updatedAt
+      activitePrincipale {
+        id
+        label
+        value
+        couleur
+      }
+      banniere {
+        id
+        url
+        alt
+        sizes {
+          full { url width height }
+          card { url width height }
+        }
+      }
+      logo {
+        id
+        url
+        alt
+        sizes {
+          card { url }
+          thumbnail { url }
+        }
+      }
+      reseauxSociaux {
+        plateforme
+        url
+      }
+      seo {
+        title
+        description
+        keywords
+        noindex
+        ogImage {
+          id
+          url
+          alt
+          sizes {
+            full { url width height }
+          }
+        }
+      }
+    }
+  }
+}
+
+# ----- Evenement SEO -----
+query EvenementSeoById($id: Int!) {
+  Evenement(id: $id) {
+    id
+    titre
+    descriptionCourte
+    dateDebut
+    dateFin
+    lieuNom
+    lieuAdresse
+    lieuCodePostal
+    lieuVille
+    lieuLatitude
+    lieuLongitude
+    lienInscription
+    statut
+    updatedAt
+    createdAt
+    type {
+      id
+      label
+      value
+      couleur
+    }
+    fournisseur {
+      id
+      slug
+      raisonSociale
+    }
+    organisateurExterne {
+      id
+      slug
+      nom
+      siteWeb
+    }
+    banniere {
+      id
+      url
+      alt
+      sizes {
+        full { url width height }
+      }
+    }
+    seo {
+      title
+      description
+      keywords
+      noindex
+      ogImage {
+        id
+        url
+        sizes { full { url } }
+      }
+    }
+  }
+}
+
+# ----- Organisateur SEO -----
+query OrganisateurSeoBySlug($slug: String!) {
+  OrganisateursEvenements(
+    where: { slug: { equals: $slug }, statut: { equals: publiee } }
+    limit: 1
+  ) {
+    docs {
+      id
+      slug
+      nom
+      ville
+      adresse
+      codePostal
+      description
+      updatedAt
+      banniere { url sizes { full { url } } }
+      logo { url sizes { card { url } } }
+      reseauxSociaux { plateforme url }
+      seo {
+        title
+        description
+        keywords
+        noindex
+        ogImage { url }
+      }
+    }
+  }
+}
+
+# ----- Sitemap: fournisseurs -----
+query SitemapFournisseurs($limit: Int = 500, $page: Int = 1) {
+  Fournisseurs(
+    where: { statut: { equals: publiee } }
+    limit: $limit
+    page: $page
+  ) {
+    totalDocs
+    totalPages
+    page
+    docs {
+      slug
+      updatedAt
+      seo { noindex }
+    }
+  }
+}
+
+# ----- Sitemap: evenements a venir -----
+query SitemapEvenements($now: DateTime!, $limit: Int = 500, $page: Int = 1) {
+  Evenements(
+    where: {
+      AND: [
+        { statut: { equals: publie } }
+        {
+          OR: [
+            { dateFin: { greater_than_equal: $now } }
+            {
+              AND: [
+                { dateFin: { exists: false } }
+                { dateDebut: { greater_than_equal: $now } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    limit: $limit
+    page: $page
+  ) {
+    totalDocs
+    totalPages
+    page
+    docs {
+      id
+      updatedAt
+      seo { noindex }
+    }
+  }
+}
+
+# ----- Sitemap: organisateurs -----
+query SitemapOrganisateurs($limit: Int = 500, $page: Int = 1) {
+  OrganisateursEvenements(
+    where: { statut: { equals: publiee } }
+    limit: $limit
+    page: $page
+  ) {
+    totalDocs
+    totalPages
+    docs {
+      slug
+      updatedAt
+      seo { noindex }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "functions": {
+    "src/app/(payload)/api/[...slug]/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/cron/downgrade-expires/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/cron/onboarding-emails/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/archiver-evenements",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/expiration-alertes",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/downgrade-expires",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/onboarding-emails",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/purge-anciens",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/retry-groupe-sync",
+      "schedule": "0 4 * * 1"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.panorama-pub.com" }],
+      "destination": "https://panorama-pub.com/:path*",
+      "permanent": true
+    }
+  ]
+}

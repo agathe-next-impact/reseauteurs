@@ -1,0 +1,975 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   RÉSEAUTEURS — Tokens design (DESIGN.md §1–§4)
+   Police : Hanken Grotesk (next/font, variable --font-sans)
+   Canvas clair #faf9f5 | bleu #2563EB | orange #f5851f
+   navy #16284f | bleu ciel #0284c7 | bandes sombres #0d0d10
+   ============================================================ */
+
+/* Fallbacks hex pour navigateurs anciens (WebViews FB/LinkedIn, Samsung < 21, Safari < 16.4) */
+:root {
+  /* shadcn tokens */
+  --background: #faf9f5;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #2563eb;
+  --radius: 0.75rem;
+  /* sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #18181b;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #2563eb;
+}
+
+@theme inline {
+  /* ── Police ── */
+  --font-sans: var(--font-hanken);
+
+  /* ── Canvas et surfaces ── */
+  --color-background: #faf9f5;
+  --color-background-secondary: #f4f4f5;
+  --color-surface: #ffffff;
+
+  /* ── Primaire bleu ── */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #bfdbfe;
+
+  /* ── Accent orange (conversion / B2B / partenaires) ── */
+  --color-brand-orange: #f5851f;
+  --color-brand-orange-hover: #e07710;
+  --color-brand-orange-light: #ffedd5;
+
+  /* ── Navy ── */
+  --color-brand-navy: #16284f;
+
+  /* ── Bleu ciel secondaire (entité Événements) ── */
+  --color-brand-event: #0284c7;
+  --color-brand-event-light: #e0f2fe;
+
+  /* ── Texte ── */
+  --color-text-dark: #18181b;
+  --color-text-medium: #52525b;
+  --color-text-light: #71717a;
+
+  /* ── Neutres zinc ── */
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+
+  /* ── Bordure ── */
+  --color-border: #e4e4e7;
+  --color-border-light: #f4f4f5;
+
+  /* ── Bandes sombres ── */
+  --color-dark-band: #0d0d10;
+  --color-dark-band-alt: #111114;
+
+  /* ── Badges réseauteur ── */
+  --color-badge-bronze: #a16207;
+  --color-badge-bronze-bg: #fef9c3;
+  --color-badge-argent: #52525b;
+  --color-badge-argent-bg: #f4f4f5;
+  --color-badge-gold: #b45309;
+  --color-badge-gold-bg: #fff7ed;
+  --color-badge-platinum: #1d4ed8;
+  --color-badge-platinum-bg: #dbeafe;
+
+  /* ── Rayons ── */
+  --radius: 0.75rem;
+  --radius-sm: 0.5625rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 999px;
+
+  /* ── Animations ── */
+  --animate-shimmer: shimmer 2s ease-in-out infinite;
+  --animate-shine: shine 0.6s ease-out forwards;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-count-up: countUp 0.8s ease-out forwards;
+}
+
+/* Bandes sombres : classe utilitaire pour les sections near-black */
+.section-dark {
+  background: #0d0d10;
+  color: #fafafa;
+}
+.section-dark-alt {
+  background: #111114;
+  color: #fafafa;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes shine {
+  from {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(200%) skewX(-20deg);
+  }
+}
+
+@keyframes dotBounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(30, 64, 175, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(30, 64, 175, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(30, 64, 175, 0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: inherit;
+  color: #262522;
+  background: #faf9f5;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   Thème CLAIR — défaut (DESIGN.md §8 : « mode clair dominant »).
+   Les tokens --ir-* ci-dessous sont la version CLAIRE. Le thème
+   sombre « Plasma » (.ir-plasma sur <body>) les surcharge plus bas.
+   Les composants .ir-plasma-* / .ir-atlas-* étant pilotés par ces
+   variables, ils s'adaptent automatiquement clair ⇄ sombre.
+   Bascule : bouton header → ajoute/retire .ir-plasma + localStorage.
+   ============================================================ */
+:root {
+  --ir-bg: #faf9f5;
+  --ir-bg-2: #f4f4f3;
+  --ir-bg-3: #efeee9;
+  --ir-surface: #ffffff;
+  --ir-surface-2: #fafafa;
+  --ir-surface-control: #ffffff;
+  --ir-surface-inset: #f4f4f5;
+  --ir-text: #18181b;
+  --ir-text-2: #27272a;
+  --ir-text-3: #52525b;
+  --ir-text-4: #71717a;
+  --ir-line-rgb: 13, 13, 16;
+  --ir-accent-rgb: 37, 99, 235;
+  --ir-accent-2-rgb: 56, 189, 248;
+  --ir-accent-3-rgb: 34, 211, 238;
+  --ir-accent: rgb(var(--ir-accent-rgb));
+  --ir-accent-2: rgb(var(--ir-accent-2-rgb));
+  --ir-accent-3: rgb(var(--ir-accent-3-rgb));
+  --ir-accent-text: #1d4ed8;
+  --ir-grad-main: linear-gradient(
+    135deg,
+    rgb(var(--ir-accent-rgb)),
+    rgb(var(--ir-accent-2-rgb)) 58%,
+    rgb(var(--ir-accent-3-rgb))
+  );
+  --ir-grad-soft: linear-gradient(
+    145deg,
+    rgba(var(--ir-accent-rgb), 0.16),
+    rgba(var(--ir-accent-2-rgb), 0.1) 52%,
+    rgba(var(--ir-accent-3-rgb), 0.08)
+  );
+  /* Surfaces composites pilotées par thème (clair par défaut) */
+  --ir-header-bg: rgba(255, 255, 255, 0.82);
+  --ir-chip-bg: rgba(13, 13, 16, 0.04);
+}
+
+/* ============================================================
+   Info-Reseaux Plasma UI (thème SOMBRE — opt-in)
+   Source: .claude/design/info-reseaux-plasma.html
+   Mode sombre + accent Plasma (bleu -> bleu ciel -> cyan).
+   ============================================================ */
+.ir-plasma {
+  --ir-bg: #09090b;
+  --ir-bg-2: #0b0b0e;
+  --ir-bg-3: #070708;
+  --ir-surface: #111114;
+  --ir-surface-2: #161619;
+  --ir-surface-control: #18181b;
+  --ir-surface-inset: #0d0d10;
+  --ir-text: #fafafa;
+  --ir-text-2: #d4d4d8;
+  --ir-text-3: #a1a1aa;
+  --ir-text-4: #71717a;
+  --ir-line-rgb: 255, 255, 255;
+  --ir-accent-rgb: 37, 99, 235;
+  --ir-accent-2-rgb: 56, 189, 248;
+  --ir-accent-3-rgb: 34, 211, 238;
+  --ir-accent: rgb(var(--ir-accent-rgb));
+  --ir-accent-2: rgb(var(--ir-accent-2-rgb));
+  --ir-accent-3: rgb(var(--ir-accent-3-rgb));
+  --ir-accent-text: #93c5fd;
+  /* Surfaces composites — valeurs sombres (inchangées vs avant) */
+  --ir-header-bg: rgba(9, 9, 11, 0.78);
+  --ir-chip-bg: rgba(255, 255, 255, 0.045);
+  --ir-grad-main: linear-gradient(
+    135deg,
+    rgb(var(--ir-accent-rgb)),
+    rgb(var(--ir-accent-2-rgb)) 58%,
+    rgb(var(--ir-accent-3-rgb))
+  );
+  --ir-grad-soft: linear-gradient(
+    145deg,
+    rgba(var(--ir-accent-rgb), 0.22),
+    rgba(var(--ir-accent-2-rgb), 0.14) 52%,
+    rgba(var(--ir-accent-3-rgb), 0.1)
+  );
+  --background: var(--ir-bg);
+  --foreground: var(--ir-text);
+  --card: var(--ir-surface);
+  --card-foreground: var(--ir-text);
+  --primary: var(--ir-accent);
+  --primary-foreground: #fff;
+  --border: rgba(var(--ir-line-rgb), 0.1);
+  --ring: var(--ir-accent);
+  color: var(--ir-text);
+  background:
+    linear-gradient(115deg, rgba(var(--ir-accent-rgb), 0.13), transparent 30%),
+    linear-gradient(245deg, rgba(var(--ir-accent-3-rgb), 0.1), transparent 28%),
+    linear-gradient(180deg, var(--ir-bg), var(--ir-bg-2) 52%, var(--ir-bg-3));
+}
+
+.ir-plasma main {
+  min-height: 60vh;
+}
+
+.ir-plasma-header {
+  border-bottom: 1px solid rgba(var(--ir-line-rgb), 0.08);
+  background: var(--ir-header-bg);
+  color: var(--ir-text);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+}
+
+.ir-plasma-brand {
+  color: var(--ir-text);
+}
+
+.ir-plasma-brand > span:nth-child(2) {
+  color: var(--ir-text);
+}
+
+.ir-plasma-brand > span:last-child {
+  color: var(--ir-text-4);
+  border-color: rgba(var(--ir-line-rgb), 0.12);
+}
+
+.ir-plasma-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ir-grad-main);
+  box-shadow: 0 10px 28px rgba(var(--ir-accent-rgb), 0.28);
+  flex: none;
+}
+
+.ir-plasma-mark span {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    9px 2px 0 -3px rgba(255, 255, 255, 0.75),
+    3px 11px 0 -3px rgba(255, 255, 255, 0.58);
+}
+
+.ir-plasma-nav-link {
+  color: var(--ir-text-3);
+}
+
+.ir-plasma-nav-link:hover {
+  color: var(--ir-text);
+}
+
+.ir-plasma :where(.bg-\[\#faf9f5\], .bg-white) {
+  background-color: transparent;
+}
+
+.ir-plasma :where(.border-\[\#e4e4e7\], .border-gray-200, .border-gray-100) {
+  border-color: rgba(var(--ir-line-rgb), 0.1);
+}
+
+.ir-plasma :where(.text-\[\#16284f\], .text-\[\#18181b\], .text-gray-900, .text-gray-800) {
+  color: var(--ir-text);
+}
+
+.ir-plasma
+  :where(
+    .text-\[\#52525b\],
+    .text-\[\#71717a\],
+    .text-gray-600,
+    .text-gray-500,
+    .text-text-medium,
+    .text-text-light
+  ) {
+  color: var(--ir-text-3);
+}
+
+.ir-plasma :where(.text-\[\#18181b\], .text-text-dark, .hover\:text-text-dark:hover) {
+  color: var(--ir-text);
+}
+
+.ir-plasma :where(.text-\[\#2563EB\], .hover\:text-\[\#2563EB\]:hover) {
+  color: var(--ir-accent-text);
+}
+
+.ir-plasma :where(.bg-\[\#2563EB\], .bg-primary) {
+  background: var(--ir-grad-main);
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(var(--ir-accent-rgb), 0.22);
+}
+
+.ir-plasma :where(.hover\:bg-\[\#1d4ed8\]:hover, .hover\:bg-primary\/80:hover) {
+  filter: brightness(1.08);
+}
+
+/* ── Parité structurelle Plasma dans les DEUX thèmes ──────────────
+   Le mode clair adopte le look franc du Plasma sombre :
+   1. angles francs (rounded-full / pills exclus — comme en sombre) ;
+   2. grilles de cartes « listing » sans gouttière → damier edge-to-edge.
+   Règles globales (non préfixées .ir-plasma) : valent en clair ET en sombre. */
+:where(.rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md, .rounded) {
+  border-radius: 0;
+}
+
+.grid[role='list'] {
+  gap: 0;
+}
+
+.ir-plasma
+  :where(
+    section.bg-white,
+    div.bg-white,
+    article.bg-white,
+    .bg-white.border,
+    .bg-\[\#faf9f5\].border
+  ) {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.025)),
+    var(--ir-surface);
+  border-color: rgba(var(--ir-line-rgb), 0.1);
+  color: var(--ir-text);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
+}
+
+.ir-plasma :where(.shadow-sm, .hover\:shadow-md:hover) {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+
+.ir-plasma :where(input, textarea, select) {
+  background: var(--ir-surface-inset);
+  border-color: rgba(var(--ir-line-rgb), 0.12);
+  color: var(--ir-text);
+}
+
+.ir-plasma input::placeholder,
+.ir-plasma textarea::placeholder {
+  color: var(--ir-text-4);
+}
+
+.ir-plasma .section-dark,
+.ir-plasma .section-dark-alt {
+  background:
+    linear-gradient(135deg, rgba(var(--ir-accent-rgb), 0.12), transparent 40%), var(--ir-bg-3);
+}
+
+.ir-plasma .ir-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+    var(--ir-surface);
+  border-color: rgba(var(--ir-line-rgb), 0.1);
+}
+
+.ir-plasma .ir-btn-plasma {
+  background: var(--ir-grad-main);
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(var(--ir-accent-rgb), 0.22);
+}
+
+.ir-plasma .ir-btn-outline-plasma {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(var(--ir-accent-rgb), 0.42);
+  color: var(--ir-accent-text);
+}
+
+.ir-plasma-footer {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--ir-bg-3);
+  border-color: rgba(var(--ir-line-rgb), 0.08);
+}
+
+.ir-atlas-page {
+  background:
+    radial-gradient(circle at 78% 8%, rgba(var(--ir-accent-rgb), 0.18), transparent 24rem),
+    radial-gradient(circle at 12% 20%, rgba(var(--ir-accent-3-rgb), 0.12), transparent 18rem),
+    var(--ir-bg);
+}
+
+.ir-atlas-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(var(--ir-line-rgb), 0.08);
+}
+
+.ir-atlas-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.34;
+  background-image:
+    linear-gradient(rgba(var(--ir-line-rgb), 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--ir-line-rgb), 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 82%);
+  pointer-events: none;
+}
+
+.ir-atlas-hero-inner {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  min-height: calc(100svh - 64px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.98fr);
+  align-items: center;
+  gap: 0;
+  padding: 0;
+}
+
+.ir-atlas-hero-copy {
+  max-width: 650px;
+  padding: clamp(32px, 7vw, 86px);
+}
+
+.ir-atlas-eyebrow {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 7px 11px;
+  border: 1px solid rgba(var(--ir-accent-rgb), 0.28);
+  border-radius: 0;
+  background: var(--ir-chip-bg);
+  color: var(--ir-accent-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ir-atlas-title {
+  max-width: 740px;
+  margin: 0;
+  color: var(--ir-text);
+  font-size: clamp(44px, 7.2vw, 86px);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.ir-atlas-title span {
+  display: block;
+  width: fit-content;
+  margin-top: 8px;
+  background: var(--ir-grad-main);
+  background-clip: text;
+  color: transparent;
+}
+
+.ir-atlas-lead {
+  max-width: 580px;
+  margin: 24px 0 0;
+  color: var(--ir-text-3);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.68;
+}
+
+.ir-atlas-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-top: 34px;
+}
+
+.ir-atlas-primary,
+.ir-atlas-secondary {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 0;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    filter 0.18s ease;
+}
+
+.ir-atlas-primary {
+  background: var(--ir-grad-main);
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(var(--ir-accent-rgb), 0.24);
+}
+
+.ir-atlas-secondary {
+  border: 1px solid rgba(var(--ir-accent-rgb), 0.34);
+  background: var(--ir-chip-bg);
+  color: var(--ir-accent-text);
+}
+
+.ir-atlas-primary:hover,
+.ir-atlas-secondary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.ir-atlas-microcopy {
+  margin: 18px 0 0;
+  color: var(--ir-text-4);
+  font-size: 12px;
+}
+
+.ir-atlas-map-panel {
+  /* Widget « carte » décoratif : reste un panneau sombre dans les DEUX
+     thèmes. On épingle les vars locales pour que grilles/texte restent
+     lisibles en mode clair (no-op en mode sombre). */
+  --ir-line-rgb: 255, 255, 255;
+  --ir-text: #fafafa;
+  --ir-text-3: #a1a1aa;
+  --ir-text-4: #71717a;
+  min-height: 520px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #0a0a0d;
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
+}
+
+.ir-atlas-map-toolbar {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(var(--ir-line-rgb), 0.08);
+  color: var(--ir-text-3);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ir-atlas-map-toolbar span:last-child {
+  color: #86efac;
+}
+
+.ir-atlas-map-canvas {
+  position: relative;
+  min-height: 360px;
+  background:
+    radial-gradient(circle at 47% 43%, rgba(var(--ir-accent-rgb), 0.2), transparent 14rem),
+    linear-gradient(rgba(var(--ir-line-rgb), 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--ir-line-rgb), 0.055) 1px, transparent 1px);
+  background-size:
+    auto,
+    42px 42px,
+    42px 42px;
+}
+
+.ir-atlas-map-node,
+.ir-atlas-route {
+  position: absolute;
+  display: block;
+}
+
+.ir-atlas-map-node {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  background: var(--ir-grad-main);
+  box-shadow:
+    0 0 0 8px rgba(var(--ir-accent-rgb), 0.14),
+    0 0 32px rgba(var(--ir-accent-rgb), 0.55);
+}
+
+.ir-atlas-map-node-a {
+  left: 18%;
+  top: 30%;
+}
+.ir-atlas-map-node-b {
+  left: 54%;
+  top: 22%;
+}
+.ir-atlas-map-node-c {
+  left: 70%;
+  top: 56%;
+}
+.ir-atlas-map-node-d {
+  left: 34%;
+  top: 70%;
+}
+
+.ir-atlas-route {
+  height: 2px;
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--ir-accent-rgb), 0),
+    rgba(var(--ir-accent-rgb), 0.8),
+    rgba(var(--ir-accent-3-rgb), 0)
+  );
+}
+
+.ir-atlas-route-a {
+  width: 42%;
+  left: 21%;
+  top: 35%;
+  rotate: -12deg;
+}
+
+.ir-atlas-route-b {
+  width: 34%;
+  left: 55%;
+  top: 32%;
+  rotate: 48deg;
+}
+
+.ir-atlas-route-c {
+  width: 38%;
+  left: 35%;
+  top: 69%;
+  rotate: -24deg;
+}
+
+.ir-atlas-map-dock {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid rgba(var(--ir-line-rgb), 0.08);
+  background: rgba(var(--ir-line-rgb), 0.07);
+}
+
+.ir-atlas-map-dock div {
+  padding: 16px;
+  background: rgba(13, 13, 16, 0.82);
+}
+
+.ir-atlas-map-dock span,
+.ir-atlas-map-dock small {
+  display: block;
+}
+
+.ir-atlas-map-dock span {
+  color: var(--ir-text);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ir-atlas-map-dock small {
+  margin-top: 3px;
+  color: var(--ir-text-4);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ir-atlas-page > section:not(.ir-atlas-hero) {
+  position: relative;
+  border-color: rgba(var(--ir-line-rgb), 0.08);
+}
+
+.ir-atlas-page :where(.max-w-4xl, .max-w-5xl, .max-w-6xl, .max-w-lg, .max-w-xl) {
+  max-width: none;
+}
+
+.ir-atlas-page :where(.mx-auto) {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.ir-atlas-page :where(.px-4, .px-5, .px-6) {
+  padding-left: clamp(20px, 4vw, 56px);
+  padding-right: clamp(20px, 4vw, 56px);
+}
+
+.ir-atlas-page :where(.grid) {
+  gap: 0;
+}
+
+.ir-atlas-page :where(.flex-wrap) {
+  gap: 0;
+}
+
+.ir-atlas-page :where(.bg-white, .bg-\[\#faf9f5\], .bg-\[\#fff7ed\]) {
+  border-radius: 0;
+}
+
+.ir-atlas-page :where(a, button, input, textarea, select) {
+  border-radius: 0;
+}
+
+.ir-atlas-page :where(.grid > .bg-white, .flex > a.bg-\[\#faf9f5\], .flex > span.bg-\[\#faf9f5\]) {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+    var(--ir-surface);
+  border-color: rgba(var(--ir-line-rgb), 0.1);
+}
+
+.ir-atlas-page :where(.bg-\[\#fff7ed\]) {
+  background:
+    linear-gradient(135deg, rgba(var(--ir-accent-3-rgb), 0.12), transparent 42%), var(--ir-surface);
+}
+
+.ir-atlas-page :where(.border-\[\#fed7aa\]) {
+  border-color: rgba(var(--ir-accent-3-rgb), 0.2);
+}
+
+@media (max-width: 880px) {
+  .ir-atlas-hero-inner {
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .ir-atlas-map-panel {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ir-atlas-title {
+    font-size: 42px;
+  }
+
+  .ir-atlas-actions,
+  .ir-atlas-primary,
+  .ir-atlas-secondary {
+    width: 100%;
+  }
+
+  .ir-atlas-map-dock {
+    grid-template-columns: 1fr;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+p {
+  margin: 8px 0;
+}
+
+/* Legal pages prose styling */
+.legal-prose {
+  color: #262522;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.legal-prose h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000;
+  margin: 2rem 0 0.75rem;
+}
+.legal-prose h2:first-child {
+  margin-top: 0;
+}
+.legal-prose h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #000;
+  margin: 1.5rem 0 0.5rem;
+}
+.legal-prose p {
+  margin: 0.5rem 0;
+}
+.legal-prose ul,
+.legal-prose ol {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.5rem;
+}
+.legal-prose ul {
+  list-style: disc;
+}
+.legal-prose ol {
+  list-style: decimal;
+}
+.legal-prose li {
+  margin: 0.25rem 0;
+}
+.legal-prose a {
+  color: #eda82f;
+  text-decoration: underline;
+}
+.legal-prose a:hover {
+  color: #eda21f;
+}
+.legal-prose strong {
+  font-weight: 600;
+  color: #000;
+}
+.legal-prose .placeholder {
+  background: #fef3c7;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  color: #92400e;
+}
+.legal-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.legal-prose th,
+.legal-prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.legal-prose th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+/* Mapbox tooltip */
+.map-tooltip .mapboxgl-popup-content {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.map-tooltip .mapboxgl-popup-tip {
+  border-top-color: #fff;
+}
+
+/* Mapbox directions panel */
+.mapbox-directions-component {
+  font-family: inherit;
+}

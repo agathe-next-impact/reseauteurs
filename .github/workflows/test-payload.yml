@@ -1,0 +1,44 @@
+name: Tests Payload
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master]
+
+env:
+  DATABASE_URI: ${{ secrets.TEST_DATABASE_URI }}
+  PAYLOAD_SECRET: test-secret-minimum-32-characters-long
+  CRON_SECRET: test-cron-secret
+  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+  STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+  NEXT_PUBLIC_MAPBOX_TOKEN: pk.test
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+jobs:
+  test-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:int
+
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - run: pnpm test:e2e
