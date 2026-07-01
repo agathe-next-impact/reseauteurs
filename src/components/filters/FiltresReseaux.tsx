@@ -10,13 +10,12 @@
  * Pas d'axe date (un réseau local est persistant).
  * Pas de filtre badge (les badges sont pour les réseauteurs).
  *
- * Layout :
- *   - Desktop : sidebar fixe à gauche (280px)
- *   - Mobile  : bouton FAB (violet) + drawer bottom-sheet
+ * Rendu comme contenu du dropdown de filtres de la barre de navigation
+ * supérieure de la carte (`.rsn-map-filterdrop`) — voir MapReseaux.
  */
 
-import { useState, useCallback } from 'react'
-import { SlidersHorizontal, X, RotateCcw, MapPin } from 'lucide-react'
+import { useCallback } from 'react'
+import { X, RotateCcw, MapPin } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 
 export interface ReseauFilters {
@@ -42,6 +41,8 @@ interface FiltresReseauxProps {
   resultCount: number
   /** Liste des réseaux nationaux disponibles pour le filtre parent. */
   nationals: NationalLite[]
+  /** Fermer le dropdown parent (fourni par la barre de navigation de la carte). */
+  onClose?: () => void
 }
 
 export default function FiltresReseaux({
@@ -49,9 +50,8 @@ export default function FiltresReseaux({
   onFilterChange,
   resultCount,
   nationals,
+  onClose,
 }: FiltresReseauxProps) {
-  const [mobileOpen, setMobileOpen] = useState(false)
-
   const hasActiveFilters = filters.ville.trim() !== '' || filters.national !== ''
 
   const resetFilters = useCallback(() => onFilterChange(emptyReseauFilters), [onFilterChange])
@@ -68,19 +68,20 @@ export default function FiltresReseaux({
     [filters, onFilterChange],
   )
 
-  const activeFilterCount = [filters.ville, filters.national].filter(Boolean).length
-
   const content = (
     <>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-base font-semibold text-[#18181b]">Filtrer les réseaux</h2>
-        <button
-          className="md:hidden p-1.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Fermer les filtres"
-        >
-          <X size={18} />
-        </button>
+        {onClose && (
+          <button
+            type="button"
+            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
+            onClick={onClose}
+            aria-label="Fermer les filtres"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Ville */}
@@ -159,46 +160,5 @@ export default function FiltresReseaux({
     </>
   )
 
-  return (
-    <>
-      {/* Bouton FAB mobile */}
-      <button
-        className="md:hidden fixed bottom-4 left-4 z-[800] bg-[#a855f7] text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium hover:bg-[#9333ea] transition-colors cursor-pointer"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Ouvrir les filtres"
-        aria-expanded={mobileOpen}
-      >
-        <SlidersHorizontal size={15} />
-        Filtres
-        {hasActiveFilters && (
-          <span className="bg-white text-[#a855f7] text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-            {activeFilterCount}
-          </span>
-        )}
-      </button>
-
-      {/* Sidebar desktop */}
-      <aside className="hidden md:flex flex-col w-[280px] shrink-0 p-4 border-r border-[#e4e4e7] bg-white overflow-y-auto">
-        {content}
-      </aside>
-
-      {/* Drawer mobile */}
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-[900]">
-          <div
-            className="absolute inset-0 bg-black/30"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 max-h-[75vh] overflow-y-auto flex flex-col shadow-2xl">
-            <div
-              className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-3 shrink-0"
-              aria-hidden="true"
-            />
-            {content}
-          </div>
-        </div>
-      )}
-    </>
-  )
+  return <div className="rsn-map-filterdrop">{content}</div>
 }

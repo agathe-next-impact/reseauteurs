@@ -17,6 +17,7 @@ import { MaillageEvenement } from '@/components/seo/MaillageEvenement'
 import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { MAP_COLORS } from '@/lib/maplibre/config'
 import { SITE_NAME } from '@/lib/site'
+import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement } from '@/types/reseauteurs-domain'
 
@@ -118,7 +119,7 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
       : null
 
   return (
-    <div className="bg-[#faf9f5] min-h-screen">
+    <div className="rsn-page">
       {/* Données structurées JSON-LD (seo-engineer) */}
       <JsonLd
         data={[
@@ -130,17 +131,73 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
           ]),
         ]}
       />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Fil d'Ariane */}
-        <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-[#71717a] flex items-center gap-1.5">
-          <Link href="/" className="hover:text-[#2563EB] no-underline transition-colors">Accueil</Link>
-          <span aria-hidden>/</span>
-          <Link href="/evenements" className="hover:text-[#2563EB] no-underline transition-colors">Événements</Link>
-          <span aria-hidden>/</span>
-          <span className="text-[#52525b]" aria-current="page">{e.titre}</span>
-        </nav>
 
-        <article className="bg-white rounded-2xl border border-[#e4e4e7] shadow-sm overflow-hidden">
+      {/* Héros de fiche — fond de marque navy (même token que PageHeader) */}
+      <section className="rsn-pagehead" data-tone="navy">
+        <div className="rsn-pagehead-inner">
+          {/* Fil d'Ariane */}
+          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-white/60 flex items-center gap-1.5">
+            <Link href="/" className="hover:text-white no-underline transition-colors">Accueil</Link>
+            <span aria-hidden>/</span>
+            <Link href="/evenements" className="hover:text-white no-underline transition-colors">Événements</Link>
+            <span aria-hidden>/</span>
+            <span className="text-white/80" aria-current="page">{e.titre}</span>
+          </nav>
+
+          <Reveal>
+            <p className="rsn-eyebrow" style={{ color: '#93c5fd' }}>
+              {typeDoc?.label ?? 'Événement business'}
+            </p>
+            <h1 className="rsn-pagehead-title">{e.titre}</h1>
+
+            {/* Date et lieu */}
+            <div className="space-y-2.5 mt-6">
+              <div className="flex items-start gap-2">
+                <CalendarDays size={15} className="text-white/50 shrink-0 mt-0.5" aria-hidden />
+                <div>
+                  <p className="text-sm font-medium text-white capitalize">
+                    {formatDatetimeFR(e.dateDebut)}
+                  </p>
+                  {e.dateFin && (
+                    <p className="text-xs text-white/60">
+                      Fin : {formatDatetimeFR(e.dateFin)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <MapPin size={15} className="text-white/50 shrink-0 mt-0.5" aria-hidden />
+                <div>
+                  {e.lieuNom && <p className="text-sm font-medium text-white">{e.lieuNom}</p>}
+                  <p className="text-sm text-white/70">
+                    {e.lieuAdresse && `${e.lieuAdresse}, `}{e.lieuCodePostal && `${e.lieuCodePostal} `}{e.lieuVille}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA S'inscrire (lien externe) */}
+            {lienInscriptionSafe && (
+              <div className="mt-7">
+                <a
+                  href={lienInscriptionSafe}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ir-atlas-primary rsn-linkrow rsn-shine"
+                  aria-label={`S'inscrire à l'événement ${e.titre} (lien externe)`}
+                >
+                  <ExternalLink size={15} aria-hidden />
+                  S&apos;inscrire
+                  <span className="text-xs opacity-75 font-normal">— sur le site du réseau</span>
+                </a>
+              </div>
+            )}
+          </Reveal>
+        </div>
+      </section>
+
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <article className="rsn-card rsn-lift rounded-2xl overflow-hidden">
           {/* Image bannière */}
           {imageUrl ? (
             <div className="relative">
@@ -158,115 +215,68 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             <div className="w-full aspect-[3/1] bg-gradient-to-br from-[#bfdbfe]/30 to-[#e0f2fe]/20" />
           )}
 
-          {/* En-tête événement */}
-          <div className="px-6 pt-6 pb-5 border-b border-[#e4e4e7]">
-            {typeDoc?.label && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#bfdbfe]/30 text-[#2563EB] text-xs font-semibold mb-3 border border-[#bfdbfe]">
-                {typeDoc.label}
-              </span>
-            )}
-            <h1 className="text-xl sm:text-2xl font-bold text-[#16284f] mb-3 leading-tight">{e.titre}</h1>
-
-            {/* Date et lieu */}
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <CalendarDays size={15} className="text-[#a1a1aa] shrink-0 mt-0.5" aria-hidden />
-                <div>
-                  <p className="text-sm font-medium text-[#18181b] capitalize">
-                    {formatDatetimeFR(e.dateDebut)}
-                  </p>
-                  {e.dateFin && (
-                    <p className="text-xs text-[#71717a]">
-                      Fin : {formatDatetimeFR(e.dateFin)}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <MapPin size={15} className="text-[#a1a1aa] shrink-0 mt-0.5" aria-hidden />
-                <div>
-                  {e.lieuNom && <p className="text-sm font-medium text-[#18181b]">{e.lieuNom}</p>}
-                  <p className="text-sm text-[#52525b]">
-                    {e.lieuAdresse && `${e.lieuAdresse}, `}{e.lieuCodePostal && `${e.lieuCodePostal} `}{e.lieuVille}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* CTA S'inscrire (lien externe) */}
-            {lienInscriptionSafe && (
-              <div className="mt-5">
-                <a
-                  href={lienInscriptionSafe}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] transition-colors no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
-                  aria-label={`S'inscrire à l'événement ${e.titre} (lien externe)`}
-                >
-                  <ExternalLink size={15} aria-hidden />
-                  S&apos;inscrire
-                  <span className="text-xs opacity-75 font-normal">— sur le site du réseau</span>
-                </a>
-              </div>
-            )}
-          </div>
-
           {/* Description */}
-          <div className="px-6 py-6 space-y-6">
+          <div className="px-6 py-6 space-y-8">
             {e.description && (
-              <section aria-labelledby="desc-titre">
-                <h2 id="desc-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos de cet événement</h2>
-                <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.description}</p>
-              </section>
+              <Reveal>
+                <section aria-labelledby="desc-titre">
+                  <h2 id="desc-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos de cet événement</h2>
+                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.description}</p>
+                </section>
+              </Reveal>
             )}
 
             {/* Réseau organisateur */}
             {reseau && (
-              <section aria-labelledby="reseau-titre">
-                <h2 id="reseau-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
-                  <Network size={14} aria-hidden />
-                  Réseau organisateur
-                </h2>
-                <Link
-                  href={`/reseau/${reseau.slug}`}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 hover:shadow-sm transition-all no-underline group"
-                >
-                  {reseauLogoUrl ? (
-                    <Image
-                      src={reseauLogoUrl}
-                      alt={`Logo ${reseau.nom}`}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-lg object-contain border border-[#e4e4e7] shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold text-sm shrink-0">
-                      {reseau.nom.charAt(0)}
+              <Reveal>
+                <section aria-labelledby="reseau-titre">
+                  <h2 id="reseau-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <Network size={14} aria-hidden />
+                    Réseau organisateur
+                  </h2>
+                  <Link
+                    href={`/reseau/${reseau.slug}`}
+                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                  >
+                    {reseauLogoUrl ? (
+                      <Image
+                        src={reseauLogoUrl}
+                        alt={`Logo ${reseau.nom}`}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-lg object-contain border border-[#e4e4e7] shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold text-sm shrink-0">
+                        {reseau.nom.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#2563EB] transition-colors">{reseau.nom}</p>
+                      {reseau.ville && <p className="text-xs text-[#71717a]">{reseau.ville}</p>}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#2563EB] transition-colors">{reseau.nom}</p>
-                    {reseau.ville && <p className="text-xs text-[#71717a]">{reseau.ville}</p>}
-                  </div>
-                  <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0" aria-hidden />
-                </Link>
-              </section>
+                    <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                  </Link>
+                </section>
+              </Reveal>
             )}
             {/* Lieu — mini-carte de l'événement */}
             {typeof e.lieuLatitude === 'number' && typeof e.lieuLongitude === 'number' && (
-              <section aria-labelledby="lieu-titre">
-                <h2 id="lieu-titre" className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
-                  <MapPin size={14} aria-hidden />
-                  Lieu
-                </h2>
-                <MiniMapLoader
-                  latitude={e.lieuLatitude}
-                  longitude={e.lieuLongitude}
-                  zoom={14}
-                  color={MAP_COLORS.evenement}
-                  label={`Lieu de l'événement ${e.titre}${e.lieuVille ? ` à ${e.lieuVille}` : ''}`}
-                />
-              </section>
+              <Reveal>
+                <section aria-labelledby="lieu-titre">
+                  <h2 id="lieu-titre" className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
+                    <MapPin size={14} aria-hidden />
+                    Lieu
+                  </h2>
+                  <MiniMapLoader
+                    latitude={e.lieuLatitude}
+                    longitude={e.lieuLongitude}
+                    zoom={14}
+                    color={MAP_COLORS.evenement}
+                    label={`Lieu de l'événement ${e.titre}${e.lieuVille ? ` à ${e.lieuVille}` : ''}`}
+                  />
+                </section>
+              </Reveal>
             )}
           </div>
 
@@ -282,14 +292,14 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
           <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5] flex flex-wrap gap-4 justify-between items-center">
             <Link
               href="/evenements"
-              className="text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors flex items-center gap-1"
+              className="rsn-linkrow text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors flex items-center gap-1"
             >
               ← Tous les événements
             </Link>
             {/* CTA vers la carte des événements */}
             <Link
               href={`/evenements?vue=carte&ville=${encodeURIComponent(e.lieuVille ?? '')}`}
-              className="inline-flex items-center gap-1.5 text-sm text-[#71717a] hover:text-[#2563EB] no-underline transition-colors"
+              className="rsn-linkrow inline-flex items-center gap-1.5 text-sm text-[#71717a] hover:text-[#2563EB] no-underline transition-colors"
             >
               <MapPin size={13} aria-hidden />
               Voir sur la carte

@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import type { Media } from '@/types/reseauteurs-domain'
 import { CreerLocalButton } from '@/components/billing/CreerLocalButton'
+import Reveal from '@/components/home/Reveal'
 
 export const metadata = {
   title: 'Mes chapitres locaux — Tableau de bord | RÉSEAUTEURS',
@@ -88,23 +89,27 @@ export default async function DashboardLocauxPage() {
   })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="rsn-page">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#16284f] flex items-center gap-2">
-          <Network size={20} className="text-[#a855f7]" aria-hidden />
-          Mes chapitres locaux
-        </h1>
-        <Link
-          href="/dashboard/reseau"
-          className="text-sm text-[#71717a] hover:text-[#18181b] no-underline transition-colors"
-        >
-          ← Mon réseau national
-        </Link>
-      </div>
+      <Reveal>
+        <p className="rsn-eyebrow mb-2">Espace connecté</p>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <Network size={20} className="text-[#a855f7]" aria-hidden />
+            Mes chapitres locaux
+          </h1>
+          <Link
+            href="/dashboard/reseau"
+            className="text-sm text-[#71717a] hover:text-[#18181b] no-underline transition-colors"
+          >
+            ← Mon réseau national
+          </Link>
+        </div>
+      </Reveal>
 
       {/* Réseau national de référence */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-4 flex items-center gap-3">
+      <div className="rsn-card rounded-2xl p-4 flex items-center gap-3">
         <Building2Small />
         <div className="flex-1 min-w-0">
           <p className="text-xs text-[#71717a]">Réseau national</p>
@@ -147,7 +152,7 @@ export default async function DashboardLocauxPage() {
       )}
 
       {/* Liste des chapitres */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7]">
+      <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Network size={14} className="text-[#a855f7]" aria-hidden />
@@ -268,6 +273,7 @@ export default async function DashboardLocauxPage() {
         >
           Demander une délégation →
         </a>
+      </div>
       </div>
     </div>
   )

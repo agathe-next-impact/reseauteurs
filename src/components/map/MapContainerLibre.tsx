@@ -3,12 +3,18 @@
 /**
  * MapContainerLibre — Conteneur de carte MapLibre GL JS (ADR-0006).
  * Remplace MapContainer.tsx (Mapbox) pour les nouvelles cartes RÉSEAUTEURS.
- * Pas de token requis : utilise des tuiles OSM via OpenFreeMap.
+ * Pas de token requis : tuiles OSM (OpenFreeMap clair / CARTO dark-matter sombre).
+ *
+ * - Basemap theme-adaptatif : suit le thème `.ir-plasma` (clair ⇆ sombre) et
+ *   réagit à l'événement `reseauteurs-theme-change` (bascule header).
+ * - Contrôles rebrandés (MapControls) au lieu des contrôles natifs MapLibre.
  */
 
-import { Map, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre'
+import { useEffect, useState } from 'react'
+import { Map } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
-import { MAP_DEFAULTS, OSM_STYLE_URL } from '@/lib/maplibre/config'
+import { MAP_DEFAULTS, MAP_STYLE_LIGHT, MAP_STYLE_DARK } from '@/lib/maplibre/config'
+import MapControls from './MapControls'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 export interface MapContainerLibreProps {
@@ -23,6 +29,18 @@ export interface MapContainerLibreProps {
   children?: React.ReactNode
 }
 
+/** Lit le thème courant depuis le DOM et réagit à la bascule header. */
+function useDarkBasemap() {
+  const [dark, setDark] = useState(false)
+  useEffect(() => {
+    const read = () => setDark(document.body.classList.contains('ir-plasma'))
+    read()
+    window.addEventListener('reseauteurs-theme-change', read)
+    return () => window.removeEventListener('reseauteurs-theme-change', read)
+  }, [])
+  return dark
+}
+
 export default function MapContainerLibre({
   mapRef,
   interactiveLayerIds,
@@ -34,38 +52,35 @@ export default function MapContainerLibre({
   cursor = 'auto',
   children,
 }: MapContainerLibreProps) {
+  const dark = useDarkBasemap()
+
   return (
-    <Map
-      ref={mapRef}
-      mapStyle={OSM_STYLE_URL}
-      initialViewState={{
-        longitude: MAP_DEFAULTS.center[0],
-        latitude: MAP_DEFAULTS.center[1],
-        zoom: MAP_DEFAULTS.zoom,
-      }}
-      fadeDuration={0}
-      interactiveLayerIds={interactiveLayerIds}
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onLoad={onLoad}
-      onMoveEnd={onMoveEnd}
-      cursor={cursor}
-      style={{ width: '100%', height: '100%' }}
-      aria-label="Carte interactive"
-    >
-      <NavigationControl position="top-left" />
-      {/*
-        GeolocateControl : déclenchement uniquement sur clic utilisateur,
-        jamais au chargement (RGPD & ADR-0011 §7).
-        trackUserLocation={false} = affiche la position une fois, sans suivi continu.
-      */}
-      <GeolocateControl
-        position="top-left"
-        trackUserLocation={false}
-        showUserHeading={false}
-      />
-      {children}
-    </Map>
+    <div className="rsn-map-shell">
+      <Map
+        ref={mapRef}
+        mapStyle={dark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
+        initialViewState={{
+          longitude: MAP_DEFAULTS.center[0],
+          latitude: MAP_DEFAULTS.center[1],
+          zoom: MAP_DEFAULTS.zoom,
+        }}
+        fadeDuration={0}
+        interactiveLayerIds={interactiveLayerIds}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onLoad={onLoad}
+        onMoveEnd={onMoveEnd}
+        cursor={cursor}
+        style={{ width: '100%', height: '100%' }}
+        aria-label="Carte interactive"
+      >
+        {children}
+      </Map>
+
+      {/* Contrôles maison (zoom / autour de moi / recentrer). Géoloc au clic
+          uniquement, jamais au chargement (RGPD & ADR-0011 §7). */}
+      <MapControls mapRef={mapRef} />
+    </div>
   )
 }

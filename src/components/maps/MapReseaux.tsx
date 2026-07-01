@@ -20,6 +20,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { List, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
 import type { GeoJSONFeatureCollection } from '@/lib/geojson'
@@ -36,6 +37,8 @@ const SlideOverReseau = dynamic(() => import('@/components/slideover/SlideOverRe
 })
 import MapContainerLibre from '@/components/map/MapContainerLibre'
 import MapPopupLibre from '@/components/map/MapPopupLibre'
+import MapLegend from '@/components/map/MapLegend'
+import MapResultsList, { type MapListItem } from '@/components/map/MapResultsList'
 
 /** Durée de debounce pour le refetch sur déplacement carte (ms) */
 const MAP_MOVE_DEBOUNCE = 400
@@ -53,16 +56,20 @@ interface MapReseauxProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
   nationals: NationalLite[]
+  /** Bascule annuaire/carte (rendue dans la barre de navigation supérieure). */
+  toolbar?: React.ReactNode
 }
 
 export default function MapReseaux({
   initialData,
   initialSlug,
   nationals,
+  toolbar,
 }: MapReseauxProps) {
   const mapRef = useRef<MapRef | null>(null)
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialSlug ?? null)
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null)
   const [filters, setFilters] = useState<ReseauFilters>(emptyReseauFilters)
   const [fetching, setFetching] = useState(false)
   const [geojsonData, setGeojsonData] = useState<GeoJSONFeatureCollection>(initialData)
@@ -70,10 +77,20 @@ export default function MapReseaux({
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null)
   const [cursor, setCursor] = useState('auto')
   const [mapReady, setMapReady] = useState(false)
+  const [listOpen, setListOpen] = useState(true)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [resultsOpen, setResultsOpen] = useState(true)
 
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cacheRef = useRef<Map<string, GeoJSONFeatureCollection>>(new Map())
+  const geojsonDataRef = useRef(geojsonData)
+  geojsonDataRef.current = geojsonData
+
+  // Nombre de filtres actifs (badge sur le bouton Filtres)
+  const activeCount = useMemo(() => {
+    return [filters.national, filters.ville.trim()].filter(Boolean).length
+  }, [filters])
 
   const sourceData = useMemo(() => geojsonData as GeoJSON.FeatureCollection, [geojsonData])
 
@@ -83,11 +100,32 @@ export default function MapReseaux({
     [selectedSlug],
   )
 
+  // Filtre de survol (surbrillance depuis la colonne de résultats)
+  const hoveredFilter = useMemo(
+    (): unknown[] => ['==', ['get', 'slug'], hoveredSlug ?? ''],
+    [hoveredSlug],
+  )
+
   // IDs des couches interactives (clic + hover)
   const interactiveLayerIds = useMemo(
     () => ['reseaux-clusters', 'reseaux-points'],
     [],
   )
+
+  // ── Colonne de résultats synchronisée (Lot C) ───────────────────────
+  const resultItems = useMemo((): MapListItem[] => {
+    return geojsonData.features
+      .filter((f) => f.properties?.slug)
+      .map((f) => {
+        const props = f.properties as Record<string, unknown>
+        return {
+          id: props.slug as string,
+          title: (props.nom as string | null | undefined) ?? 'Réseau',
+          meta: (props.ville as string | null | undefined) ?? null,
+          accent: MAP_COLORS.reseau,
+        }
+      })
+  }, [geojsonData])
 
   // ── Handlers carte ──────────────────────────────────────────────────
   const handleLoad = useCallback((e: MapEvent) => {
@@ -128,7 +166,6 @@ export default function MapReseaux({
       const slug = feature.properties?.slug as string | undefined
       if (slug) {
         setSelectedSlug(slug)
-        // Synchronisation URL — le composant parent (frontend-builder) pourra adapter
         window.history.replaceState(
           null,
           '',
@@ -136,6 +173,26 @@ export default function MapReseaux({
         )
       }
     }
+  }, [])
+
+  // ── Sélection depuis la colonne de résultats (Lot C) ────────────────
+  const handleSelectFromList = useCallback((slug: string) => {
+    setSelectedSlug(slug)
+    window.history.replaceState(null, '', `/reseaux?res=${encodeURIComponent(slug)}`)
+
+    const match = geojsonDataRef.current.features.find(
+      (f) => f.properties?.slug === slug,
+    )
+    if (match) {
+      const map = mapRef.current?.getMap()
+      const coords = (match.geometry as GeoJSON.Point).coordinates as [number, number]
+      const currentZoom = map?.getZoom() ?? 12
+      map?.flyTo({ center: coords, zoom: Math.max(currentZoom, 12), duration: 700 })
+    }
+  }, [])
+
+  const handleHoverFromList = useCallback((slug: string | null) => {
+    setHoveredSlug(slug)
   }, [])
 
   const handleMouseEnter = useCallback((e: MapMouseEvent) => {
@@ -236,15 +293,26 @@ export default function MapReseaux({
   }, [])
 
   return (
-    <div className="flex h-[calc(100dvh-4rem-1px)]" aria-label="Carte des réseaux locaux">
-      <FiltresReseaux
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        resultCount={resultCount}
-        nationals={nationals}
-      />
+    <div className="flex flex-col h-[calc(100dvh-4rem-1px)]" aria-label="Carte des réseaux locaux">
+      {/* Barre de navigation supérieure : bascule vue + affichage du panneau */}
+      <div className="rsn-map-topbar">
+        <div className="rsn-map-topbar-start">{toolbar}</div>
+        <div className="rsn-map-topbar-end">
+          <button
+            type="button"
+            className={`rsn-map-topbar-btn hidden lg:inline-flex${listOpen ? ' is-active' : ''}`}
+            onClick={() => setListOpen((v) => !v)}
+            aria-pressed={listOpen}
+            aria-label={listOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
+          >
+            <List size={15} />
+            {listOpen ? 'Masquer le panneau' : 'Panneau'}
+          </button>
+        </div>
+      </div>
 
-      <div className="flex-1 relative isolate">
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 relative isolate">
         {/* Overlay de chargement initial — masqué dès que la carte est prête */}
         <div
           className={`absolute inset-0 z-[700] bg-white flex items-center justify-center pointer-events-none transition-opacity duration-500 ${
@@ -344,6 +412,19 @@ export default function MapReseaux({
                 }}
               />
 
+              {/* Surbrillance au survol (depuis la colonne de résultats) */}
+              <Layer
+                id="reseaux-hover"
+                type="circle"
+                filter={hoveredFilter as unknown as boolean}
+                paint={{
+                  'circle-color': 'transparent',
+                  'circle-radius': 13,
+                  'circle-stroke-width': 3,
+                  'circle-stroke-color': MAP_COLORS.reseau,
+                }}
+              />
+
               {/* Anneau de sélection (marqueur actif) */}
               <Layer
                 id="reseaux-selected"
@@ -378,6 +459,92 @@ export default function MapReseaux({
             </MapPopupLibre>
           )}
         </MapContainerLibre>
+
+        {/* État vide : aucune donnée dans la zone visible */}
+        {mapReady && !fetching && geojsonData.features.length === 0 && (
+          <div className="rsn-map-empty" role="status">
+            <p>Aucun réseau dans cette zone.</p>
+          </div>
+        )}
+
+        {/* Légende du marqueur réseau */}
+        <MapLegend
+          title="Carte"
+          items={[{ label: 'Réseau local', color: MAP_COLORS.reseau }]}
+        />
+        </div>
+
+        {/* Rail droit (desktop) : accordéon Filtres + Résultats */}
+        {listOpen && (
+          <div className="rsn-map-rail">
+            <div className="rsn-rail-accordion">
+              {/* Section Filtres */}
+              <section className="rsn-acc rsn-acc-filters">
+                <button
+                  type="button"
+                  className="rsn-acc-head"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                  aria-expanded={filtersOpen}
+                >
+                  <SlidersHorizontal size={15} aria-hidden />
+                  <span className="rsn-acc-label">Filtres</span>
+                  {activeCount > 0 && (
+                    <span className="rsn-map-topbar-btn-badge">{activeCount}</span>
+                  )}
+                  <ChevronDown
+                    size={16}
+                    aria-hidden
+                    className={`rsn-acc-chevron${filtersOpen ? ' is-open' : ''}`}
+                  />
+                </button>
+                {filtersOpen && (
+                  <div className="rsn-acc-filters-body">
+                    <FiltresReseaux
+                      filters={filters}
+                      onFilterChange={handleFilterChange}
+                      resultCount={resultCount}
+                      nationals={nationals}
+                    />
+                  </div>
+                )}
+              </section>
+
+              {/* Section Résultats */}
+              <section className={`rsn-acc rsn-acc-results${resultsOpen ? ' is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="rsn-acc-head"
+                  onClick={() => setResultsOpen((v) => !v)}
+                  aria-expanded={resultsOpen}
+                >
+                  <List size={15} aria-hidden />
+                  <span className="rsn-acc-label">Résultats</span>
+                  <span className="rsn-acc-count">
+                    {resultCount}
+                    {resultCount > 100 ? ' · zoomez' : ''}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    aria-hidden
+                    className={`rsn-acc-chevron${resultsOpen ? ' is-open' : ''}`}
+                  />
+                </button>
+                {resultsOpen && (
+                  <MapResultsList
+                    items={resultItems}
+                    selectedId={selectedSlug}
+                    total={resultCount}
+                    onSelect={handleSelectFromList}
+                    onHover={handleHoverFromList}
+                    entityLabel="réseau"
+                    emptyLabel="Aucun réseau dans cette zone."
+                    hideHead
+                  />
+                )}
+              </section>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Panneau de détail (slide-over desktop + bottom-sheet mobile) */}

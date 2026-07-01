@@ -15,11 +15,13 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
+import { List, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
 import type { GeoJSONFeatureCollection } from '@/lib/geojson'
 import type { TooltipInfo } from '@/types/map'
-import { MAP_COLORS } from '@/lib/maplibre/config'
+import { MAP_COLORS, BADGE_MARKER_COLORS, BADGE_MARKER_FALLBACK } from '@/lib/maplibre/config'
 import FiltresReseauteurs, {
   type ReseauteurFilters,
   emptyFilters,
@@ -32,9 +34,11 @@ const SlideOverReseauteur = dynamic(() => import('@/components/slideover/SlideOv
 })
 import MapContainerLibre from '@/components/map/MapContainerLibre'
 import MapPopupLibre from '@/components/map/MapPopupLibre'
+import MapLegend from '@/components/map/MapLegend'
+import MapResultsList, { type MapListItem } from '@/components/map/MapResultsList'
 
 /** Durée de debounce pour le refetch sur déplacement carte (ms) */
-const MAP_MOVE_DEBOUNCE = 400
+const MAP_MOVE_DEBOUNCE = 500
 
 // ── Expressions MapLibre pour les couleurs de cluster ──────────────────────
 const clusterCircleColor = [
@@ -45,11 +49,24 @@ const clusterCircleColor = [
   50, '#1e40af',               // 50+
 ]
 
+// ── Expression MapLibre `match` pour la couleur des marqueurs par badge ────
+const badgeCircleColor = [
+  'match',
+  ['get', 'badge'],
+  ...BADGE_MARKER_COLORS.flatMap((b) => [b.value, b.color]),
+  BADGE_MARKER_FALLBACK,
+]
+
+/** Table de correspondance badge → { color, label } pour la colonne de résultats. */
+const BADGE_LOOKUP = new Map(BADGE_MARKER_COLORS.map((b) => [b.value, b]))
+
 interface MapReseauteursProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
   categories: CategoryLite[]
   reseaux: ReseauLite[]
+  /** Bascule annuaire/carte (rendue dans la barre de navigation supérieure). */
+  toolbar?: React.ReactNode
 }
 
 export default function MapReseauteurs({
@@ -57,10 +74,12 @@ export default function MapReseauteurs({
   initialSlug,
   categories,
   reseaux,
+  toolbar,
 }: MapReseauteursProps) {
   const mapRef = useRef<MapRef | null>(null)
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialSlug ?? null)
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null)
   const [filters, setFilters] = useState<ReseauteurFilters>(emptyFilters)
   const [fetching, setFetching] = useState(false)
   const [geojsonData, setGeojsonData] = useState<GeoJSONFeatureCollection>(initialData)
@@ -68,12 +87,27 @@ export default function MapReseauteurs({
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null)
   const [cursor, setCursor] = useState('auto')
   const [mapReady, setMapReady] = useState(false)
+  const [listOpen, setListOpen] = useState(true)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [resultsOpen, setResultsOpen] = useState(true)
 
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cacheRef = useRef<Map<string, GeoJSONFeatureCollection>>(new Map())
   const geojsonDataRef = useRef(geojsonData)
   geojsonDataRef.current = geojsonData
+
+  // Nombre de filtres actifs (badge sur le bouton Filtres)
+  const activeCount = useMemo(() => {
+    const selectedReseaux = filters.reseau
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    return (
+      [filters.ville.trim(), filters.secteur, filters.badge].filter(Boolean).length +
+      selectedReseaux.length
+    )
+  }, [filters])
 
   const sourceData = useMemo(() => geojsonData as GeoJSON.FeatureCollection, [geojsonData])
 
@@ -83,10 +117,42 @@ export default function MapReseauteurs({
     [selectedSlug],
   )
 
+  // Filtre de survol (surbrillance depuis la colonne de résultats)
+  const hoveredFilter = useMemo(
+    (): unknown[] => ['==', ['get', 'slug'], hoveredSlug ?? ''],
+    [hoveredSlug],
+  )
+
   const interactiveLayerIds = useMemo(
     () => ['reseauteurs-clusters', 'reseauteurs-points'],
     [],
   )
+
+  // ── Colonne de résultats synchronisée (Lot C) ───────────────────────
+  const resultItems = useMemo((): MapListItem[] => {
+    return geojsonData.features
+      .filter((f) => f.properties?.slug)
+      .map((f) => {
+        const props = f.properties as Record<string, unknown>
+        const slug = props.slug as string
+        const prenom = (props.prenom as string | null | undefined) ?? ''
+        const nom = (props.nom as string | null | undefined) ?? ''
+        const title = [prenom, nom].filter(Boolean).join(' ') || 'Réseauteur'
+        const fonction = (props.fonction as string | null | undefined) ?? null
+        const entreprise = (props.entreprise as string | null | undefined) ?? null
+        const badge = (props.badge as string | null | undefined) ?? null
+        const badgeInfo = badge ? BADGE_LOOKUP.get(badge) : undefined
+
+        return {
+          id: slug,
+          title,
+          subtitle: fonction || entreprise,
+          meta: (props.ville as string | null | undefined) ?? null,
+          accent: badgeInfo?.color ?? BADGE_MARKER_FALLBACK,
+          accentLabel: badgeInfo?.label,
+        }
+      })
+  }, [geojsonData])
 
   // ── Handlers carte ──────────────────────────────────────────────────
   const handleLoad = useCallback((e: MapEvent) => {
@@ -131,6 +197,26 @@ export default function MapReseauteurs({
         )
       }
     }
+  }, [])
+
+  // ── Sélection depuis la colonne de résultats (Lot C) ────────────────
+  const handleSelectFromList = useCallback((slug: string) => {
+    setSelectedSlug(slug)
+    window.history.replaceState(null, '', `/carte/reseauteurs?r=${encodeURIComponent(slug)}`)
+
+    const match = geojsonDataRef.current.features.find(
+      (f) => f.properties?.slug === slug,
+    )
+    if (match) {
+      const map = mapRef.current?.getMap()
+      const coords = (match.geometry as GeoJSON.Point).coordinates as [number, number]
+      const currentZoom = map?.getZoom() ?? 12
+      map?.flyTo({ center: coords, zoom: Math.max(currentZoom, 12), duration: 700 })
+    }
+  }, [])
+
+  const handleHoverFromList = useCallback((slug: string | null) => {
+    setHoveredSlug(slug)
   }, [])
 
   const handleMouseEnter = useCallback((e: MapMouseEvent) => {
@@ -239,16 +325,26 @@ export default function MapReseauteurs({
   }, [])
 
   return (
-    <div className="flex h-[calc(100dvh-4rem-1px)]" aria-label="Carte des réseauteurs">
-      <FiltresReseauteurs
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        resultCount={resultCount}
-        categories={categories}
-        reseaux={reseaux}
-      />
+    <div className="flex flex-col h-[calc(100dvh-4rem-1px)]" aria-label="Carte des réseauteurs">
+      {/* Barre de navigation supérieure : bascule vue + affichage du panneau */}
+      <div className="rsn-map-topbar">
+        <div className="rsn-map-topbar-start">{toolbar}</div>
+        <div className="rsn-map-topbar-end">
+          <button
+            type="button"
+            className={`rsn-map-topbar-btn hidden lg:inline-flex${listOpen ? ' is-active' : ''}`}
+            onClick={() => setListOpen((v) => !v)}
+            aria-pressed={listOpen}
+            aria-label={listOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
+          >
+            <List size={15} />
+            {listOpen ? 'Masquer le panneau' : 'Panneau'}
+          </button>
+        </div>
+      </div>
 
-      <div className="flex-1 relative isolate">
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 relative isolate">
         {/* Overlay de chargement initial */}
         <div
           className={`absolute inset-0 z-[700] bg-white flex items-center justify-center pointer-events-none transition-opacity duration-500 ${
@@ -333,16 +429,28 @@ export default function MapReseauteurs({
                 } as unknown as Record<string, unknown>}
                 paint={{ 'text-color': '#ffffff' }}
               />
-              {/* Marqueurs individuels — cercle bleu */}
+              {/* Marqueurs individuels — couleur par badge réseauteur */}
               <Layer
                 id="reseauteurs-points"
                 type="circle"
                 filter={['!', ['has', 'point_count']]}
                 paint={{
-                  'circle-color': MAP_COLORS.primary,
+                  'circle-color': badgeCircleColor as unknown as string,
                   'circle-radius': 9,
                   'circle-stroke-width': 2.5,
                   'circle-stroke-color': MAP_COLORS.white,
+                }}
+              />
+              {/* Surbrillance au survol (depuis la colonne de résultats) */}
+              <Layer
+                id="reseauteurs-hover"
+                type="circle"
+                filter={hoveredFilter as unknown as boolean}
+                paint={{
+                  'circle-color': 'transparent',
+                  'circle-radius': 13,
+                  'circle-stroke-width': 3,
+                  'circle-stroke-color': MAP_COLORS.primary,
                 }}
               />
               {/* Anneau de sélection */}
@@ -390,6 +498,95 @@ export default function MapReseauteurs({
             </MapPopupLibre>
           )}
         </MapContainerLibre>
+
+        {/* État vide : aucune donnée dans la zone visible */}
+        {mapReady && !fetching && geojsonData.features.length === 0 && (
+          <div className="rsn-map-empty" role="status">
+            <p>Aucun réseauteur dans cette zone.</p>
+            <Link href="/inscription">Créer mon profil</Link>
+          </div>
+        )}
+
+        {/* Légende du code couleur des marqueurs (badge) */}
+        <MapLegend
+          title="Badge réseauteur"
+          items={BADGE_MARKER_COLORS.map((b) => ({ label: b.label, color: b.color }))}
+          note="Selon le nombre d'événements fréquentés par mois."
+        />
+      </div>
+
+      {/* Rail droit (desktop) : accordéon Filtres + Résultats */}
+      {listOpen && (
+        <div className="rsn-map-rail">
+          <div className="rsn-rail-accordion">
+            {/* Section Filtres */}
+            <section className="rsn-acc rsn-acc-filters">
+              <button
+                type="button"
+                className="rsn-acc-head"
+                onClick={() => setFiltersOpen((v) => !v)}
+                aria-expanded={filtersOpen}
+              >
+                <SlidersHorizontal size={15} aria-hidden />
+                <span className="rsn-acc-label">Filtres</span>
+                {activeCount > 0 && (
+                  <span className="rsn-map-topbar-btn-badge">{activeCount}</span>
+                )}
+                <ChevronDown
+                  size={16}
+                  aria-hidden
+                  className={`rsn-acc-chevron${filtersOpen ? ' is-open' : ''}`}
+                />
+              </button>
+              {filtersOpen && (
+                <div className="rsn-acc-filters-body">
+                  <FiltresReseauteurs
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    resultCount={resultCount}
+                    categories={categories}
+                    reseaux={reseaux}
+                  />
+                </div>
+              )}
+            </section>
+
+            {/* Section Résultats */}
+            <section className={`rsn-acc rsn-acc-results${resultsOpen ? ' is-open' : ''}`}>
+              <button
+                type="button"
+                className="rsn-acc-head"
+                onClick={() => setResultsOpen((v) => !v)}
+                aria-expanded={resultsOpen}
+              >
+                <List size={15} aria-hidden />
+                <span className="rsn-acc-label">Résultats</span>
+                <span className="rsn-acc-count">
+                  {resultCount}
+                  {resultCount > 100 ? ' · zoomez' : ''}
+                </span>
+                <ChevronDown
+                  size={16}
+                  aria-hidden
+                  className={`rsn-acc-chevron${resultsOpen ? ' is-open' : ''}`}
+                />
+              </button>
+              {resultsOpen && (
+                <MapResultsList
+                  items={resultItems}
+                  selectedId={selectedSlug}
+                  total={resultCount}
+                  onSelect={handleSelectFromList}
+                  onHover={handleHoverFromList}
+                  entityLabel="réseauteur"
+                  emptyLabel="Aucun réseauteur dans cette zone."
+                  hideHead
+                />
+              )}
+            </section>
+          </div>
+        </div>
+      )}
       </div>
 
       {/* Panneau de détail (slide-over + bottom-sheet mobile) */}

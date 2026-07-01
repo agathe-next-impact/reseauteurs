@@ -21,6 +21,7 @@ import {
   CheckoutPartenaireButton,
   PortalButton,
 } from '@/app/(frontend)/dashboard/(organisateur)/reseau/CheckoutButtons'
+import Reveal from '@/components/home/Reveal'
 
 export const metadata: Metadata = {
   title: 'Abonnement — Tableau de bord | RÉSEAUTEURS',
@@ -75,11 +76,15 @@ export default async function AbonnementPage() {
   const isActive = isPartenaire && expireAt ? expireAt > nowDate : isPartenaire
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold text-[#18181b] mb-6 flex items-center gap-2">
-        <CreditCard size={22} />
-        Abonnement
-      </h1>
+    <div className="rsn-page">
+      <div className="max-w-3xl mx-auto px-6 py-8">
+      <Reveal className="mb-6">
+        <p className="rsn-eyebrow mb-2">Espace connecté</p>
+        <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+          <CreditCard size={22} aria-hidden />
+          Abonnement
+        </h1>
+      </Reveal>
 
       {/* Statut actuel */}
       {reseau ? (
@@ -88,7 +93,7 @@ export default async function AbonnementPage() {
             className={`rounded-2xl border p-6 mb-4 ${
               isActive
                 ? 'border-green-200 bg-green-50'
-                : 'border-[#e4e4e7] bg-white'
+                : 'rsn-card'
             }`}
           >
             <div className="flex items-start gap-4">
@@ -139,7 +144,7 @@ export default async function AbonnementPage() {
           </div>
 
           {/* J2.A — Actions Stripe */}
-          <div className="rounded-2xl border border-[#e4e4e7] bg-white p-6 space-y-4">
+          <div className="rsn-card rounded-2xl p-6 space-y-4">
             <h3 className="text-sm font-semibold text-[#52525b] uppercase tracking-wide">
               Gestion de l&apos;abonnement
             </h3>
@@ -179,7 +184,7 @@ export default async function AbonnementPage() {
         </div>
       ) : (
         /* Aucun réseau lié au compte organisateur */
-        <div className="rounded-2xl border border-[#e4e4e7] bg-white p-8 text-center mb-8">
+        <div className="rsn-card rounded-2xl p-8 text-center mb-8">
           <Building2 size={32} className="mx-auto text-zinc-300 mb-3" />
           <p className="text-[#52525b] font-medium mb-1">Aucun réseau associé à ce compte</p>
           <p className="text-sm text-[#71717a] mb-4">
@@ -195,7 +200,7 @@ export default async function AbonnementPage() {
       )}
 
       {/* Offre partenariat — récapitulatif des avantages */}
-      <div className="rounded-2xl border border-[#e4e4e7] bg-white p-6">
+      <div className="rsn-card rounded-2xl p-6">
         <h3 className="text-sm font-semibold text-[#52525b] uppercase tracking-wide mb-4">
           Ce que comprend le partenariat
         </h3>
@@ -224,6 +229,7 @@ export default async function AbonnementPage() {
         >
           Voir l&apos;historique des factures
         </Link>
+      </div>
       </div>
     </div>
   )

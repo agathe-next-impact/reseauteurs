@@ -21,6 +21,8 @@ interface MapEvenementsReseauteursLoaderProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
   reseaux: ReseauLiteFilter[]
+  /** Bascule agenda/carte (rendue dans la barre de navigation supérieure). */
+  toolbar?: React.ReactNode
 }
 
 export default function MapEvenementsReseauteursLoader(

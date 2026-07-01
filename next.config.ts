@@ -45,6 +45,11 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Épingle la racine du projet : sinon Next remonte les dossiers parents et peut
+  // inférer C:\dev comme racine (à cause d'un package-lock.json parasite), ce qui fait
+  // échouer Turbopack avec « Next.js package not found ». Voir dirname défini plus haut.
+  turbopack: { root: dirname },
+  outputFileTracingRoot: dirname,
   serverExternalPackages: ['sharp'],
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -157,9 +162,6 @@ const nextConfig: NextConfig = {
     }
 
     return webpackConfig
-  },
-  turbopack: {
-    root: path.resolve(dirname),
   },
 }
 

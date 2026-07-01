@@ -46,6 +46,7 @@ import { EvenementsManager } from './EvenementsManager'
 import { CheckoutPartenaireButton, PortalButton } from './CheckoutButtons'
 import { BadgePartenaire } from '@/components/ui/BadgeReseauteur'
 import { AbonnementNationalStatus } from '@/components/billing/AbonnementNationalStatus'
+import Reveal from '@/components/home/Reveal'
 import type { Reseau, Media } from '@/types/reseauteurs-domain'
 
 export const metadata = {
@@ -112,19 +113,21 @@ export default async function DashboardReseauPage() {
   if (!local) {
     // Aucun réseau associé (signup en cours ou anomalie)
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
-        <Building2 size={48} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-        <p className="text-sm font-medium text-[#52525b] mb-2">Aucun réseau associé</p>
-        <p className="text-sm text-[#71717a] mb-6">
-          Votre compte organisateur n&apos;est pas encore rattaché à un réseau. Contactez-nous pour configurer votre espace.
-        </p>
-        <a
-          href={`mailto:contact@reseauteurs.fr?subject=Rattachement réseau — ${freshUser.email as string}`}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors"
-        >
-          <Mail size={15} />
-          Contacter le support
-        </a>
+      <div className="rsn-page">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
+          <Building2 size={48} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
+          <p className="text-sm font-medium text-[#52525b] mb-2">Aucun réseau associé</p>
+          <p className="text-sm text-[#71717a] mb-6">
+            Votre compte organisateur n&apos;est pas encore rattaché à un réseau. Contactez-nous pour configurer votre espace.
+          </p>
+          <a
+            href={`mailto:contact@reseauteurs.fr?subject=Rattachement réseau — ${freshUser.email as string}`}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors"
+          >
+            <Mail size={15} />
+            Contacter le support
+          </a>
+        </div>
       </div>
     )
   }
@@ -185,28 +188,32 @@ async function NationalDashboard({
     : null
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="rsn-page">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#16284f] flex items-center gap-2">
-          <Building2 size={20} aria-hidden />
-          Mon réseau national
-        </h1>
-        {!!national.slug && (
-          <Link
-            href={`/reseau/${national.slug as string}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors flex items-center gap-1"
-          >
-            Voir la fiche publique
-            <ExternalLink size={12} aria-hidden />
-          </Link>
-        )}
-      </div>
+      <Reveal>
+        <p className="rsn-eyebrow mb-2">Espace connecté</p>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <Building2 size={20} aria-hidden />
+            Mon réseau national
+          </h1>
+          {!!national.slug && (
+            <Link
+              href={`/reseau/${national.slug as string}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors flex items-center gap-1"
+            >
+              Voir la fiche publique
+              <ExternalLink size={12} aria-hidden />
+            </Link>
+          )}
+        </div>
+      </Reveal>
 
       {/* Résumé national */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+      <div className="rsn-card rounded-2xl p-5">
         <div className="flex items-center gap-3">
           {logoUrl ? (
             <Image
@@ -248,7 +255,7 @@ async function NationalDashboard({
       />
 
       {/* Édition fiche nationale */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7]">
+      <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Globe size={14} aria-hidden />
@@ -287,7 +294,7 @@ async function NationalDashboard({
           - Si capacité dépassée → afficher "Montez de palier" avec lien portail Stripe
           - Si non abonné → gate déjà visible via le bloc abonnement ci-dessus
       */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7]">
+      <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Network size={14} className="text-[#a855f7]" aria-hidden />
@@ -387,7 +394,7 @@ async function NationalDashboard({
       </div>
 
       {/* Événements */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7]">
+      <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Calendar size={14} aria-hidden />
@@ -428,7 +435,7 @@ async function NationalDashboard({
       {/* Factures */}
       {/* POINT D'INSERTION accounts-and-billing (vague 3) : composant FacturesList */}
       {estPartenaire && (
-        <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+        <div className="rsn-card rounded-2xl p-5">
           <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
             <FileText size={14} aria-hidden />
             Factures
@@ -450,6 +457,7 @@ async function NationalDashboard({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -485,25 +493,29 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
     : false
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="rsn-page">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#16284f] flex items-center gap-2">
-          <Network size={20} className="text-[#a855f7]" aria-hidden />
-          Mon chapitre local
-        </h1>
-        {!!local.slug && (
-          <Link
-            href={`/reseau/${local.slug as string}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors flex items-center gap-1"
-          >
-            Voir la fiche publique
-            <ExternalLink size={12} aria-hidden />
-          </Link>
-        )}
-      </div>
+      <Reveal>
+        <p className="rsn-eyebrow mb-2">Espace connecté</p>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <Network size={20} className="text-[#a855f7]" aria-hidden />
+            Mon chapitre local
+          </h1>
+          {!!local.slug && (
+            <Link
+              href={`/reseau/${local.slug as string}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors flex items-center gap-1"
+            >
+              Voir la fiche publique
+              <ExternalLink size={12} aria-hidden />
+            </Link>
+          )}
+        </div>
+      </Reveal>
 
       {/* Référence au national */}
       {parentDoc && (
@@ -535,7 +547,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
       )}
 
       {/* Résumé */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+      <div className="rsn-card rounded-2xl p-5">
         <div className="flex items-center gap-3">
           {logoUrl ? (
             <Image
@@ -569,7 +581,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
       </div>
 
       {/* Édition fiche locale */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7]">
+      <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Globe size={14} aria-hidden />
@@ -582,7 +594,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
       </div>
 
       {/* Événements */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7]">
+      <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Calendar size={14} aria-hidden />
@@ -618,6 +630,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
             reseauId={local.id as string | number}
           />
         )}
+      </div>
       </div>
     </div>
   )

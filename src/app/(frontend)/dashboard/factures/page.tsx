@@ -12,6 +12,7 @@ import config from '@payload-config'
 import { stripe } from '@/lib/stripe'
 import { FileText, Download, ExternalLink, CreditCard } from 'lucide-react'
 import Link from 'next/link'
+import Reveal from '@/components/home/Reveal'
 import type Stripe from 'stripe'
 
 export const metadata = {
@@ -74,27 +75,33 @@ export default async function FacturesPage() {
   const openInvoices = invoices.filter((inv) => inv.status === 'open')
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-xl font-bold text-[#16284f] flex items-center gap-2">
-          <FileText size={20} aria-hidden />
-          Mes factures
-        </h1>
-        {stripeCustomerId && (
-          <form action="/api/stripe/portal" method="POST">
-            <button
-              type="submit"
-              className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium flex items-center gap-1.5 transition-colors"
-            >
-              <ExternalLink size={14} aria-hidden />
-              Portail Stripe
-            </button>
-          </form>
-        )}
-      </div>
+    <div className="rsn-page">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+      <Reveal>
+        <div className="flex items-center justify-between mb-2">
+          <p className="rsn-eyebrow">Espace connecté</p>
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <FileText size={20} aria-hidden />
+            Mes factures
+          </h1>
+          {stripeCustomerId && (
+            <form action="/api/stripe/portal" method="POST">
+              <button
+                type="submit"
+                className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium flex items-center gap-1.5 transition-colors"
+              >
+                <ExternalLink size={14} aria-hidden />
+                Portail Stripe
+              </button>
+            </form>
+          )}
+        </div>
+      </Reveal>
 
       {!stripeCustomerId ? (
-        <div className="bg-[#faf9f5] rounded-2xl border border-[#e4e4e7] p-8 text-center">
+        <div className="rsn-card rounded-2xl border-dashed p-8 text-center">
           <CreditCard size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
           <p className="text-sm font-medium text-[#52525b] mb-2">Aucun abonnement actif</p>
           <p className="text-sm text-[#71717a] mb-6">
@@ -159,6 +166,7 @@ export default async function FacturesPage() {
           </p>
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -171,7 +179,7 @@ function InvoiceRow({ invoice }: { invoice: Stripe.Invoice }) {
     ?? (fromSubscription ? 'Abonnement réseau partenaire' : 'Abonnement')
 
   return (
-    <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-[#e4e4e7]">
+    <div className="rsn-card flex items-center gap-3 p-4 rounded-xl">
       <div className="shrink-0 w-9 h-9 rounded-lg bg-[#f3f4f6] flex items-center justify-center text-[#71717a]" aria-hidden>
         <FileText size={16} />
       </div>

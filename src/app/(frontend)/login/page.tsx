@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import AuthShell from '@/components/layout/AuthShell'
 
 /**
  * Only allow same-origin paths to defeat open-redirect attacks. Must start
@@ -89,98 +89,78 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center gap-2 text-2xl font-bold text-primary no-underline"
-          >
-            <Image src="/img/logo.png" alt="" width={40} height={40} priority />
-            <span>RÉSEAUTEURS</span>
-          </Link>
-          <p className="text-sm text-text-light mt-1">Connexion à votre espace</p>
+    <AuthShell
+      title="Se connecter"
+      subtitle="Connexion à votre espace"
+      footer={
+        <>
+          <p>
+            Pas encore de compte ?{' '}
+            <Link href="/inscription" className="font-medium text-primary hover:text-primary-hover">
+              S&apos;inscrire
+            </Link>
+          </p>
+          <p className="mt-2">
+            <Link
+              href="/"
+              className="text-sm text-text-light hover:text-text-medium transition-colors"
+            >
+              Retour a l&apos;accueil
+            </Link>
+          </p>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-text-medium mb-1.5">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-primary transition-colors"
+            placeholder="vous@entreprise.fr"
+          />
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-          <h1 className="text-xl font-semibold text-text-dark mb-6">Se connecter</h1>
-
-          {error && (
-            <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-text-medium mb-1.5"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-primary transition-colors"
-                placeholder="vous@entreprise.fr"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-text-medium mb-1.5"
-              >
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-primary transition-colors"
-                placeholder="Votre mot de passe"
-              />
-            </div>
-
-            <Button type="submit" loading={loading} iconLeft={LogIn} className="w-full" size="md">
-              Se connecter
-            </Button>
-
-            <div className="text-right">
-              <Link
-                href="/mot-de-passe-oublie"
-                className="text-sm text-text-light hover:text-primary transition-colors"
-              >
-                Mot de passe oublié ?
-              </Link>
-            </div>
-          </form>
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-text-medium mb-1.5">
+            Mot de passe
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-primary transition-colors"
+            placeholder="Votre mot de passe"
+          />
         </div>
 
-        {/* Footer links */}
-        <p className="text-center text-sm text-text-light mt-6">
-          Pas encore de compte ?{' '}
-          <Link href="/inscription" className="font-medium text-primary hover:text-primary-hover">
-            S&apos;inscrire
-          </Link>
-        </p>
-        <p className="text-center mt-2">
+        <Button type="submit" loading={loading} iconLeft={LogIn} className="w-full" size="md">
+          Se connecter
+        </Button>
+
+        <div className="text-right">
           <Link
-            href="/"
-            className="text-sm text-text-light hover:text-text-medium transition-colors"
+            href="/mot-de-passe-oublie"
+            className="text-sm text-text-light hover:text-primary transition-colors"
           >
-            Retour a l&apos;accueil
+            Mot de passe oublié ?
           </Link>
-        </p>
-      </div>
-    </div>
+        </div>
+      </form>
+    </AuthShell>
   )
 }

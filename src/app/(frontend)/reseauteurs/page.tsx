@@ -3,7 +3,7 @@
  *
  * ADR-0012 §7 : landing page self-canonical.
  * - Bascule entité : /reseauteurs ↔ /reseaux (navigation entre deux pages).
- * - Bascule vue : ?vue=annuaire (défaut) | carte — synchronisée avec l'URL.
+ * - Bascule vue : ?vue=carte (défaut) | annuaire — synchronisée avec l'URL.
  * - Filtres : nom, ville, dept, région, badge, réseau, secteur — profonds-linkables.
  *
  * Vue annuaire : filtre + grille de cartes profil.
@@ -23,8 +23,9 @@ import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { ReseauteursFilters } from '@/components/search/ReseauteursFilters'
 import { toFeatureCollection, toFeature } from '@/lib/geojson'
 import { SITE_NAME } from '@/lib/site'
+import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
-import type { Reseauteur, Media, Reseau, Categorie } from '@/types/reseauteurs-domain'
+import type { Reseauteur, Media, Categorie } from '@/types/reseauteurs-domain'
 import type { Where } from 'payload'
 import type { CategoryLite, ReseauLite } from '@/components/filters/FiltresReseauteurs'
 import EntiteVueToggle from '@/components/explore/EntiteVueToggle'
@@ -82,43 +83,23 @@ export default async function ReseauteursPage({
   searchParams: Promise<SearchParams>
 }) {
   const sp = await searchParams
-  const vue = sp.vue === 'carte' ? 'carte' : 'annuaire'
+  // Vue par défaut = carte (URL sans param). L'annuaire reste accessible via ?vue=annuaire.
+  const vue = sp.vue === 'annuaire' ? 'annuaire' : 'carte'
   const page = Math.max(1, parseInt(sp.page ?? '1', 10))
   const payload = await getPayload({ config })
 
-  // Données communes : réseaux locaux pour les filtres, catégories
-  const [{ docs: reseaux }, { docs: categories }] = await Promise.all([
-    withDbRetry(
-      () =>
-        payload.find({
-          collection: 'reseaux',
-          where: {
-            and: [
-              { statut: { equals: 'publiee' } },
-              { niveau: { equals: 'local' } },
-            ],
-          } as Where,
-          select: { nom: true, slug: true } as Record<string, boolean>,
-          depth: 0,
-          limit: 500,
-          sort: 'nom',
-          overrideAccess: true,
-        }),
-      { label: 'reseauteurs:find reseaux-locaux' },
-    ),
-    withDbRetry(
-      () =>
-        payload.find({
-          collection: 'categories',
-          depth: 0,
-          limit: 100,
-          overrideAccess: true,
-        }),
-      { label: 'reseauteurs:find categories' },
-    ),
-  ])
+  // Données communes : catégories pour le filtre secteur
+  const { docs: categories } = await withDbRetry(
+    () =>
+      payload.find({
+        collection: 'categories',
+        depth: 0,
+        limit: 100,
+        overrideAccess: true,
+      }),
+    { label: 'reseauteurs:find categories' },
+  )
 
-  const reseauxListe = (reseaux as Reseau[]).map((r) => ({ slug: r.slug ?? '', nom: r.nom }))
   const categoriesListe = (categories as Categorie[]).map((c) => ({ id: c.id, label: c.label ?? '' }))
 
   // ─── VUE CARTE ─────────────────────────────────────────────────────────────
@@ -211,20 +192,17 @@ export default async function ReseauteursPage({
     }))
 
     return (
-      <div className="relative">
-        {/* Toggle flottant au-dessus de la carte */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[801] bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e4e4e7] px-3 py-2">
+      <MapReseauteursLoader
+        initialData={initialData}
+        initialSlug={null}
+        categories={carteCategories}
+        reseaux={carteReseaux}
+        toolbar={
           <Suspense fallback={null}>
             <EntiteVueToggle entite="reseauteurs" vue="carte" />
           </Suspense>
-        </div>
-        <MapReseauteursLoader
-          initialData={initialData}
-          initialSlug={null}
-          categories={carteCategories}
-          reseaux={carteReseaux}
-        />
-      </div>
+        }
+      />
     )
   }
 
@@ -245,15 +223,10 @@ export default async function ReseauteursPage({
     { label: 'reseauteurs:find annuaire' },
   )
 
-  const docs = sp.reseau
-    ? (reseauteursRaw as Reseauteur[]).filter((r) => {
-        const rels = r.reseauxFrequentes as Array<Reseau | number> | null | undefined
-        return rels?.some((rel) => typeof rel === 'object' && rel.slug === sp.reseau)
-      })
-    : (reseauteursRaw as Reseauteur[])
+  const docs = reseauteursRaw as Reseauteur[]
 
   return (
-    <div className="bg-[#faf9f5] min-h-screen">
+    <div className="rsn-page min-h-screen">
       {/* Barre de navigation entité + vue */}
       <div className="bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-2.5 flex items-center gap-3">
         <Suspense fallback={null}>
@@ -263,9 +236,12 @@ export default async function ReseauteursPage({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* En-tête */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#16284f] mb-1 flex items-center gap-2">
-            <Users size={22} className="text-[#2563EB]" aria-hidden />
+        <Reveal className="mb-6">
+          <p className="rsn-eyebrow mb-2">
+            <Users size={13} aria-hidden />
+            Annuaire des réseauteurs
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16284f] mb-1">
             Réseauteurs
           </h1>
           <p className="text-sm text-[#71717a]">
@@ -273,7 +249,7 @@ export default async function ReseauteursPage({
               ? `${totalDocs.toLocaleString('fr-FR')} réseauteur${totalDocs > 1 ? 's' : ''} référencé${totalDocs > 1 ? 's' : ''}`
               : 'Aucun réseauteur pour l\'instant'}
           </p>
-        </div>
+        </Reveal>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Panneau filtres */}
@@ -283,7 +259,7 @@ export default async function ReseauteursPage({
                 <div className="h-64 rounded-2xl bg-white border border-[#e4e4e7] animate-pulse" />
               }
             >
-              <ReseauteursFilters reseaux={reseauxListe} categories={categoriesListe} />
+              <ReseauteursFilters categories={categoriesListe} />
             </Suspense>
           </aside>
 
@@ -307,60 +283,62 @@ export default async function ReseauteursPage({
               </div>
             ) : (
               <>
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
-                  role="list"
-                  aria-label="Liste des réseauteurs"
-                >
-                  {docs.map((r) => {
-                    const photoMedia = r.photo as Media | null | undefined
-                    const photoUrl = photoMedia?.sizes?.thumbnail?.url ?? photoMedia?.url
-                    return (
-                      <article key={r.id} role="listitem">
-                        <Link
-                          href={`/reseauteur/${r.slug}`}
-                          className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-[#e4e4e7] hover:shadow-md hover:-translate-y-0.5 hover:border-[#2563EB]/30 transition-all no-underline h-full group"
-                        >
-                          <div className="flex items-start gap-3">
-                            {photoUrl ? (
-                              <Image
-                                src={photoUrl}
-                                alt={`Photo de profil de ${r.prenom} ${r.nom}`}
-                                width={48}
-                                height={48}
-                                className="w-12 h-12 rounded-xl object-cover border border-[#e4e4e7] shrink-0"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 rounded-xl bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold shrink-0" aria-hidden>
-                                {r.prenom.charAt(0)}
-                                {r.nom.charAt(0)}
+                <Reveal>
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+                    role="list"
+                    aria-label="Liste des réseauteurs"
+                  >
+                    {docs.map((r) => {
+                      const photoMedia = r.photo as Media | null | undefined
+                      const photoUrl = photoMedia?.sizes?.thumbnail?.url ?? photoMedia?.url
+                      return (
+                        <article key={r.id} role="listitem">
+                          <Link
+                            href={`/reseauteur/${r.slug}`}
+                            className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-[#e4e4e7] hover:border-[#2563EB]/30 no-underline h-full group rsn-lift"
+                          >
+                            <div className="flex items-start gap-3">
+                              {photoUrl ? (
+                                <Image
+                                  src={photoUrl}
+                                  alt={`Photo de profil de ${r.prenom} ${r.nom}`}
+                                  width={48}
+                                  height={48}
+                                  className="w-12 h-12 rounded-xl object-cover border border-[#e4e4e7] shrink-0"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-xl bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold shrink-0" aria-hidden>
+                                  {r.prenom.charAt(0)}
+                                  {r.nom.charAt(0)}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-[#16284f] leading-tight group-hover:text-[#2563EB] transition-colors">
+                                  {r.prenom} {r.nom}
+                                </p>
+                                {r.fonction && (
+                                  <p className="text-xs text-[#52525b] truncate">{r.fonction}</p>
+                                )}
+                                {r.entreprise && (
+                                  <p className="text-xs text-[#71717a] truncate">{r.entreprise}</p>
+                                )}
                               </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-[#16284f] leading-tight group-hover:text-[#2563EB] transition-colors">
-                                {r.prenom} {r.nom}
-                              </p>
-                              {r.fonction && (
-                                <p className="text-xs text-[#52525b] truncate">{r.fonction}</p>
-                              )}
-                              {r.entreprise && (
-                                <p className="text-xs text-[#71717a] truncate">{r.entreprise}</p>
-                              )}
+                              {r.badge && <BadgeReseauteur badge={r.badge} size="sm" />}
                             </div>
-                            {r.badge && <BadgeReseauteur badge={r.badge} size="sm" />}
-                          </div>
-                          {r.ville && (
-                            <p className="text-xs text-[#71717a] flex items-center gap-1">
-                              <MapPin size={11} aria-hidden />
-                              {r.ville}
-                              {r.departement ? `, ${r.departement}` : ''}
-                            </p>
-                          )}
-                        </Link>
-                      </article>
-                    )
-                  })}
-                </div>
+                            {r.ville && (
+                              <p className="text-xs text-[#71717a] flex items-center gap-1">
+                                <MapPin size={11} aria-hidden />
+                                {r.ville}
+                                {r.departement ? `, ${r.departement}` : ''}
+                              </p>
+                            )}
+                          </Link>
+                        </article>
+                      )
+                    })}
+                  </div>
+                </Reveal>
 
                 {/* Pagination */}
                 {totalPages > 1 && (

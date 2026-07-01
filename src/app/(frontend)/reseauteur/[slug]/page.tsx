@@ -17,6 +17,7 @@ import { MaillageReseauteur } from '@/components/seo/MaillageReseauteur'
 import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { SITE_NAME } from '@/lib/site'
+import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { Reseauteur, Media, Reseau, Categorie } from '@/types/reseauteurs-domain'
 
@@ -96,7 +97,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
       : (r.secteur as number | null | undefined) ?? null
 
   return (
-    <div className="bg-[#faf9f5] min-h-screen">
+    <div className="rsn-page">
       {/* Données structurées JSON-LD (seo-engineer) */}
       {isIndexable && (
         <JsonLd
@@ -110,34 +111,37 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
           ]}
         />
       )}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Fil d'Ariane */}
-        <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-[#71717a] flex items-center gap-1.5">
-          <Link href="/" className="hover:text-[#2563EB] no-underline transition-colors">Accueil</Link>
-          <span aria-hidden>/</span>
-          <Link href="/reseauteurs" className="hover:text-[#2563EB] no-underline transition-colors">Réseauteurs</Link>
-          <span aria-hidden>/</span>
-          <span className="text-[#52525b]" aria-current="page">{r.prenom} {r.nom}</span>
-        </nav>
 
-        <article className="bg-white rounded-2xl border border-[#e4e4e7] shadow-sm overflow-hidden">
-          {/* En-tête profil */}
-          <div className="px-6 pt-8 pb-6 border-b border-[#e4e4e7]">
-            <div className="flex items-start gap-5">
+      {/* Héros de fiche — fond de marque navy (même token que PageHeader) */}
+      <section className="rsn-pagehead" data-tone="navy">
+        <div className="rsn-pagehead-inner">
+          {/* Fil d'Ariane */}
+          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-white/60 flex items-center gap-1.5">
+            <Link href="/" className="hover:text-white no-underline transition-colors">Accueil</Link>
+            <span aria-hidden>/</span>
+            <Link href="/reseauteurs" className="hover:text-white no-underline transition-colors">Réseauteurs</Link>
+            <span aria-hidden>/</span>
+            <span className="text-white/80" aria-current="page">{r.prenom} {r.nom}</span>
+          </nav>
+
+          <Reveal>
+            <p className="rsn-eyebrow" style={{ color: '#93c5fd' }}>Profil réseauteur</p>
+
+            <div className="flex items-start gap-5 mt-3.5">
               {/* Avatar */}
               <div className="shrink-0">
                 {photoUrl ? (
                   <Image
                     src={photoUrl}
                     alt={`Photo de profil de ${r.prenom} ${r.nom}`}
-                    width={88}
-                    height={88}
-                    className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl object-cover border border-[#e4e4e7]"
+                    width={96}
+                    height={96}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-white/15"
                     priority
                   />
                 ) : (
                   <div
-                    className="w-20 h-20 rounded-2xl bg-[#bfdbfe]/40 flex items-center justify-center text-[#2563EB] font-extrabold text-2xl border border-[#e4e4e7]"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 flex items-center justify-center text-white font-extrabold text-2xl border border-white/15"
                     aria-label={`Initiales de ${r.prenom} ${r.nom}`}
                   >
                     {r.prenom.charAt(0)}{r.nom.charAt(0)}
@@ -147,24 +151,24 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
 
               {/* Identité */}
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h1 className="text-xl sm:text-2xl font-bold text-[#16284f]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="rsn-pagehead-title !mt-0 !text-[28px] sm:!text-[38px]">
                     {r.prenom} {r.nom}
                   </h1>
                   {r.badge && <BadgeReseauteur badge={r.badge} />}
                 </div>
                 {r.fonction && (
-                  <p className="text-sm font-medium text-[#52525b]">{r.fonction}</p>
+                  <p className="text-sm sm:text-base font-medium text-white/85 mt-1.5">{r.fonction}</p>
                 )}
                 {r.entreprise && (
-                  <p className="text-sm text-[#71717a] flex items-center gap-1.5 mt-0.5">
+                  <p className="text-sm text-white/65 flex items-center gap-1.5 mt-1">
                     <Building2 size={13} aria-hidden />
                     {r.entreprise}
                   </p>
                 )}
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <MapPin size={13} className="text-[#a1a1aa] shrink-0" aria-hidden />
-                  <span className="text-sm text-[#71717a]">
+                  <MapPin size={13} className="text-white/50 shrink-0" aria-hidden />
+                  <span className="text-sm text-white/65">
                     {r.ville}{r.departement ? `, ${r.departement}` : ''}{r.region ? ` — ${r.region}` : ''}
                   </span>
                 </div>
@@ -172,12 +176,12 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
             </div>
 
             {/* Liens externes */}
-            <div className="flex flex-wrap gap-2 mt-5">
+            <div className="flex flex-wrap gap-2 mt-6">
               {/* RGPD : téléphone uniquement si renseigné (contrôle de confidentialité du réseauteur) */}
               {r.telephone && (
                 <a
                   href={`tel:${r.telephone}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors no-underline"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
                   aria-label={`Appeler ${r.prenom} ${r.nom}`}
                 >
                   <Phone size={13} aria-hidden />
@@ -188,7 +192,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
               {r.emailContact && (
                 <a
                   href={`mailto:${r.emailContact}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors no-underline"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
                   aria-label={`Écrire à ${r.prenom} ${r.nom}`}
                 >
                   <Mail size={13} aria-hidden />
@@ -200,7 +204,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                   href={r.site}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors no-underline"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
                   aria-label={`Site web de ${r.prenom} ${r.nom}`}
                 >
                   <Globe size={13} aria-hidden />
@@ -212,7 +216,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                   href={r.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors no-underline"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
                   aria-label={`Profil LinkedIn de ${r.prenom} ${r.nom}`}
                 >
                   <ExternalLink size={13} aria-hidden />
@@ -220,93 +224,107 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                 </a>
               )}
             </div>
-          </div>
+          </Reveal>
+        </div>
+      </section>
 
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <article className="rsn-card rsn-lift rounded-2xl overflow-hidden">
           {/* Corps de la fiche */}
-          <div className="px-6 py-6 space-y-6">
+          <div className="px-6 py-6 space-y-8">
             {/* Présentation */}
             {r.description && (
-              <section aria-labelledby="presentation-titre">
-                <h2 id="presentation-titre" className="text-sm font-semibold text-[#18181b] mb-2">Présentation</h2>
-                <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{r.description}</p>
-              </section>
+              <Reveal>
+                <section aria-labelledby="presentation-titre">
+                  <h2 id="presentation-titre" className="text-sm font-semibold text-[#18181b] mb-2">Présentation</h2>
+                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{r.description}</p>
+                </section>
+              </Reveal>
             )}
 
             {/* Secteur */}
             {secteurDoc && (
-              <section aria-labelledby="secteur-titre">
-                <h2 id="secteur-titre" className="text-sm font-semibold text-[#18181b] mb-2">Secteur d&apos;activité</h2>
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#bfdbfe]/30 text-[#2563EB] text-xs font-medium border border-[#bfdbfe]">
-                  {secteurDoc.label}
-                </span>
-              </section>
+              <Reveal>
+                <section aria-labelledby="secteur-titre">
+                  <h2 id="secteur-titre" className="text-sm font-semibold text-[#18181b] mb-2">Secteur d&apos;activité</h2>
+                  <span className="rsn-tag" style={{ color: '#1d4ed8', borderColor: 'rgba(37,99,235,0.3)' }}>
+                    {secteurDoc.label}
+                  </span>
+                </section>
+              </Reveal>
             )}
 
             {/* Compétences */}
             {competences.length > 0 && (
-              <section aria-labelledby="competences-titre">
-                <h2 id="competences-titre" className="text-sm font-semibold text-[#18181b] mb-2">Compétences</h2>
-                <div className="flex flex-wrap gap-2" role="list" aria-label="Compétences">
-                  {competences.map((c, i) => (
-                    <span
-                      key={c.id ?? i}
-                      role="listitem"
-                      className="px-2.5 py-1 rounded-full bg-[#f4f4f5] text-[#52525b] text-xs font-medium border border-[#e4e4e7]"
-                    >
-                      {c.label}
-                    </span>
-                  ))}
-                </div>
-              </section>
+              <Reveal>
+                <section aria-labelledby="competences-titre">
+                  <h2 id="competences-titre" className="text-sm font-semibold text-[#18181b] mb-2">Compétences</h2>
+                  <div className="flex flex-wrap gap-2" role="list" aria-label="Compétences">
+                    {competences.map((c, i) => (
+                      <span
+                        key={c.id ?? i}
+                        role="listitem"
+                        className="px-2.5 py-1 rounded-full bg-[#f4f4f5] text-[#52525b] text-xs font-medium border border-[#e4e4e7]"
+                      >
+                        {c.label}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              </Reveal>
             )}
 
             {/* Réseaux fréquentés */}
             {reseauxFrequentes.length > 0 && (
-              <section aria-labelledby="reseaux-titre">
-                <h2 id="reseaux-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
-                  <Users size={14} aria-hidden />
-                  Réseaux fréquentés
-                </h2>
-                <div className="flex flex-wrap gap-2" role="list" aria-label="Réseaux fréquentés">
-                  {reseauxFrequentes.map((reseau) => {
-                    const rLogoMedia = reseau.logo as Media | null | undefined
-                    const rLogoUrl = rLogoMedia?.sizes?.thumbnail?.url ?? rLogoMedia?.url
-                    return (
-                      <Link
-                        key={reseau.id}
-                        href={`/reseau/${reseau.slug}`}
-                        role="listitem"
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f4f4f5] border border-[#e4e4e7] text-xs font-medium text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors"
-                      >
-                        {rLogoUrl && (
-                          <Image src={rLogoUrl} alt="" width={14} height={14} className="w-3.5 h-3.5 rounded-full object-cover" aria-hidden />
-                        )}
-                        {reseau.nom}
-                        {reseau.partenaire && (
-                          <span className="ml-0.5 text-[#f5851f]" title="Réseau partenaire" aria-label="Réseau partenaire">•</span>
-                        )}
-                      </Link>
-                    )
-                  })}
-                </div>
-              </section>
+              <Reveal>
+                <section aria-labelledby="reseaux-titre">
+                  <h2 id="reseaux-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <Users size={14} aria-hidden />
+                    Réseaux fréquentés
+                  </h2>
+                  <div className="flex flex-wrap gap-2" role="list" aria-label="Réseaux fréquentés">
+                    {reseauxFrequentes.map((reseau) => {
+                      const rLogoMedia = reseau.logo as Media | null | undefined
+                      const rLogoUrl = rLogoMedia?.sizes?.thumbnail?.url ?? rLogoMedia?.url
+                      return (
+                        <Link
+                          key={reseau.id}
+                          href={`/reseau/${reseau.slug}`}
+                          role="listitem"
+                          className="rsn-linkrow inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f4f4f5] border border-[#e4e4e7] text-xs font-medium text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors"
+                        >
+                          {rLogoUrl && (
+                            <Image src={rLogoUrl} alt="" width={14} height={14} className="w-3.5 h-3.5 rounded-full object-cover" aria-hidden />
+                          )}
+                          {reseau.nom}
+                          {reseau.partenaire && (
+                            <span className="ml-0.5 text-[#f5851f]" title="Réseau partenaire" aria-label="Réseau partenaire">•</span>
+                          )}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </section>
+              </Reveal>
             )}
 
             {/* Localisation — mini-carte (centroïde ville, RGPD ADR-0011 §7) */}
             {typeof r.latitude === 'number' && typeof r.longitude === 'number' && (
-              <section aria-labelledby="loc-titre">
-                <h2 id="loc-titre" className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
-                  <MapPin size={14} aria-hidden />
-                  Localisation
-                </h2>
-                <MiniMapLoader
-                  latitude={r.latitude}
-                  longitude={r.longitude}
-                  zoom={11}
-                  label={`Localisation de ${r.prenom} ${r.nom}${r.ville ? ` à ${r.ville}` : ''}`}
-                />
-                <p className="text-xs text-[#a1a1aa] mt-1.5">Position au niveau de la ville (confidentialité).</p>
-              </section>
+              <Reveal>
+                <section aria-labelledby="loc-titre">
+                  <h2 id="loc-titre" className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
+                    <MapPin size={14} aria-hidden />
+                    Localisation
+                  </h2>
+                  <MiniMapLoader
+                    latitude={r.latitude}
+                    longitude={r.longitude}
+                    zoom={11}
+                    label={`Localisation de ${r.prenom} ${r.nom}${r.ville ? ` à ${r.ville}` : ''}`}
+                  />
+                  <p className="text-xs text-[#a1a1aa] mt-1.5">Position au niveau de la ville (confidentialité).</p>
+                </section>
+              </Reveal>
             )}
           </div>
 
@@ -322,11 +340,11 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
             {/* CTA vers la carte plein écran des réseauteurs (map-engineer J2.B) */}
             <Link
               href={`/carte/reseauteurs?ville=${encodeURIComponent(r.ville ?? '')}`}
-              className="inline-flex items-center gap-2 text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors"
+              className="rsn-linkrow inline-flex items-center gap-2 text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors"
             >
               <MapPin size={14} aria-hidden />
               Voir les réseauteurs à {r.ville} sur la carte
-              <ArrowRight size={13} aria-hidden />
+              <ArrowRight size={13} aria-hidden className="rsn-arrow" />
             </Link>
           </div>
         </article>

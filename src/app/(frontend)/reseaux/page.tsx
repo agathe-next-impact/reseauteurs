@@ -17,6 +17,7 @@ import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Network, Users, Calendar } from 'lucide-react'
+import Reveal from '@/components/home/Reveal'
 import { buildTogglePageMetadata } from '@/lib/seo-canonical'
 import { withDbRetry } from '@/lib/db-retry'
 import { BadgePartenaire } from '@/components/ui/BadgeReseauteur'
@@ -132,15 +133,16 @@ export default async function ReseauxPage({
     }))
 
     return (
-      <div className="relative">
-        {/* Toggle flottant au-dessus de la carte */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[801] bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e4e4e7] px-3 py-2">
+      <MapReseauxLoader
+        initialData={initialData}
+        initialSlug={null}
+        nationals={nationals}
+        toolbar={
           <Suspense fallback={null}>
             <EntiteVueToggle entite="reseaux" vue="carte" />
           </Suspense>
-        </div>
-        <MapReseauxLoader initialData={initialData} initialSlug={null} nationals={nationals} />
-      </div>
+        }
+      />
     )
   }
 
@@ -211,7 +213,7 @@ export default async function ReseauxPage({
   const nationaux = nationauxRaw as Reseau[]
 
   return (
-    <div className="bg-[#faf9f5] min-h-screen">
+    <div className="rsn-page min-h-screen">
       {/* Barre de navigation entité + vue */}
       <div className="bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-2.5 flex items-center gap-3">
         <Suspense fallback={null}>
@@ -221,9 +223,12 @@ export default async function ReseauxPage({
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* En-tête */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#16284f] mb-1 flex items-center gap-2">
-            <Network size={22} className="text-[#f5851f]" aria-hidden />
+        <Reveal className="mb-6">
+          <p className="rsn-eyebrow rsn-pagehead-eyebrow--orange mb-2">
+            <Network size={13} aria-hidden />
+            Annuaire des réseaux
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16284f] mb-1">
             Réseaux d&apos;affaires
           </h1>
           <p className="text-sm text-[#71717a]">
@@ -231,7 +236,7 @@ export default async function ReseauxPage({
               ? `${totalDocs.toLocaleString('fr-FR')} réseau${totalDocs > 1 ? 'x' : ''} national${totalDocs > 1 ? 'aux' : ''} référencé${totalDocs > 1 ? 's' : ''}`
               : 'Aucun réseau pour l\'instant'}
           </p>
-        </div>
+        </Reveal>
 
         {/* Barre de recherche */}
         <div className="mb-6">
@@ -268,7 +273,7 @@ export default async function ReseauxPage({
                   <article key={r.id} role="listitem">
                     <Link
                       href={`/reseau/${r.slug}`}
-                      className={`flex flex-col gap-4 p-5 bg-white rounded-2xl border hover:shadow-md hover:-translate-y-0.5 transition-all no-underline h-full group ${r.partenaire ? 'border-[#f5851f]/40' : 'border-[#e4e4e7]'}`}
+                      className={`flex flex-col gap-4 p-5 bg-white border rsn-lift no-underline h-full group ${r.partenaire ? 'border-[#f5851f]/40' : 'border-[#e4e4e7]'}`}
                     >
                       <div className="flex items-start gap-3">
                         {logoUrl ? (

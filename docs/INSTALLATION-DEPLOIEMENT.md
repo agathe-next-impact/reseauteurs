@@ -20,7 +20,7 @@
 **Comptes/services (prod et idéalement dev) :**
 - **Neon** (PostgreSQL serverless avec PostGIS) — via l'intégration Vercel ou direct.
 - **Vercel** (hébergement + Blob + Crons).
-- **Stripe** (3 produits B2B) — clés test pour le dev.
+- **Stripe** (2 produits B2B — abonnement réseau national à paliers + annonceur) — clés test pour le dev.
 - **Resend** (emails transactionnels + webhook).
 - *(optionnel dev)* **Stripe CLI** pour rejouer les webhooks en local.
 
@@ -36,10 +36,11 @@ Variables**. **Ne jamais committer** `.env*`.
 | `DATABASE_URI` | ✅ | Chaîne Neon PostgreSQL (⚠️ nom = `DATABASE_URI`, pas `DATABASE_URL`). `?sslmode=require` en prod. |
 | `PAYLOAD_SECRET` | ✅ | Secret JWT/sessions, **min. 32 caractères** (`openssl rand -base64 32`). |
 | `NEXT_PUBLIC_SITE_URL` | ✅ | `http://localhost:3000` en dev ; `https://reseauteurs.fr` en prod. |
-| `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` | ✅ | `sk_test_`/`pk_test_` en dev, `..._live_` en prod. |
-| `STRIPE_RESEAU_PARTENAIRE_PRICE_ID` | ✅ | Produit 1 — abonnement annuel réseau partenaire. |
-| `STRIPE_EVENEMENT_PREMIUM_PRICE_ID` | ✅ | Produit 2 — paiement ponctuel événement Premium. |
-| `STRIPE_PARTENAIRE_ANNONCEUR_PRICE_ID` | ✅ | Produit 3 — abonnement partenaire annonceur. |
+| `STRIPE_SECRET_KEY` | ✅ | `sk_test_` en dev, `sk_live_` en prod. *(Pas de clé publishable : le Checkout est un redirect serveur.)* |
+| `STRIPE_PRICE_NATIONAL_STARTER` | ✅ | Produit 1 — abonnement réseau **national**, palier **Starter** (≤ 5 locaux). |
+| `STRIPE_PRICE_NATIONAL_GROWTH` | ✅ | Produit 1 — palier **Growth** (≤ 25 locaux). |
+| `STRIPE_PRICE_NATIONAL_ENTERPRISE` | ✅ | Produit 1 — palier **Enterprise** (locaux illimités). |
+| `STRIPE_PARTENAIRE_ANNONCEUR_PRICE_ID` | ✅ | Produit 2 — abonnement partenaire annonceur. |
 | `STRIPE_WEBHOOK_SECRET` | ✅ | `whsec_…` (Stripe Dashboard › Webhooks, ou `stripe listen` en dev). |
 | `BLOB_READ_WRITE_TOKEN` | ✅ (prod) | Vercel Blob (stockage médias). |
 | `RESEND_API_KEY` | ✅ | Envoi d'emails. |
@@ -50,16 +51,21 @@ Variables**. **Ne jamais committer** `.env*`.
 | `SITE_PROTECTION_USER` / `SITE_PROTECTION_PASSWORD` | ⬜ | Identifiants Basic Auth si activé. |
 | `NEXT_PUBLIC_MAPLIBRE_STYLE` | ⬜ | Style de tuiles custom (sinon OSM par défaut). Géocodage = data.gouv (sans clé). |
 
-> Les 3 `..._PRICE_ID` Stripe sont à créer dans Stripe (cf. issue #2 pour la grille tarifaire chiffrée).
+> **Monétisation = ADR-0012 (supersède l'ADR-0011).** Deux produits B2B seulement : (1) **abonnement
+> réseau national** en Subscription à **3 paliers** selon le nombre de chapitres locaux, et (2) **annonceur**.
+> **L'événement Premium ponctuel est SUPPRIMÉ** — plus de `STRIPE_EVENEMENT_PREMIUM_PRICE_ID`, plus de
+> `STRIPE_RESEAU_PARTENAIRE_PRICE_ID`, plus de marqueur Premium sur la carte (migration destructive
+> `20260630_110000_evenements_drop_premium`). Les prix (3 paliers + annonceur) sont à créer dans Stripe
+> Dashboard › Produits (grille chiffrée : issue #2).
 
 ---
 
 ## 3. Installation locale
 
 ```bash
-# 1. Récupérer le code (voir §5 pour la structure monorepo)
-#    Le projet vit dans le sous-dossier infos-reseaux/ du dépôt.
-cd infos-reseaux
+# 1. Cloner le dépôt et s'y placer (l'app est à la racine — voir §5)
+git clone https://github.com/agathe-next-impact/reseauteurs.git
+cd reseauteurs
 
 # 2. Activer pnpm et installer
 corepack enable
@@ -77,8 +83,9 @@ pnpm generate:types
 # 5. Appliquer les migrations (crée PostGIS + le schéma 3 entités)
 pnpm payload migrate
 
-# 6. (optionnel) Seed de données de dév : 8 réseauteurs, 6 événements (2 Premium),
-#    5 réseaux, 2 partenaires → les 2 cartes ne sont pas vides
+# 6. (optionnel) Seed de données de dév (hiérarchie ADR-0012) : 5 réseaux nationaux
+#    + 8 réseaux locaux (chapitres géolocalisés = marqueurs de la carte réseaux),
+#    8 réseauteurs affiliés à des locaux, 6 événements, 2 partenaires — script idempotent.
 pnpm exec tsx src/scripts/seed-dev.ts
 
 # 7. Lancer le serveur de dev (http://localhost:3000)
@@ -99,13 +106,19 @@ L'app **exige PostGIS** (colonnes `geom geography(Point,4326)`, index GiST, `ST_
 2. Copier la connection string dans `DATABASE_URI` de `.env.local`.
 3. PostGIS est activé par la 1ère migration (`CREATE EXTENSION postgis`) — l'utilisateur Neon a les droits.
 
-**Option B — PostgreSQL local avec PostGIS (Docker)**
+**Option B — PostgreSQL + PostGIS via le `docker-compose.yml` fourni**
 ```bash
-docker run --name reseauteurs-db -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=reseauteurs \
-  -p 5432:5432 -d postgis/postgis:16-3.4
-# puis : DATABASE_URI=postgresql://postgres:dev@localhost:5432/reseauteurs
+# Base de données seule (recommandé : l'app tourne à côté en `pnpm dev`)
+docker compose up -d postgres
+#   → DATABASE_URI=postgresql://postgres:dev@localhost:5432/reseauteurs
+
+# … ou toute la stack (Postgres + app Node exposée sur :3000)
+docker compose up
 ```
-> Le `docker-compose.yml` du repo lance **l'app Node** (pas Postgres) — la DB reste sur Neon par défaut.
+> Le `docker-compose.yml` du repo définit **deux services** : `postgres` (`postgis/postgis:16-3.4-alpine`,
+> avec healthcheck) et `payload` (`node:20-alpine`, lance `pnpm dev`). Le service `payload` lit `.env.local`
+> mais force `DATABASE_URI` vers le conteneur `postgres`. En dev, démarrer **seulement `postgres`** et lancer
+> l'app en `pnpm dev` est le plus rapide (HMR natif).
 
 ### Migrations
 - Appliquer : `pnpm payload migrate`
@@ -116,13 +129,14 @@ docker run --name reseauteurs-db -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=reseaut
 
 ---
 
-## 5. ⚠️ Structure du dépôt (monorepo)
+## 5. Structure du dépôt
 
-La racine git est **`C:\dev`** et contient plusieurs projets ; RÉSEAUTEURS vit dans **`infos-reseaux/`**.
-Conséquences :
-- **En local** : travailler depuis `infos-reseaux/` (toutes les commandes pnpm).
-- **Sur Vercel** : régler **Settings → Build & Development → Root Directory = `infos-reseaux`** (sinon Vercel ne trouve ni `package.json` ni le code).
-- Le remote `origin` = `github.com/agathe-next-impact/reseauteurs` suit ce dépôt ; ne committer/pousser que le sous-arbre `infos-reseaux/` pour cette app.
+Dépôt **autonome** : `github.com/agathe-next-impact/reseauteurs`. L'application est **à la racine** du dépôt
+(le `package.json`, `src/`, `public/`, `next.config.ts`, `vercel.json` et `docs/` sont tous à la racine —
+**pas** de sous-dossier applicatif). Conséquences :
+- **En local** : toutes les commandes pnpm se lancent depuis la **racine** du dépôt (`reseauteurs/`).
+- **Sur Vercel** : **Root Directory** reste la **racine** (champ laissé vide / `./`) — Next.js est auto-détecté.
+- `origin` = `github.com/agathe-next-impact/reseauteurs` ; c'est le remote de déploiement.
 
 ---
 
@@ -133,9 +147,11 @@ Conséquences :
 pnpm stripe:listen          # = stripe listen --forward-to localhost:3000/api/stripe/webhook
 #   → copier le whsec_… affiché dans STRIPE_WEBHOOK_SECRET (.env.local)
 ```
-Tester : checkout événement Premium (`checkout.session.completed` → `evenement.premium=true`),
-abonnement réseau partenaire (`customer.subscription.updated` → `reseau.partenaire=true`),
-expiration (`customer.subscription.deleted` → `reseau.partenaire=false`). Cartes test : `4242 4242 4242 4242`.
+Tester : abonnement réseau **national** (`checkout.session.completed` metadata `type=reseau_partenaire`
+→ `reseau.partenaire=true` + palier réconcilié via `getPalierFromPriceId`), abonnement **annonceur**,
+expiration (`customer.subscription.deleted` → `partenaire=false`). Cartes test : `4242 4242 4242 4242`.
+> ⚠️ Il n'y a **plus** de flux « checkout événement Premium » (supprimé, ADR-0012) : le webhook ignore
+> tout `checkout.session.completed` dont le `type` n'est pas géré.
 
 ---
 
@@ -155,7 +171,7 @@ pnpm start         # sert le build de prod en local
 ## 8. Déploiement (Vercel)
 
 1. **Importer le repo** GitHub dans Vercel.
-2. **Root Directory = `infos-reseaux`** (cf. §5). Framework : Next.js (auto). Install : `pnpm install`. Build : `pnpm build`.
+2. **Root Directory = racine du dépôt** (champ laissé vide, cf. §5). Framework : Next.js (auto). Install : `pnpm install`. Build : `pnpm build`.
 3. **Base de données** : lier l'**intégration Neon** (renseigne `DATABASE_URI`) ou la coller manuellement.
 4. **Variables d'environnement** (§2) pour les 3 environnements (Production / Preview / Development). En prod : clés Stripe **live**, `NEXT_PUBLIC_SITE_URL=https://reseauteurs.fr`, `SITE_PROTECTION_ENABLED=false`, `CRON_SECRET` défini.
 5. **Vercel Blob** : créer un store Blob → `BLOB_READ_WRITE_TOKEN`.
@@ -182,7 +198,7 @@ pnpm start         # sert le build de prod en local
 
 - [ ] Build Vercel **vert** (1er vrai build — confirme l'absence d'erreurs de compilation ; cf. issue #1).
 - [ ] Migrations jouées (dry-run + rollback testés sur branche Neon, snapshot prod pris).
-- [ ] Webhooks **Stripe live** signés et reçus (`evenement.premium`, `reseau.partenaire`).
+- [ ] Webhooks **Stripe live** signés et reçus (abonnement national → `reseau.partenaire` + palier ; annonceur → `partenaire`).
 - [ ] `NEXT_PUBLIC_SITE_URL=https://reseauteurs.fr` · `SITE_PROTECTION_ENABLED=false` · `CRON_SECRET` défini.
 - [ ] Domaine `reseauteurs.fr` actif + SSL.
 - [ ] **Pages légales** validées par un juriste + grille tarifaire chiffrée (issue #2).
@@ -203,7 +219,7 @@ pnpm start         # sert le build de prod en local
 |---|---|
 | `type "geography" does not exist` / erreurs géo | PostGIS non activé → rejouer `pnpm payload migrate` (la 1ère migration crée l'extension) ; vérifier les droits Neon. |
 | Connexion DB échoue | Vérifier le **nom** `DATABASE_URI` (≠ `DATABASE_URL`) et `?sslmode=require`. |
-| Vercel : « No Next.js detected » | **Root Directory** non réglé sur `infos-reseaux` (§5). |
+| Vercel : « No Next.js detected » | **Root Directory** modifié à tort → le remettre à la racine du dépôt (champ vide, §5). |
 | Webhooks Stripe en 400 | `STRIPE_WEBHOOK_SECRET` incorrect (régénéré par `stripe listen` à chaque session). |
 | Crons en 401 | `CRON_SECRET` manquant côté Vercel. |
 | Admin Payload cassé après modif schéma | `pnpm generate:types` puis `pnpm devsafe`. |

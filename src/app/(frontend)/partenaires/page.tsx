@@ -11,6 +11,8 @@ import { Building2, ArrowRight, ExternalLink } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
 import { withDbRetry } from '@/lib/db-retry'
 import { SITE_NAME } from '@/lib/site'
+import PageHeader from '@/components/layout/PageHeader'
+import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { Partenaire, Media } from '@/types/reseauteurs-domain'
 
@@ -40,20 +42,19 @@ export default async function PartenairesPage() {
   const docs = partenaires as Partenaire[]
 
   return (
-    <div className="bg-[#faf9f5] min-h-screen">
-      {/* En-tête orange */}
-      <section className="bg-gradient-to-br from-[#fff7ed] to-[#ffedd5] border-b border-[#fed7aa] py-14">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#c2410c] mb-3">Partenaires</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#16284f] mb-3">
-            Ils soutiennent le networking français
-          </h1>
-          <p className="text-sm sm:text-base text-[#52525b] max-w-xl mx-auto">
+    <div className="rsn-page">
+      <PageHeader
+        tone="orange"
+        icon={<Building2 size={13} aria-hidden />}
+        eyebrow="Partenaires"
+        title={<>Ils soutiennent le networking français</>}
+        lead={
+          <>
             Nos partenaires croient en la valeur du networking professionnel et soutiennent{' '}
             <strong>RÉSEAUTEURS</strong> dans sa mission de rassembler tous les réseaux.
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Grille des partenaires */}
@@ -66,13 +67,14 @@ export default async function PartenairesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-16" role="list" aria-label="Nos partenaires">
+          <Reveal className="mb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" role="list" aria-label="Nos partenaires">
             {docs.map((p) => {
               const logoMedia = p.logo as Media | null | undefined
               const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url
 
               const inner = (
-                <div className="flex flex-col items-center gap-3 p-5 bg-white rounded-2xl border border-[#e4e4e7] hover:border-[#f5851f]/50 hover:shadow-md transition-all h-full group">
+                <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#e4e4e7] rsn-lift rsn-shine h-full group">
                   {logoUrl ? (
                     <Image
                       src={logoUrl}
@@ -120,27 +122,31 @@ export default async function PartenairesPage() {
               )
             })}
           </div>
+          </Reveal>
         )}
 
         {/* Bloc CTA B2B — devenir partenaire */}
-        <div className="bg-gradient-to-br from-[#f5851f] to-[#e07710] rounded-2xl p-8 md:p-10 text-white text-center">
-          <Building2 size={32} className="mx-auto mb-4 opacity-80" aria-hidden />
-          <h2 className="text-xl sm:text-2xl font-bold mb-3">
-            Vous représentez une entreprise ou un réseau ?
-          </h2>
-          <p className="text-sm sm:text-base opacity-90 max-w-md mx-auto mb-6">
-            Devenez partenaire de RÉSEAUTEURS et touchez des milliers de professionnels du networking
-            partout en France. Logo en page d&apos;accueil, page dédiée, visibilité maximale.
-          </p>
-          {/* TODO accounts-and-billing : brancher le lien vers le formulaire de contact partenariat */}
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[#c2410c] font-bold text-sm hover:bg-[#fff7ed] transition-colors no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            Nous contacter
-            <ArrowRight size={16} aria-hidden />
-          </Link>
-        </div>
+        <Reveal>
+          <div className="bg-gradient-to-br from-[#f5851f] to-[#e07710] p-8 md:p-10 text-white text-center">
+            <Building2 size={32} className="mx-auto mb-4 opacity-80" aria-hidden />
+            <h2 className="text-xl sm:text-2xl font-bold mb-3">
+              Vous représentez une entreprise ou un réseau ?
+            </h2>
+            <p className="text-sm sm:text-base opacity-90 max-w-md mx-auto mb-6">
+              Devenez partenaire de RÉSEAUTEURS et touchez des milliers de professionnels du
+              networking partout en France. Logo en page d&apos;accueil, page dédiée, visibilité
+              maximale.
+            </p>
+            {/* TODO accounts-and-billing : brancher le lien vers le formulaire de contact partenariat */}
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#c2410c] font-bold text-sm hover:bg-[#fff7ed] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Nous contacter
+              <ArrowRight size={16} aria-hidden className="rsn-arrow" />
+            </Link>
+          </div>
+        </Reveal>
       </div>
     </div>
   )

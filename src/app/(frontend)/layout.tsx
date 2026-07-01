@@ -57,7 +57,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{if(localStorage.getItem('reseauteurs-theme')==='dark')document.body.classList.add('ir-plasma');}catch(e){}})();",
+              "(function(){try{document.documentElement.classList.add('js-ready');if(localStorage.getItem('reseauteurs-theme')==='dark')document.body.classList.add('ir-plasma');}catch(e){}})();",
           }}
         />
         <JsonLd data={[buildOrganizationJsonLd(), buildWebSiteJsonLd()]} />

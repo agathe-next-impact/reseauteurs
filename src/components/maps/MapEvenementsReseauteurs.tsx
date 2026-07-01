@@ -15,6 +15,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { List, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
 import type { GeoJSONFeatureCollection } from '@/lib/geojson'
@@ -32,8 +33,10 @@ const SlideOverEvenementNew = dynamic(
 )
 import MapContainerLibre from '@/components/map/MapContainerLibre'
 import MapPopupLibre from '@/components/map/MapPopupLibre'
+import MapLegend from '@/components/map/MapLegend'
+import MapResultsList, { type MapListItem } from '@/components/map/MapResultsList'
 
-const MAP_MOVE_DEBOUNCE = 400
+const MAP_MOVE_DEBOUNCE = 500
 
 // ── Expressions MapLibre pour les clusters d'événements ─────────────────────
 const clusterCircleColor = [
@@ -48,16 +51,20 @@ interface MapEvenementsReseauteursProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
   reseaux: ReseauLiteFilter[]
+  /** Bascule agenda/carte (rendue dans la barre de navigation supérieure). */
+  toolbar?: React.ReactNode
 }
 
 export default function MapEvenementsReseauteurs({
   initialData,
   initialSlug,
   reseaux,
+  toolbar,
 }: MapEvenementsReseauteursProps) {
   const mapRef = useRef<MapRef | null>(null)
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialSlug ?? null)
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null)
   const [filters, setFilters] = useState<EvenementFiltersNew>(emptyFiltersNew)
   const [fetching, setFetching] = useState(false)
   const [geojsonData, setGeojsonData] = useState<GeoJSONFeatureCollection>(initialData)
@@ -65,10 +72,27 @@ export default function MapEvenementsReseauteurs({
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null)
   const [cursor, setCursor] = useState('auto')
   const [mapReady, setMapReady] = useState(false)
+  const [listOpen, setListOpen] = useState(true)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [resultsOpen, setResultsOpen] = useState(true)
 
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cacheRef = useRef<Map<string, GeoJSONFeatureCollection>>(new Map())
+  const geojsonDataRef = useRef(geojsonData)
+  geojsonDataRef.current = geojsonData
+
+  // Nombre de filtres actifs (badge sur le bouton Filtres)
+  const activeCount = useMemo(() => {
+    const selectedReseaux = filters.reseau
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    return (
+      selectedReseaux.length +
+      [filters.ville.trim(), filters.dateDebut, filters.dateFin].filter(Boolean).length
+    )
+  }, [filters])
 
   const sourceData = useMemo(() => geojsonData as GeoJSON.FeatureCollection, [geojsonData])
 
@@ -77,11 +101,31 @@ export default function MapEvenementsReseauteurs({
     [selectedSlug],
   )
 
+  // Filtre de survol (surbrillance depuis la colonne de résultats)
+  const hoveredFilter = useMemo(
+    (): unknown[] => ['==', ['get', 'slug'], hoveredSlug ?? ''],
+    [hoveredSlug],
+  )
+
   // ADR-0012 : un seul type de marqueur — plus de couche premium séparée
   const interactiveLayerIds = useMemo(
     () => ['evenements-clusters', 'evenements-points'],
     [],
   )
+
+  // ── Colonne de résultats synchronisée (Lot C) ───────────────────────
+  const resultItems = useMemo((): MapListItem[] => {
+    return geojsonData.features
+      .filter((f) => f.properties?.slug)
+      .map((f) => {
+        const props = f.properties as Record<string, unknown>
+        return {
+          id: props.slug as string,
+          title: (props.titre as string | null | undefined) ?? 'Événement',
+          meta: (props.lieuVille as string | null | undefined) ?? null,
+        }
+      })
+  }, [geojsonData])
 
   // ── Handlers ────────────────────────────────────────────────────────
   const handleLoad = useCallback((e: MapEvent) => {
@@ -126,6 +170,26 @@ export default function MapEvenementsReseauteurs({
         )
       }
     }
+  }, [])
+
+  // ── Sélection depuis la colonne de résultats (Lot C) ────────────────
+  const handleSelectFromList = useCallback((slug: string) => {
+    setSelectedSlug(slug)
+    window.history.replaceState(null, '', `/carte/evenements?e=${encodeURIComponent(slug)}`)
+
+    const match = geojsonDataRef.current.features.find(
+      (f) => f.properties?.slug === slug,
+    )
+    if (match) {
+      const map = mapRef.current?.getMap()
+      const coords = (match.geometry as GeoJSON.Point).coordinates as [number, number]
+      const currentZoom = map?.getZoom() ?? 12
+      map?.flyTo({ center: coords, zoom: Math.max(currentZoom, 12), duration: 700 })
+    }
+  }, [])
+
+  const handleHoverFromList = useCallback((slug: string | null) => {
+    setHoveredSlug(slug)
   }, [])
 
   const handleMouseEnter = useCallback((e: MapMouseEvent) => {
@@ -228,15 +292,26 @@ export default function MapEvenementsReseauteurs({
   }, [])
 
   return (
-    <div className="flex h-[calc(100dvh-4rem-1px)]" aria-label="Carte des événements">
-      <FiltresEvenementsReseauteurs
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        resultCount={resultCount}
-        reseaux={reseaux}
-      />
+    <div className="flex flex-col h-[calc(100dvh-4rem-1px)]" aria-label="Carte des événements">
+      {/* Barre de navigation supérieure : bascule vue + affichage du panneau */}
+      <div className="rsn-map-topbar">
+        <div className="rsn-map-topbar-start">{toolbar}</div>
+        <div className="rsn-map-topbar-end">
+          <button
+            type="button"
+            className={`rsn-map-topbar-btn hidden lg:inline-flex${listOpen ? ' is-active' : ''}`}
+            onClick={() => setListOpen((v) => !v)}
+            aria-pressed={listOpen}
+            aria-label={listOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
+          >
+            <List size={15} />
+            {listOpen ? 'Masquer le panneau' : 'Panneau'}
+          </button>
+        </div>
+      </div>
 
-      <div className="flex-1 relative isolate">
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 relative isolate">
         {/* Overlay de chargement initial */}
         <div
           className={`absolute inset-0 z-[700] bg-white flex items-center justify-center pointer-events-none transition-opacity duration-500 ${
@@ -335,6 +410,19 @@ export default function MapEvenementsReseauteurs({
                 }}
               />
 
+              {/* Surbrillance au survol (depuis la colonne de résultats) */}
+              <Layer
+                id="evenements-hover"
+                type="circle"
+                filter={hoveredFilter as unknown as boolean}
+                paint={{
+                  'circle-color': 'transparent',
+                  'circle-radius': 13,
+                  'circle-stroke-width': 3,
+                  'circle-stroke-color': MAP_COLORS.primary,
+                }}
+              />
+
               {/* Anneau de sélection */}
               <Layer
                 id="evenements-selected"
@@ -369,6 +457,92 @@ export default function MapEvenementsReseauteurs({
             </MapPopupLibre>
           )}
         </MapContainerLibre>
+
+        {/* État vide : aucune donnée dans la zone visible */}
+        {mapReady && !fetching && geojsonData.features.length === 0 && (
+          <div className="rsn-map-empty" role="status">
+            <p>Aucun événement dans cette zone.</p>
+          </div>
+        )}
+
+        {/* Légende du marqueur événement */}
+        <MapLegend
+          title="Carte"
+          items={[{ label: 'Événement business', color: MAP_COLORS.evenement }]}
+        />
+        </div>
+
+        {/* Rail droit (desktop) : accordéon Filtres + Résultats */}
+        {listOpen && (
+          <div className="rsn-map-rail">
+            <div className="rsn-rail-accordion">
+              {/* Section Filtres */}
+              <section className="rsn-acc rsn-acc-filters">
+                <button
+                  type="button"
+                  className="rsn-acc-head"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                  aria-expanded={filtersOpen}
+                >
+                  <SlidersHorizontal size={15} aria-hidden />
+                  <span className="rsn-acc-label">Filtres</span>
+                  {activeCount > 0 && (
+                    <span className="rsn-map-topbar-btn-badge">{activeCount}</span>
+                  )}
+                  <ChevronDown
+                    size={16}
+                    aria-hidden
+                    className={`rsn-acc-chevron${filtersOpen ? ' is-open' : ''}`}
+                  />
+                </button>
+                {filtersOpen && (
+                  <div className="rsn-acc-filters-body">
+                    <FiltresEvenementsReseauteurs
+                      filters={filters}
+                      onFilterChange={handleFilterChange}
+                      resultCount={resultCount}
+                      reseaux={reseaux}
+                    />
+                  </div>
+                )}
+              </section>
+
+              {/* Section Résultats */}
+              <section className={`rsn-acc rsn-acc-results${resultsOpen ? ' is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="rsn-acc-head"
+                  onClick={() => setResultsOpen((v) => !v)}
+                  aria-expanded={resultsOpen}
+                >
+                  <List size={15} aria-hidden />
+                  <span className="rsn-acc-label">Résultats</span>
+                  <span className="rsn-acc-count">
+                    {resultCount}
+                    {resultCount > 100 ? ' · zoomez' : ''}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    aria-hidden
+                    className={`rsn-acc-chevron${resultsOpen ? ' is-open' : ''}`}
+                  />
+                </button>
+                {resultsOpen && (
+                  <MapResultsList
+                    items={resultItems}
+                    selectedId={selectedSlug}
+                    total={resultCount}
+                    onSelect={handleSelectFromList}
+                    onHover={handleHoverFromList}
+                    entityLabel="événement"
+                    emptyLabel="Aucun événement dans cette zone."
+                    hideHead
+                  />
+                )}
+              </section>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Panneau de détail (slide-over + bottom-sheet mobile) */}

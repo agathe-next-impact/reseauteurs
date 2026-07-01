@@ -1,0 +1,38 @@
+import type { ReactNode } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { SITE_NAME } from '@/lib/site'
+
+/**
+ * Coquille des pages d'authentification (login, inscription, reset…) :
+ * carte centrée dans le cadre de marque, theme-adaptative. La logique du
+ * formulaire reste dans la page ; on ne fournit que le décor.
+ */
+export default function AuthShell({
+  title,
+  subtitle,
+  children,
+  footer,
+}: {
+  title: ReactNode
+  subtitle?: ReactNode
+  children: ReactNode
+  footer?: ReactNode
+}) {
+  return (
+    <div className="rsn-auth">
+      <div className="rsn-auth-card">
+        <div className="text-center mb-6">
+          <Link href="/" className="rsn-auth-brand" aria-label={`Accueil ${SITE_NAME}`}>
+            <Image src="/img/logo.png" alt="" width={34} height={34} priority />
+            <span>{SITE_NAME.toUpperCase()}</span>
+          </Link>
+          {subtitle && <p className="text-sm text-[#71717a] mt-2">{subtitle}</p>}
+        </div>
+        <h1 className="text-xl font-bold text-[#16284f] mb-6">{title}</h1>
+        {children}
+      </div>
+      {footer && <div className="text-center text-sm text-[#71717a]">{footer}</div>}
+    </div>
+  )
+}

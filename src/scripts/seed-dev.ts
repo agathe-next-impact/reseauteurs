@@ -1,18 +1,26 @@
 // @ts-nocheck — types en attente de generate:types (data-architect)
 /**
- * seed-dev.ts — Seed de développement pour le modèle à 3 entités (ADR-0011).
+ * seed-dev.ts — Seed de développement pour le modèle à 3 entités hiérarchique (ADR-0012).
  *
  * Crée des données réalistes pour les 2 cartes en dev local :
- *   - 5 réseaux (BNI, DCF, CJD, Afterwork, Réseau Entreprendre)
- *   - 8 réseauteurs validés (grandes villes FR)
- *   - 6 événements
+ *   - 5 réseaux NATIONAUX (marques : BNI, DCF, CJD, Afterwork, Réseau Entreprendre)
+ *   - 8 réseaux LOCAUX (chapitres rattachés à un national, géolocalisés — ce sont EUX
+ *     qui portent les marqueurs sur la carte des réseaux, ADR-0012 §1)
+ *   - 8 réseauteurs validés, affiliés à des réseaux LOCAUX (jamais aux nationaux, ADR-0012 §2)
+ *   - 6 événements (organisés par un local, ou par le national pour l'événement national)
  *   - 2 partenaires (annonceurs actifs)
  *
- * Idempotent : vérifie l'existence avant d'insérer.
+ * Modèle hiérarchique (ADR-0012) :
+ *   - niveau 'national' → la marque, sans parent, pas de marqueur carte.
+ *   - niveau 'local'    → un chapitre, parent = un national, géolocalisé (centroïde ville).
+ *   - reseauxFrequentes d'un réseauteur = uniquement des LOCAUX ; le national est dérivé.
+ *
+ * Idempotent : vérifie l'existence (par nom / identité) avant d'insérer.
+ * SEED_DEV=true désactive les hooks de compteurs/géocodage/validation runtime coûteux ;
+ * la validation de hiérarchie (national↔local) reste active — les parents doivent exister.
  *
  * Usage :
- *   yarn ts-node src/scripts/seed-dev.ts
- *   (ou via payload local API dans un script de migration dev)
+ *   pnpm exec tsx src/scripts/seed-dev.ts
  *
  * NE PAS exécuter en production.
  */
@@ -43,19 +51,22 @@ async function seed() {
     import('../payload.config'),
   ])
   const payload = await getPayload({ config })
-  console.log('[seed-dev] Démarrage du seed 3 entités...')
+  console.log('[seed-dev] Démarrage du seed 3 entités hiérarchique (ADR-0012)...')
 
-  // ── 1. Réseaux ───────────────────────────────────────────────────────
-  const reseauxData = [
-    { nom: 'BNI France', ville: 'Paris', description: 'Business Network International — le plus grand réseau de networking d\'affaires au monde.', presentation: 'BNI aide les professionnels à développer leur activité par le bouche-à-oreille structuré. Présent dans toutes les régions françaises.', siteWeb: 'https://www.bni.fr', partenaire: true },
-    { nom: 'DCF — Dirigeants Commerciaux de France', ville: 'Lyon', description: 'Association des dirigeants et cadres commerciaux.', presentation: 'Les DCF fédèrent 5 000 membres dans 60 délégations régionales.', siteWeb: 'https://www.dcf.fr', partenaire: true },
-    { nom: 'CJD — Centre des Jeunes Dirigeants', ville: 'Bordeaux', description: 'Mouvement de dirigeants pour un management responsable.', siteWeb: 'https://www.cjd.net', partenaire: false },
-    { nom: 'Afterwork Business Auvergne', ville: 'Clermont-Ferrand', description: 'Afterworks professionnels en Auvergne.', siteWeb: '', partenaire: false },
-    { nom: 'Réseau Entreprendre Rhône-Alpes', ville: 'Grenoble', description: 'Accompagnement des créateurs et repreneurs d\'entreprises.', siteWeb: 'https://www.reseau-entreprendre.org', partenaire: false },
+  // Map clé → id, tous niveaux confondus (les clés nationales et locales ne se chevauchent pas).
+  const reseauxIds: Record<string, number | string> = {}
+
+  // ── 1. Réseaux NATIONAUX (marques) ───────────────────────────────────
+  // Un national n'a pas de parent ni de marqueur carte : on ne lui donne pas de coords.
+  const nationauxData = [
+    { key: 'bni', nom: 'BNI France', ville: 'Paris', description: 'Business Network International — le plus grand réseau de networking d\'affaires au monde.', presentation: 'BNI aide les professionnels à développer leur activité par le bouche-à-oreille structuré. Présent dans toutes les régions françaises.', siteWeb: 'https://www.bni.fr', partenaire: true },
+    { key: 'dcf', nom: 'DCF — Dirigeants Commerciaux de France', ville: 'Lyon', description: 'Association des dirigeants et cadres commerciaux.', presentation: 'Les DCF fédèrent 5 000 membres dans 60 délégations régionales.', siteWeb: 'https://www.dcf.fr', partenaire: true },
+    { key: 'cjd', nom: 'CJD — Centre des Jeunes Dirigeants', ville: 'Bordeaux', description: 'Mouvement de dirigeants pour un management responsable.', presentation: '', siteWeb: 'https://www.cjd.net', partenaire: false },
+    { key: 'afterwork', nom: 'Afterwork Business Auvergne', ville: 'Clermont-Ferrand', description: 'Afterworks professionnels en Auvergne.', presentation: '', siteWeb: '', partenaire: false },
+    { key: 're', nom: 'Réseau Entreprendre Rhône-Alpes', ville: 'Grenoble', description: 'Accompagnement des créateurs et repreneurs d\'entreprises.', presentation: '', siteWeb: 'https://www.reseau-entreprendre.org', partenaire: false },
   ]
 
-  const reseauxIds: Record<string, number | string> = {}
-  for (const r of reseauxData) {
+  for (const r of nationauxData) {
     const existing = await payload.find({
       collection: 'reseaux',
       where: { nom: { equals: r.nom } },
@@ -63,15 +74,15 @@ async function seed() {
       overrideAccess: true,
     })
     if (existing.docs.length > 0) {
-      reseauxIds[r.nom] = existing.docs[0].id
-      console.log(`[seed-dev] Réseau existant : ${r.nom}`)
+      reseauxIds[r.key] = existing.docs[0].id
+      console.log(`[seed-dev] National existant : ${r.nom}`)
       continue
     }
-    const coords = CITY_COORDS[r.ville]
     const created = await payload.create({
       collection: 'reseaux',
       data: {
         nom: r.nom,
+        niveau: 'national',
         ville: r.ville,
         description: r.description,
         presentation: r.presentation ?? '',
@@ -79,12 +90,61 @@ async function seed() {
         partenaire: r.partenaire,
         statut: 'publiee',
         source: 'importe',
+      },
+      overrideAccess: true,
+    })
+    reseauxIds[r.key] = created.id
+    console.log(`[seed-dev] National créé : ${r.nom} (id=${created.id})`)
+  }
+
+  // ── 1b. Réseaux LOCAUX (chapitres) ───────────────────────────────────
+  // parent = un national déjà créé ci-dessus ; géolocalisés → marqueurs de la carte réseaux.
+  const locauxData = [
+    { key: 'bni-paris', nom: 'BNI Paris 8e', parentKey: 'bni', ville: 'Paris', description: 'Chapitre BNI du 8e arrondissement de Paris — petit-déjeuners networking hebdomadaires.' },
+    { key: 'bni-marseille', nom: 'BNI Marseille Vieux-Port', parentKey: 'bni', ville: 'Marseille', description: 'Chapitre BNI du Vieux-Port de Marseille.' },
+    { key: 'bni-nantes', nom: 'BNI Nantes Atlantique', parentKey: 'bni', ville: 'Nantes', description: 'Chapitre BNI de Nantes Atlantique.' },
+    { key: 'dcf-lyon', nom: 'DCF Lyon', parentKey: 'dcf', ville: 'Lyon', description: 'Délégation DCF de Lyon et sa région.' },
+    { key: 'dcf-strasbourg', nom: 'DCF Strasbourg', parentKey: 'dcf', ville: 'Strasbourg', description: 'Délégation DCF de Strasbourg et du Grand Est.' },
+    { key: 'cjd-bordeaux', nom: 'CJD Bordeaux', parentKey: 'cjd', ville: 'Bordeaux', description: 'Section CJD de Bordeaux Gironde.' },
+    { key: 'afterwork-clermont', nom: 'Afterwork Business Clermont-Ferrand', parentKey: 'afterwork', ville: 'Clermont-Ferrand', description: 'Afterworks business à Clermont-Ferrand.' },
+    { key: 're-grenoble', nom: 'Réseau Entreprendre Grenoble', parentKey: 're', ville: 'Grenoble', description: 'Antenne Réseau Entreprendre de Grenoble et de l\'Isère.' },
+  ]
+
+  for (const l of locauxData) {
+    const existing = await payload.find({
+      collection: 'reseaux',
+      where: { nom: { equals: l.nom } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    if (existing.docs.length > 0) {
+      reseauxIds[l.key] = existing.docs[0].id
+      console.log(`[seed-dev] Local existant : ${l.nom}`)
+      continue
+    }
+    const parentId = reseauxIds[l.parentKey]
+    if (!parentId) {
+      console.warn(`[seed-dev] National parent introuvable pour le local : ${l.nom} (parentKey=${l.parentKey})`)
+      continue
+    }
+    const coords = CITY_COORDS[l.ville]
+    const created = await payload.create({
+      collection: 'reseaux',
+      data: {
+        nom: l.nom,
+        niveau: 'local',
+        parent: parentId,
+        ville: l.ville,
+        description: l.description,
+        presentation: '',
+        statut: 'publiee',
+        source: 'importe',
         ...(coords ?? {}),
       },
       overrideAccess: true,
     })
-    reseauxIds[r.nom] = created.id
-    console.log(`[seed-dev] Réseau créé : ${r.nom} (id=${created.id})`)
+    reseauxIds[l.key] = created.id
+    console.log(`[seed-dev] Local créé : ${l.nom} (id=${created.id}, parent=${l.parentKey})`)
   }
 
   // ── 2. Catégories (secteurs) — on vérifie que le seed 130000 a tourné
@@ -96,15 +156,16 @@ async function seed() {
   console.log(`[seed-dev] ${secteurs.totalDocs} secteurs disponibles.`)
 
   // ── 3. Réseauteurs ───────────────────────────────────────────────────
+  // reseaux = clés de réseaux LOCAUX (ADR-0012 : affiliation aux chapitres, jamais aux nationaux).
   const reseauteursData = [
-    { prenom: 'Marie', nom: 'Dupont', ville: 'Paris', departement: 'Paris', region: 'Île-de-France', entreprise: 'MD Consulting', fonction: 'Consultante RH', evenementsParMois: 8, reseaux: ['BNI France', 'DCF — Dirigeants Commerciaux de France'], secteur: 'conseil-services-b2b' },
-    { prenom: 'Jean', nom: 'Martin', ville: 'Lyon', departement: 'Rhône', region: 'Auvergne-Rhône-Alpes', entreprise: 'Martin Immobilier', fonction: 'Directeur commercial', evenementsParMois: 4, reseaux: ['DCF — Dirigeants Commerciaux de France'], secteur: 'btp-immobilier' },
-    { prenom: 'Sophie', nom: 'Bernard', ville: 'Marseille', departement: 'Bouches-du-Rhône', region: 'Provence-Alpes-Côte d\'Azur', entreprise: 'Bernard Tech Solutions', fonction: 'CTO', evenementsParMois: 12, reseaux: ['BNI France'], secteur: 'informatique-tech' },
-    { prenom: 'Pierre', nom: 'Leblanc', ville: 'Bordeaux', departement: 'Gironde', region: 'Nouvelle-Aquitaine', entreprise: 'Leblanc Formation', fonction: 'Formateur', evenementsParMois: 3, reseaux: ['CJD — Centre des Jeunes Dirigeants'], secteur: 'formation-education' },
+    { prenom: 'Marie', nom: 'Dupont', ville: 'Paris', departement: 'Paris', region: 'Île-de-France', entreprise: 'MD Consulting', fonction: 'Consultante RH', evenementsParMois: 8, reseaux: ['bni-paris', 'dcf-lyon'], secteur: 'conseil-services-b2b' },
+    { prenom: 'Jean', nom: 'Martin', ville: 'Lyon', departement: 'Rhône', region: 'Auvergne-Rhône-Alpes', entreprise: 'Martin Immobilier', fonction: 'Directeur commercial', evenementsParMois: 4, reseaux: ['dcf-lyon'], secteur: 'btp-immobilier' },
+    { prenom: 'Sophie', nom: 'Bernard', ville: 'Marseille', departement: 'Bouches-du-Rhône', region: 'Provence-Alpes-Côte d\'Azur', entreprise: 'Bernard Tech Solutions', fonction: 'CTO', evenementsParMois: 12, reseaux: ['bni-marseille'], secteur: 'informatique-tech' },
+    { prenom: 'Pierre', nom: 'Leblanc', ville: 'Bordeaux', departement: 'Gironde', region: 'Nouvelle-Aquitaine', entreprise: 'Leblanc Formation', fonction: 'Formateur', evenementsParMois: 3, reseaux: ['cjd-bordeaux'], secteur: 'formation-education' },
     { prenom: 'Claire', nom: 'Moreau', ville: 'Toulouse', departement: 'Haute-Garonne', region: 'Occitanie', entreprise: 'Santé & Bien-être', fonction: 'Médecin généraliste', evenementsParMois: 2, reseaux: [], secteur: 'medical-sante' },
-    { prenom: 'Antoine', nom: 'Leroy', ville: 'Nantes', departement: 'Loire-Atlantique', region: 'Pays de la Loire', entreprise: 'Leroy Finance', fonction: 'Expert-comptable', evenementsParMois: 6, reseaux: ['BNI France', 'Afterwork Business Auvergne'], secteur: 'finance-assurance' },
-    { prenom: 'Isabelle', nom: 'Petit', ville: 'Strasbourg', departement: 'Bas-Rhin', region: 'Grand Est', entreprise: 'Petit Avocats', fonction: 'Avocate d\'affaires', evenementsParMois: 5, reseaux: ['DCF — Dirigeants Commerciaux de France'], secteur: 'juridique-notariat' },
-    { prenom: 'Thomas', nom: 'Dupont', ville: 'Clermont-Ferrand', departement: 'Puy-de-Dôme', region: 'Auvergne-Rhône-Alpes', entreprise: 'Dupont Marketing', fonction: 'Directeur marketing', evenementsParMois: 1, reseaux: ['Afterwork Business Auvergne'], secteur: 'marketing-communication' },
+    { prenom: 'Antoine', nom: 'Leroy', ville: 'Nantes', departement: 'Loire-Atlantique', region: 'Pays de la Loire', entreprise: 'Leroy Finance', fonction: 'Expert-comptable', evenementsParMois: 6, reseaux: ['bni-nantes', 'afterwork-clermont'], secteur: 'finance-assurance' },
+    { prenom: 'Isabelle', nom: 'Petit', ville: 'Strasbourg', departement: 'Bas-Rhin', region: 'Grand Est', entreprise: 'Petit Avocats', fonction: 'Avocate d\'affaires', evenementsParMois: 5, reseaux: ['dcf-strasbourg'], secteur: 'juridique-notariat' },
+    { prenom: 'Thomas', nom: 'Dupont', ville: 'Clermont-Ferrand', departement: 'Puy-de-Dôme', region: 'Auvergne-Rhône-Alpes', entreprise: 'Dupont Marketing', fonction: 'Directeur marketing', evenementsParMois: 1, reseaux: ['afterwork-clermont'], secteur: 'marketing-communication' },
   ]
 
   for (const r of reseauteursData) {
@@ -120,7 +181,7 @@ async function seed() {
     }
 
     const reseauxRelIds = r.reseaux
-      .map((rn) => reseauxIds[rn])
+      .map((key) => reseauxIds[key])
       .filter((id): id is number | string => id !== undefined)
 
     const secteurId = secteurMap[r.secteur]
@@ -146,13 +207,14 @@ async function seed() {
         },
         overrideAccess: true,
       })
-      console.log(`[seed-dev] Réseauteur créé : ${r.prenom} ${r.nom}, badge=${created.badge}, ville=${r.ville}`)
+      console.log(`[seed-dev] Réseauteur créé : ${r.prenom} ${r.nom}, badge=${created.badge}, locaux=[${r.reseaux.join(', ')}]`)
     } catch (err) {
       console.error(`[seed-dev] Erreur création ${r.prenom} ${r.nom}:`, err)
     }
   }
 
   // ── 4. Événements ────────────────────────────────────────────────────
+  // reseau = clé d'un réseau LOCAL (organisateur = chapitre) ou NATIONAL (événement national).
   const typesEvt = await payload.find({ collection: 'types-evenement', limit: 10, overrideAccess: true })
   const typeMap: Record<string, number | string> = {}
   for (const t of typesEvt.docs) {
@@ -163,7 +225,7 @@ async function seed() {
   const evenementsData = [
     {
       titre: 'Réunion BNI Paris 8e — Petit-déjeuner networking',
-      reseau: 'BNI France',
+      reseau: 'bni-paris',
       lieuVille: 'Paris',
       lieuAdresse: '12 Avenue de Wagram',
       lieuCodePostal: '75008',
@@ -173,7 +235,7 @@ async function seed() {
     },
     {
       titre: 'DCF Lyon — Soirée networking Presqu\'île',
-      reseau: 'DCF — Dirigeants Commerciaux de France',
+      reseau: 'dcf-lyon',
       lieuVille: 'Lyon',
       lieuAdresse: '20 Place Bellecour',
       lieuCodePostal: '69002',
@@ -183,7 +245,7 @@ async function seed() {
     },
     {
       titre: 'CJD Bordeaux — Forum des dirigeants responsables',
-      reseau: 'CJD — Centre des Jeunes Dirigeants',
+      reseau: 'cjd-bordeaux',
       lieuVille: 'Bordeaux',
       lieuAdresse: '1 Place de la Bourse',
       lieuCodePostal: '33000',
@@ -193,7 +255,7 @@ async function seed() {
     },
     {
       titre: 'Afterwork Business — Spécial Tech & Innovation',
-      reseau: 'Afterwork Business Auvergne',
+      reseau: 'afterwork-clermont',
       lieuVille: 'Clermont-Ferrand',
       lieuAdresse: '5 Place de Jaude',
       lieuCodePostal: '63000',
@@ -203,7 +265,7 @@ async function seed() {
     },
     {
       titre: 'Réseau Entreprendre — Pitch & Financement',
-      reseau: 'Réseau Entreprendre Rhône-Alpes',
+      reseau: 're-grenoble',
       lieuVille: 'Grenoble',
       lieuAdresse: '3 Rue Félix Poulat',
       lieuCodePostal: '38000',
@@ -212,8 +274,9 @@ async function seed() {
       type: 'conferences',
     },
     {
+      // Événement national (organisé par la tête de réseau, pas un chapitre).
       titre: 'BNI National Congress — Paris La Défense',
-      reseau: 'BNI France',
+      reseau: 'bni',
       lieuVille: 'Paris',
       lieuAdresse: 'CNIT, 2 Place de la Défense',
       lieuCodePostal: '92400',
@@ -318,6 +381,7 @@ async function seed() {
     }
   }
 
+  // ── 6. Backfill géométrie PostGIS (les hooks de géocodage sont court-circuités en SEED_DEV)
   await payload.db.drizzle.execute(`
     UPDATE reseaux
        SET geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography
@@ -332,7 +396,7 @@ async function seed() {
      WHERE lieu_latitude IS NOT NULL AND lieu_longitude IS NOT NULL;
   `)
 
-  console.log('[seed-dev] Seed terminé. Les deux cartes sont non vides.')
+  console.log('[seed-dev] Seed terminé. 5 nationaux, 8 locaux, 8 réseauteurs, 6 événements, 2 partenaires.')
   process.exit(0)
 }
 

@@ -19,6 +19,7 @@
  *   - initialData  : GeoJSONFeatureCollection des réseaux locaux (vue initiale France)
  *   - initialSlug  : slug d'un réseau présélectionné (depuis l'URL ?res=...)
  *   - nationals    : liste des réseaux nationaux pour le filtre parent
+ *   - toolbar      : bascule annuaire/carte (rendue dans la barre de navigation supérieure)
  */
 
 import dynamic from 'next/dynamic'
@@ -35,6 +36,8 @@ export interface MapReseauxLoaderProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
   nationals: NationalLite[]
+  /** Bascule annuaire/carte (rendue dans la barre de navigation supérieure). */
+  toolbar?: React.ReactNode
 }
 
 export default function MapReseauxLoader(props: MapReseauxLoaderProps) {

@@ -8,6 +8,7 @@ import DeleteAccountButton from '@/components/dashboard/DeleteAccountButton'
 import MarketingPreferencesToggle from '@/components/dashboard/MarketingPreferencesToggle'
 import ChangeEmailForm from '@/components/dashboard/ChangeEmailForm'
 import EmailChangeBanner from '@/components/dashboard/EmailChangeBanner'
+import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import { UserCog, AlertTriangle, ShieldCheck, Download, Mail } from 'lucide-react'
 
@@ -41,18 +42,22 @@ export default async function ComptePage() {
   })
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="rsn-page">
+      <div className="max-w-4xl mx-auto px-6 py-8">
       <Suspense fallback={null}>
         <EmailChangeBanner />
       </Suspense>
 
-      <h1 className="text-2xl font-bold text-text-dark mb-6 flex items-center gap-2">
-        <UserCog size={22} />
-        Mon compte
-      </h1>
+      <Reveal className="mb-6">
+        <p className="rsn-eyebrow mb-2">Espace connecté</p>
+        <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+          <UserCog size={22} aria-hidden />
+          Mon compte
+        </h1>
+      </Reveal>
 
       {/* Account info */}
-      <Card className="hover:shadow-sm hover:translate-y-0 mb-6">
+      <Card className="rsn-card hover:shadow-sm hover:translate-y-0 mb-6">
         <CardBody>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-text-light mb-4">
             Informations du compte
@@ -83,7 +88,7 @@ export default async function ComptePage() {
       </Card>
 
       {/* RGPD / Privacy section */}
-      <Card className="hover:shadow-sm hover:translate-y-0 mb-6">
+      <Card className="rsn-card hover:shadow-sm hover:translate-y-0 mb-6">
         <CardBody>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-text-light mb-4 flex items-center gap-1.5">
             <ShieldCheck size={14} />
@@ -172,7 +177,7 @@ export default async function ComptePage() {
       </Card>
 
       {/* Danger zone */}
-      <Card className="hover:shadow-sm hover:translate-y-0 border-red-200">
+      <Card className="rsn-card hover:shadow-sm hover:translate-y-0 border-red-200">
         <CardBody>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-red-500 mb-4 flex items-center gap-1.5">
             <AlertTriangle size={14} />
@@ -189,6 +194,7 @@ export default async function ComptePage() {
           </div>
         </CardBody>
       </Card>
+      </div>
     </div>
   )
 }

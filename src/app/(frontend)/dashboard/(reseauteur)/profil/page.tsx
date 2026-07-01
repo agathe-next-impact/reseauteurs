@@ -14,6 +14,7 @@ import { User, MapPin, Globe, Phone, Mail, Network, Shield, ExternalLink } from 
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { ProfilForm } from './ProfilForm'
 import { DeleteAccountButton } from './DeleteAccountButton'
+import Reveal from '@/components/home/Reveal'
 import type { Reseauteur, Media } from '@/types/reseauteurs-domain'
 
 export const metadata = {
@@ -68,27 +69,33 @@ export default async function DashboardProfilPage() {
   }))
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-xl font-bold text-[#16284f] flex items-center gap-2">
-          <User size={20} aria-hidden />
-          Mon profil
-        </h1>
-        {reseauteur?.slug && (
-          <Link
-            href={`/reseauteur/${reseauteur.slug}`}
-            className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Voir ma fiche publique →
-          </Link>
-        )}
-      </div>
+    <div className="rsn-page">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+      <Reveal>
+        <div className="flex items-center justify-between mb-2">
+          <p className="rsn-eyebrow">Espace connecté</p>
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <User size={20} aria-hidden />
+            Mon profil
+          </h1>
+          {reseauteur?.slug && (
+            <Link
+              href={`/reseauteur/${reseauteur.slug}`}
+              className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Voir ma fiche publique →
+            </Link>
+          )}
+        </div>
+      </Reveal>
 
       {!reseauteur ? (
         /* État vide — le profil est auto-créé au signup. S'il manque, c'est une anomalie. */
-        <div className="bg-white rounded-2xl border border-dashed border-[#e4e4e7] p-10 text-center">
+        <div className="rsn-card rounded-2xl border-dashed p-10 text-center">
           <User size={36} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
           <p className="text-sm font-medium text-[#52525b] mb-2">Profil en cours d&apos;initialisation…</p>
           <p className="text-sm text-[#71717a] mb-6">
@@ -98,7 +105,7 @@ export default async function DashboardProfilPage() {
       ) : (
         <div className="space-y-6">
           {/* Résumé profil */}
-          <div className="bg-white rounded-2xl border border-[#e4e4e7] p-6">
+          <div className="rsn-card rounded-2xl p-6">
             <div className="flex items-start gap-4 mb-5">
               {photoUrl ? (
                 <Image
@@ -161,7 +168,7 @@ export default async function DashboardProfilPage() {
           </div>
 
           {/* Badge networking */}
-          <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+          <div className="rsn-card rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
               <Network size={14} aria-hidden />
               Badge réseauteur
@@ -175,13 +182,13 @@ export default async function DashboardProfilPage() {
           </div>
 
           {/* Formulaire d'édition */}
-          <div className="bg-white rounded-2xl border border-[#e4e4e7] p-6">
+          <div className="rsn-card rounded-2xl p-6">
             <h2 className="text-sm font-semibold text-[#18181b] mb-5">Modifier mon profil</h2>
             <ProfilForm reseauteur={reseauteur} reseauxLocaux={reseauxLocaux} />
           </div>
 
           {/* Confidentialité & RGPD */}
-          <div className="bg-[#faf9f5] rounded-2xl border border-[#e4e4e7] p-5">
+          <div className="rsn-card rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
               <Shield size={14} aria-hidden />
               Confidentialité & RGPD
@@ -203,6 +210,7 @@ export default async function DashboardProfilPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

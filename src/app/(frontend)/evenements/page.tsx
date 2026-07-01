@@ -2,7 +2,7 @@
  * Page « Événements » — /evenements
  *
  * ADR-0012 §7 : landing page self-canonical.
- * - Bascule vue : ?vue=agenda (défaut) | carte.
+ * - Bascule vue : ?vue=carte (défaut) | agenda.
  * - Filtres : réseau (slug), ville, date — deep-linkables.
  * - ADR-0012 : suppression de l'événement Premium — aucun marqueur/badge Premium.
  *
@@ -22,6 +22,7 @@ import { withDbRetry } from '@/lib/db-retry'
 import { toFeatureCollection, toFeature } from '@/lib/geojson'
 import { todayParisDateString } from '@/lib/dates'
 import { SITE_NAME } from '@/lib/site'
+import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { EvenementRsn as Evenement, Media, Reseau } from '@/types/reseauteurs-domain'
 import type { Where } from 'payload'
@@ -77,7 +78,8 @@ export default async function EvenementsPage({
   searchParams: Promise<SearchParams>
 }) {
   const sp = await searchParams
-  const vue = sp.vue === 'carte' ? 'carte' : 'agenda'
+  // Vue par défaut = carte (URL sans param). L'agenda reste accessible via ?vue=agenda.
+  const vue = sp.vue === 'agenda' ? 'agenda' : 'carte'
   const page = Math.max(1, parseInt(sp.page ?? '1', 10))
   const payload = await getPayload({ config })
 
@@ -168,19 +170,16 @@ export default async function EvenementsPage({
     const initialData = toFeatureCollection(features)
 
     return (
-      <div className="relative">
-        {/* Toggle flottant au-dessus de la carte */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[801] bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e4e4e7] px-3 py-2">
+      <MapEvenementsReseauteursLoader
+        initialData={initialData}
+        initialSlug={null}
+        reseaux={reseauxFiltres}
+        toolbar={
           <Suspense fallback={null}>
             <EntiteVueToggle entite="evenements" vue="carte" />
           </Suspense>
-        </div>
-        <MapEvenementsReseauteursLoader
-          initialData={initialData}
-          initialSlug={null}
-          reseaux={reseauxFiltres}
-        />
-      </div>
+        }
+      />
     )
   }
 
@@ -209,7 +208,7 @@ export default async function EvenementsPage({
     : (evenements as Evenement[])
 
   return (
-    <div className="bg-[#faf9f5] min-h-screen">
+    <div className="rsn-page min-h-screen">
       {/* Barre de navigation + vue */}
       <div className="bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-2.5 flex items-center gap-3">
         <Suspense fallback={null}>
@@ -219,9 +218,12 @@ export default async function EvenementsPage({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* En-tête */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#16284f] mb-1 flex items-center gap-2">
-            <Calendar size={22} className="text-[#0284c7]" aria-hidden />
+        <Reveal className="mb-6">
+          <p className="rsn-eyebrow mb-2 text-[#0284c7]">
+            <Calendar size={13} aria-hidden />
+            Agenda des événements
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16284f] mb-1">
             Événements
           </h1>
           <p className="text-sm text-[#71717a]">
@@ -229,7 +231,7 @@ export default async function EvenementsPage({
               ? `${totalDocs.toLocaleString('fr-FR')} événement${totalDocs > 1 ? 's' : ''} à venir`
               : 'Aucun événement pour l\'instant'}
           </p>
-        </div>
+        </Reveal>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filtres */}
@@ -257,97 +259,99 @@ export default async function EvenementsPage({
               </div>
             ) : (
               <>
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
-                  role="list"
-                  aria-label="Liste des événements"
-                >
-                  {docs.map((ev) => {
-                    const imageMedia = ev.image as Media | null | undefined
-                    const imageUrl = imageMedia?.sizes?.thumbnail?.url ?? imageMedia?.url
-                    const reseau = ev.reseau as Reseau | null | undefined
-                    const dateStr = new Date(ev.dateDebut).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })
+                <Reveal>
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+                    role="list"
+                    aria-label="Liste des événements"
+                  >
+                    {docs.map((ev) => {
+                      const imageMedia = ev.image as Media | null | undefined
+                      const imageUrl = imageMedia?.sizes?.thumbnail?.url ?? imageMedia?.url
+                      const reseau = ev.reseau as Reseau | null | undefined
+                      const dateStr = new Date(ev.dateDebut).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })
 
-                    let lienSafe: string | null = null
-                    if (ev.lienInscription) {
-                      try {
-                        const u = new URL(ev.lienInscription)
-                        if (u.protocol === 'https:' || u.protocol === 'http:')
-                          lienSafe = ev.lienInscription
-                      } catch { /* ignore */ }
-                    }
+                      let lienSafe: string | null = null
+                      if (ev.lienInscription) {
+                        try {
+                          const u = new URL(ev.lienInscription)
+                          if (u.protocol === 'https:' || u.protocol === 'http:')
+                            lienSafe = ev.lienInscription
+                        } catch { /* ignore */ }
+                      }
 
-                    return (
-                      <article
-                        key={ev.id}
-                        role="listitem"
-                        className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
-                      >
-                        {imageUrl ? (
-                          <Link
-                            href={`/evenement/${ev.slug}`}
-                            className="block aspect-[2/1] overflow-hidden"
-                            tabIndex={-1}
-                            aria-hidden
-                          >
-                            <Image
-                              src={imageUrl}
-                              alt={`Bannière ${ev.titre}`}
-                              width={400}
-                              height={200}
-                              className="w-full h-full object-cover"
-                            />
-                          </Link>
-                        ) : (
-                          <div
-                            className="aspect-[2/1] bg-gradient-to-br from-[#e0f2fe]/40 to-[#bfdbfe]/20"
-                            aria-hidden
-                          />
-                        )}
-                        <div className="p-4 flex flex-col gap-2">
-                          <Link
-                            href={`/evenement/${ev.slug}`}
-                            className="text-sm font-bold text-[#16284f] hover:text-[#2563EB] no-underline transition-colors leading-tight line-clamp-2"
-                          >
-                            {ev.titre}
-                          </Link>
-                          <div className="flex items-center gap-1.5 text-xs text-[#71717a]">
-                            <Calendar size={11} aria-hidden />
-                            <time dateTime={ev.dateDebut}>{dateStr}</time>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-xs text-[#71717a]">
-                            <MapPin size={11} aria-hidden />
-                            {ev.lieuVille}
-                          </div>
-                          {reseau && (
+                      return (
+                        <article
+                          key={ev.id}
+                          role="listitem"
+                          className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden rsn-lift"
+                        >
+                          {imageUrl ? (
                             <Link
-                              href={`/reseau/${reseau.slug}`}
-                              className="text-xs text-[#52525b] hover:text-[#2563EB] no-underline transition-colors font-medium"
+                              href={`/evenement/${ev.slug}`}
+                              className="block aspect-[2/1] overflow-hidden"
+                              tabIndex={-1}
+                              aria-hidden
                             >
-                              {reseau.nom}
+                              <Image
+                                src={imageUrl}
+                                alt={`Bannière ${ev.titre}`}
+                                width={400}
+                                height={200}
+                                className="w-full h-full object-cover"
+                              />
                             </Link>
+                          ) : (
+                            <div
+                              className="aspect-[2/1] bg-gradient-to-br from-[#e0f2fe]/40 to-[#bfdbfe]/20"
+                              aria-hidden
+                            />
                           )}
-                          {lienSafe && (
-                            <a
-                              href={lienSafe}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-[#1d4ed8] no-underline transition-colors"
-                              aria-label={`S'inscrire à ${ev.titre} (lien externe)`}
+                          <div className="p-4 flex flex-col gap-2">
+                            <Link
+                              href={`/evenement/${ev.slug}`}
+                              className="text-sm font-bold text-[#16284f] hover:text-[#0284c7] no-underline transition-colors leading-tight line-clamp-2"
                             >
-                              <ExternalLink size={11} aria-hidden />
-                              S&apos;inscrire
-                            </a>
-                          )}
-                        </div>
-                      </article>
-                    )
-                  })}
-                </div>
+                              {ev.titre}
+                            </Link>
+                            <div className="flex items-center gap-1.5 text-xs text-[#71717a]">
+                              <Calendar size={11} aria-hidden />
+                              <time dateTime={ev.dateDebut}>{dateStr}</time>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-[#71717a]">
+                              <MapPin size={11} aria-hidden />
+                              {ev.lieuVille}
+                            </div>
+                            {reseau && (
+                              <Link
+                                href={`/reseau/${reseau.slug}`}
+                                className="text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
+                              >
+                                {reseau.nom}
+                              </Link>
+                            )}
+                            {lienSafe && (
+                              <a
+                                href={lienSafe}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0284c7] hover:text-[#0369a1] no-underline transition-colors"
+                                aria-label={`S'inscrire à ${ev.titre} (lien externe)`}
+                              >
+                                <ExternalLink size={11} aria-hidden />
+                                S&apos;inscrire
+                              </a>
+                            )}
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                </Reveal>
 
                 {totalPages > 1 && (
                   <nav aria-label="Pagination" className="mt-8 flex items-center justify-center gap-2">

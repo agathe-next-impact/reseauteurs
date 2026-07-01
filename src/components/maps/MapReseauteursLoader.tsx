@@ -25,6 +25,8 @@ interface MapReseauteursLoaderProps {
   initialSlug?: string | null
   categories: CategoryLite[]
   reseaux: ReseauLite[]
+  /** Bascule annuaire/carte (rendue dans la barre de navigation supérieure). */
+  toolbar?: React.ReactNode
 }
 
 export default function MapReseauteursLoader(props: MapReseauteursLoaderProps) {

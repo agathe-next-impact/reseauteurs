@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
+import { HelpCircle } from 'lucide-react'
 import { FAQAccordion, type FAQSection } from '@/components/ui/FAQAccordion'
 import { SITE_URL } from '@/lib/site'
+import PageHeader from '@/components/layout/PageHeader'
+import Reveal from '@/components/home/Reveal'
 
 export const metadata: Metadata = {
   title: 'FAQ — RÉSEAUTEURS',
@@ -151,13 +154,21 @@ const sections: FAQSection[] = [
 
 export default function FAQUtilisateursPage() {
   return (
-    <main className="max-w-3xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-semibold text-text-dark mb-2">FAQ utilisateurs</h1>
-      <p className="text-text-medium mb-20">
-        Toutes les réponses aux questions les plus fréquentes des visiteurs et membres de
-        RÉSEAUTEURS.
-      </p>
-      <FAQAccordion sections={sections} />
-    </main>
+    <div className="rsn-page">
+      <PageHeader
+        tone="blue"
+        icon={<HelpCircle size={13} aria-hidden />}
+        eyebrow="FAQ"
+        title={<>FAQ utilisateurs</>}
+        lead="Toutes les réponses aux questions les plus fréquentes des visiteurs et membres de RÉSEAUTEURS."
+      />
+      <div className="max-w-3xl mx-auto px-6 py-12">
+        <Reveal>
+          <div className="rsn-card p-6 sm:p-8 shadow-sm">
+            <FAQAccordion sections={sections} />
+          </div>
+        </Reveal>
+      </div>
+    </div>
   )
 }
