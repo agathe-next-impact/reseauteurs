@@ -6,7 +6,7 @@ import { z } from 'zod/v4'
 import { rateLimit } from '@/lib/rate-limit'
 import { getClientIp } from '@/lib/client-ip'
 import { palierProjeteAvecUtilisateurPayant } from '@/lib/groupes'
-import { stripe, PLANS } from '@/lib/stripe'
+import { stripe } from '@/lib/stripe'
 
 const bodySchema = z.object({
   code: z.string().min(1).max(64),
@@ -167,33 +167,17 @@ export async function POST(request: Request) {
     if (!coupon.valid) {
       return NextResponse.json({ error: 'Code promotionnel invalide' }, { status: 404 })
     }
-    // Restriction produit : si le coupon liste applies_to.products, le price
-    // Infinite doit en dependre.
-    const appliesTo = coupon.applies_to
-    if (appliesTo?.products && appliesTo.products.length > 0) {
-      const infinitePrice = await stripe.prices.retrieve(PLANS.infinite.priceId as string)
-      const infiniteProductId =
-        typeof infinitePrice.product === 'string' ? infinitePrice.product : infinitePrice.product?.id
-      if (!infiniteProductId || !appliesTo.products.includes(infiniteProductId)) {
-        return NextResponse.json(
-          { error: 'Ce code n\'est pas applicable a l\'abonnement Infinite' },
-          { status: 404 },
-        )
-      }
-    }
-    // First-time transaction : Stripe rejettera au checkout si l'user a deja
-    // une facture payee. On ne peut pas verifier sans appel customer ; on
-    // laisse Stripe trancher au checkout (cas marginal).
+    // NB : l'ancien produit « Infinite » (modèle PanoramaPub) est caduc (ADR-0011),
+    // on ne vérifie donc plus la restriction produit `applies_to` ici. Stripe
+    // revalide de toute façon entièrement le coupon au moment du checkout.
 
     // Calcul de la reduction projetee pour afficher le tarif dans l'UI.
-    const basePriceCents = PLANS.infinite.price
     let reductionPct = 0
     let reductionLabel = ''
     if (typeof coupon.percent_off === 'number' && coupon.percent_off > 0) {
       reductionPct = coupon.percent_off
       reductionLabel = `-${coupon.percent_off}%`
     } else if (typeof coupon.amount_off === 'number' && coupon.amount_off > 0) {
-      reductionPct = Math.round((coupon.amount_off / basePriceCents) * 100)
       reductionLabel = `-${(coupon.amount_off / 100).toFixed(2)} EUR`
     }
 
