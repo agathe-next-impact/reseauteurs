@@ -1,7 +1,10 @@
+/** Géométrie LineString GeoJSON (type local — évite une dépendance @types/geojson). */
+type LineString = { type: 'LineString'; coordinates: number[][] }
+
 export type DirectionsProfile = 'driving' | 'driving-traffic' | 'walking' | 'cycling'
 
 export interface DirectionsRoute {
-  geometry: GeoJSON.LineString
+  geometry: LineString
   duration: number // seconds
   distance: number // meters
   weight_name: string
@@ -26,7 +29,7 @@ export interface DirectionsLeg {
 export interface DirectionsStep {
   duration: number
   distance: number
-  geometry: GeoJSON.LineString
+  geometry: LineString
   name: string
   maneuver: {
     type: string

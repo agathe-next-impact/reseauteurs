@@ -24,15 +24,16 @@ export const Media: CollectionConfig = {
       // peut casser une image affichee sur une fiche/page publique sans alerte.
       async ({ id, req }) => {
         type CheckTarget = {
-          collection: 'fournisseurs' | 'evenements' | 'organisateurs-evenements' | 'labels-rse' | 'testimonials'
+          collection: 'reseauteurs' | 'reseaux' | 'evenements' | 'partenaires' | 'testimonials'
           fields: string[]
           arrayPath?: string
         }
+        // Collections du modèle 3 entités (ADR-0011) référençant un media.
         const targets: CheckTarget[] = [
-          { collection: 'fournisseurs', fields: ['banniere', 'logo'], arrayPath: 'illustrations.image' },
-          { collection: 'evenements', fields: ['banniere', 'logo'], arrayPath: 'illustrations.image' },
-          { collection: 'organisateurs-evenements', fields: ['banniere', 'logo'], arrayPath: 'illustrations.image' },
-          { collection: 'labels-rse', fields: ['logo'] },
+          { collection: 'reseauteurs', fields: ['photo'] },
+          { collection: 'reseaux', fields: ['logo', 'banniere'] },
+          { collection: 'evenements', fields: ['image'] },
+          { collection: 'partenaires', fields: ['logo'] },
           { collection: 'testimonials', fields: ['logo'] },
         ]
 

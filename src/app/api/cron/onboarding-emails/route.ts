@@ -58,7 +58,7 @@ export async function GET(request: Request) {
       sort: 'createdAt',
       overrideAccess: true,
     })
-    welcomeStragglers = docs as Record<string, unknown>[]
+    welcomeStragglers = docs as unknown as Record<string, unknown>[]
   } catch (err) {
     console.error('[cron/onboarding-emails] welcome-rattrapage query failed:', err)
   }

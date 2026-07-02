@@ -70,16 +70,12 @@ export function generateICS(event: Evenement): string {
     lines.push(`LOCATION:${escapeICS(location)}`)
   }
 
-  if (event.descriptionCourte) {
-    lines.push(`DESCRIPTION:${escapeICS(event.descriptionCourte)}`)
+  if (event.description) {
+    lines.push(`DESCRIPTION:${escapeICS(event.description)}`)
   }
 
   if (event.lienInscription) {
     lines.push(`URL:${event.lienInscription}`)
-  }
-
-  if (event.emailContact) {
-    lines.push(`ORGANIZER:mailto:${event.emailContact}`)
   }
 
   lines.push('END:VEVENT')

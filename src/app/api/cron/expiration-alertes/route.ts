@@ -59,7 +59,7 @@ export async function GET(request: Request) {
     )
 
     for (const reseau of reseauxExpiring) {
-      const userRel = (reseau as Record<string, unknown>).user
+      const userRel = (reseau as unknown as Record<string, unknown>).user
       const userId =
         typeof userRel === 'object' && userRel !== null
           ? (userRel as { id: number | string }).id
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
         })
 
         // Vérification flag (évite les doublons sur ce cycle)
-        const alerts = (owner as Record<string, unknown>).expirationAlerts as
+        const alerts = (owner as unknown as Record<string, unknown>).expirationAlerts as
           | Record<string, boolean>
           | undefined
         if (alerts?.[flagField] === true) continue
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
           to: owner.email,
           subject: `RÉSEAUTEURS — Votre abonnement réseau partenaire expire dans ${daysLeft} jours`,
           html: expirationWarningEmail(
-            owner.nomSociete ?? ((reseau as Record<string, unknown>).nom as string ?? ''),
+            owner.nomSociete ?? ((reseau as unknown as Record<string, unknown>).nom as string ?? ''),
             daysLeft,
             'Réseau partenaire',
           ),
@@ -116,7 +116,7 @@ export async function GET(request: Request) {
         }
       } catch (err) {
         console.error(
-          `[cron/expiration-alertes] Failed for reseau ${(reseau as Record<string, unknown>).id}:`,
+          `[cron/expiration-alertes] Failed for reseau ${(reseau as unknown as Record<string, unknown>).id}:`,
           err,
         )
       }
@@ -149,9 +149,9 @@ export async function GET(request: Request) {
           payload,
           kind: 'expiration-warning',
           to: CONTACT_EMAIL,
-          subject: `RÉSEAUTEURS — Partenaire annonceur "${(partenaire as Record<string, unknown>).nom}" expire dans ${daysLeft} jours`,
+          subject: `RÉSEAUTEURS — Partenaire annonceur "${(partenaire as unknown as Record<string, unknown>).nom}" expire dans ${daysLeft} jours`,
           html: expirationWarningEmail(
-            (partenaire as Record<string, unknown>).nom as string ?? 'Partenaire',
+            (partenaire as unknown as Record<string, unknown>).nom as string ?? 'Partenaire',
             daysLeft,
             'Partenaire annonceur',
           ),
@@ -160,7 +160,7 @@ export async function GET(request: Request) {
         if (result.sent) sent++
       } catch (err) {
         console.error(
-          `[cron/expiration-alertes] Failed for partenaire ${(partenaire as Record<string, unknown>).id}:`,
+          `[cron/expiration-alertes] Failed for partenaire ${(partenaire as unknown as Record<string, unknown>).id}:`,
           err,
         )
       }

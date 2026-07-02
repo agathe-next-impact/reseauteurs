@@ -62,7 +62,7 @@ export async function GET(request: Request) {
         reseauxDowngraded++
 
         // Notifie l'organisateur si son user est lié
-        const userRel = (reseau as Record<string, unknown>).user
+        const userRel = (reseau as unknown as Record<string, unknown>).user
         const userId =
           typeof userRel === 'object' && userRel !== null
             ? (userRel as { id: number | string }).id
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
               to: owner.email,
               subject: 'RÉSEAUTEURS — Votre abonnement réseau partenaire a expiré',
               html: planDowngradedEmail(
-                owner.nomSociete ?? (reseau as Record<string, unknown>).nom as string ?? '',
+                owner.nomSociete ?? (reseau as unknown as Record<string, unknown>).nom as string ?? '',
                 'Réseau partenaire',
               ),
               userId: owner.id,

@@ -53,11 +53,11 @@ export async function POST() {
     })
 
     const role = freshUser.role as string
-    const hadSubscription = !!(freshUser as Record<string, unknown>).stripeSubscriptionId
+    const hadSubscription = !!(freshUser as unknown as Record<string, unknown>).stripeSubscriptionId
 
     // ── 1. Annulation Stripe (si abonnement actif sur le compte organisateur)
     if (hadSubscription) {
-      const subId = (freshUser as Record<string, unknown>).stripeSubscriptionId as string
+      const subId = (freshUser as unknown as Record<string, unknown>).stripeSubscriptionId as string
       try {
         await stripe.subscriptions.update(subId, {
           metadata: { account_deletion: 'true' },
@@ -129,7 +129,7 @@ export async function POST() {
 
     // ── 4. Suppression du user (les hooks Payload nettoient les media)
     const confirmationTo = freshUser.email
-    const confirmationName = (freshUser as Record<string, unknown>).nomSociete as string ?? ''
+    const confirmationName = (freshUser as unknown as Record<string, unknown>).nomSociete as string ?? ''
 
     await payload.delete({
       collection: 'users',
