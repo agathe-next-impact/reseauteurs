@@ -59,6 +59,8 @@ import * as migration_20260629_102000_partenaires_stripe_customer from './202606
 import * as migration_20260630_100000_reseaux_hierarchie from './20260630_100000_reseaux_hierarchie';
 import * as migration_20260630_110000_evenements_drop_premium from './20260630_110000_evenements_drop_premium';
 import * as migration_20260630_120000_reseaux_niveau_national_default from './20260630_120000_reseaux_niveau_national_default';
+// ── Correctif inscription — restaure le DEFAULT de users.plan (2026-07-07)
+import * as migration_20260707_100000_users_plan_default from './20260707_100000_users_plan_default';
 
 export const migrations = [
   {
@@ -358,5 +360,10 @@ export const migrations = [
     up: migration_20260630_120000_reseaux_niveau_national_default.up,
     down: migration_20260630_120000_reseaux_niveau_national_default.down,
     name: '20260630_120000_reseaux_niveau_national_default',
+  },
+  {
+    up: migration_20260707_100000_users_plan_default.up,
+    down: migration_20260707_100000_users_plan_default.down,
+    name: '20260707_100000_users_plan_default',
   },
 ];

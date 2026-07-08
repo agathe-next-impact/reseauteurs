@@ -338,8 +338,21 @@ export const Reseauteurs: CollectionConfig = {
     {
       name: 'prenom',
       type: 'text',
-      required: true,
       label: 'Prénom',
+      // `required` CONDITIONNEL (et non `required: true`) : à l'inscription, le
+      // profil est auto-créé en SQUELETTE (statut 'en_attente', prénom vide) puis
+      // complété depuis le dashboard (cf. Users.ts afterChange l.311-341). Un
+      // `required: true` rigide fait échouer cette auto-création → rollback de la
+      // transaction d'inscription → le compte n'est jamais persisté (bug 500/200
+      // silencieux). Le prénom (re)devient obligatoire dès que le profil quitte
+      // 'en_attente' (validation/publication) : aucune fiche publique sans prénom.
+      validate: (value, { siblingData }) => {
+        const statut = (siblingData as { statut?: string } | undefined)?.statut
+        if (statut !== 'en_attente' && (!value || String(value).trim() === '')) {
+          return 'Le prénom est obligatoire pour publier le profil.'
+        }
+        return true
+      },
     },
     {
       name: 'nom',

@@ -12,6 +12,7 @@
  */
 
 import type { Payload } from 'payload'
+import { sql } from '@payloadcms/db-postgres'
 
 /** Marqueur (dans les descriptions) pour repérer/nettoyer la démo. */
 export const DEMO_TAG = '[démo]'
@@ -157,186 +158,258 @@ export async function runDemoSeed(
   payload: Payload,
   log: (msg: string) => void = () => {},
 ): Promise<DemoSeedResult> {
+  // Le temps du seed, on active SEED_DEV : les hooks lourds des collections
+  // (syncGeom PostGIS, recalcul des compteurs, géocodage) sont neutralisés — sur
+  // le pooler Neon ils gardaient la transaction ouverte trop longtemps
+  // (« idle-in-transaction timeout »). On rétablit geom + compteurs ensuite via
+  // un backfill dédié (statements courts, hors transaction longue). SEED_DEV est
+  // restauré dans le finally (important pour la route serverless : ne pas laisser
+  // l'instance chaude avec les hooks désactivés).
+  const prevSeedDev = process.env.SEED_DEV
+  process.env.SEED_DEV = 'true'
+
   const stats = { created: 0, skipped: 0 }
+  // Coordonnées collectées pour le backfill geom (id + lng/lat).
+  const geomReseaux: Array<{ id: number | string; lat?: number; lng?: number }> = []
+  const geomReseauteurs: Array<{ id: number | string; lat?: number; lng?: number }> = []
+  const geomEvenements: Array<{ id: number | string; lat?: number; lng?: number }> = []
 
-  const upsert = async (collection, where, data) => {
-    const existing = await payload.find({ collection, where, limit: 1, depth: 0, overrideAccess: true })
-    if (existing.docs.length > 0) {
-      stats.skipped++
-      return existing.docs[0]
-    }
-    const doc = await payload.create({ collection, data, overrideAccess: true })
-    stats.created++
-    return doc
-  }
-
-  // 1) Secteurs
-  log('secteurs')
-  const secteurByValue: Record<string, number | string> = {}
-  for (const c of CATEGORIES) {
-    const doc = await upsert('categories', { value: { equals: c.value } }, c)
-    secteurByValue[c.value] = doc.id
-  }
-
-  // 2) Types d'événement
-  log('types')
-  const typeByValue: Record<string, number | string> = {}
-  for (const t of TYPES_EVENEMENT) {
-    const doc = await upsert('types-evenement', { value: { equals: t.value } }, t)
-    typeByValue[t.value] = doc.id
-  }
-
-  // 3) Réseaux nationaux
-  log('réseaux nationaux')
-  const reseauByNom: Record<string, number | string> = {}
-  for (const n of NATIONAUX) {
-    const city = CITIES[n.ville]
-    const doc = await upsert(
-      'reseaux',
-      { and: [{ nom: { equals: n.nom } }, { niveau: { equals: 'national' } }] },
-      {
-        nom: n.nom,
-        niveau: 'national',
-        ville: n.ville,
-        source: 'importe',
-        statut: 'publiee',
-        partenaire: n.partenaire,
-        siteWeb: n.siteWeb,
-        description: `${n.description} ${DEMO_TAG}`,
-        latitude: city?.lat,
-        longitude: city?.lng,
-      },
-    )
-    reseauByNom[n.nom] = doc.id
-  }
-
-  // 4) Réseaux locaux
-  log('réseaux locaux')
-  for (const l of LOCAUX) {
-    const parentId = reseauByNom[l.parent]
-    if (!parentId) continue
-    const city = CITIES[l.ville]
-    const doc = await upsert(
-      'reseaux',
-      { and: [{ nom: { equals: l.nom } }, { niveau: { equals: 'local' } }] },
-      {
-        nom: l.nom,
-        niveau: 'local',
-        parent: parentId,
-        ville: l.ville,
-        source: 'importe',
-        statut: 'publiee',
-        description: `Chapitre local de ${l.parent} à ${l.ville}. ${DEMO_TAG}`,
-        latitude: city?.lat,
-        longitude: city?.lng,
-      },
-    )
-    reseauByNom[l.nom] = doc.id
-  }
-
-  // 5) Réseauteurs
-  log('réseauteurs')
-  let idx = 0
-  for (const r of RESEAUTEURS) {
-    idx++
-    const city = CITIES[r.ville]
-    const reseauxIds = r.reseaux.map((nom) => reseauByNom[nom]).filter(Boolean)
-    await upsert(
-      'reseauteurs',
-      { and: [{ prenom: { equals: r.prenom } }, { nom: { equals: r.nom } }] },
-      {
-        prenom: r.prenom,
-        nom: r.nom,
-        ville: r.ville,
-        departement: city?.dep,
-        region: city?.region,
-        entreprise: r.entreprise,
-        fonction: r.fonction,
-        description: `${r.fonction} chez ${r.entreprise}. ${DEMO_TAG}`,
-        secteur: secteurByValue[r.secteur],
-        competences: (r.competences ?? []).map((label) => ({ label })),
-        reseauxFrequentes: reseauxIds,
-        evenementsParMois: r.evMois,
-        linkedin: r.linkedin,
-        site: r.site,
-        statut: 'valide',
-        latitude: city ? jitter(city.lat, idx) : undefined,
-        longitude: city ? jitter(city.lng, idx) : undefined,
-      },
-    )
-  }
-
-  // 6) Événements
-  log('événements')
-  for (const e of EVENEMENTS) {
-    const reseauId = reseauByNom[e.reseau]
-    if (!reseauId) continue
-    const city = CITIES[e.ville]
-    await upsert(
-      'evenements',
-      { titre: { equals: e.titre } },
-      {
-        titre: e.titre,
-        reseau: reseauId,
-        type: typeByValue[e.type],
-        dateDebut: dateInDays(e.inDays, e.hour),
-        lieuNom: e.lieuNom,
-        lieuVille: e.ville,
-        description: `${e.description} ${DEMO_TAG}`,
-        lienInscription: 'https://example.com/inscription',
-        statut: 'publie',
-        lieuLatitude: city?.lat,
-        lieuLongitude: city?.lng,
-      },
-    )
-  }
-
-  // 7) Partenaires — logo requis : seulement si stockage média persistant (Vercel Blob)
-  let partenaires: 'seeded' | 'skipped-no-blob' = 'skipped-no-blob'
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    partenaires = 'seeded'
-    log('partenaires')
-    const sharp = (await import('sharp')).default
-    for (const p of PARTENAIRES) {
-      const existing = await payload.find({
-        collection: 'partenaires',
-        where: { nom: { equals: p.nom } },
-        limit: 1,
-        overrideAccess: true,
-      })
+  try {
+    const upsert = async (collection, where, data) => {
+      const existing = await payload.find({ collection, where, limit: 1, depth: 0, overrideAccess: true })
       if (existing.docs.length > 0) {
         stats.skipped++
-        continue
+        return existing.docs[0]
       }
-      try {
-        const { r, g, b } = hexToRgb(p.couleur)
-        const buffer = await sharp({
-          create: { width: 400, height: 400, channels: 3, background: { r, g, b } },
-        })
-          .png()
-          .toBuffer()
-        const media = await payload.create({
-          collection: 'media',
-          data: { alt: `Logo ${p.nom} ${DEMO_TAG}` },
-          file: {
-            data: buffer,
-            mimetype: 'image/png',
-            name: `demo-${p.nom.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`,
-            size: buffer.length,
-          },
-          overrideAccess: true,
-        })
-        await payload.create({
+      const doc = await payload.create({ collection, data, overrideAccess: true })
+      stats.created++
+      return doc
+    }
+
+    // 1) Secteurs
+    log('secteurs')
+    const secteurByValue: Record<string, number | string> = {}
+    for (const c of CATEGORIES) {
+      const doc = await upsert('categories', { value: { equals: c.value } }, c)
+      secteurByValue[c.value] = doc.id
+    }
+
+    // 2) Types d'événement
+    log('types')
+    const typeByValue: Record<string, number | string> = {}
+    for (const t of TYPES_EVENEMENT) {
+      const doc = await upsert('types-evenement', { value: { equals: t.value } }, t)
+      typeByValue[t.value] = doc.id
+    }
+
+    // 3) Réseaux nationaux
+    log('réseaux nationaux')
+    const reseauByNom: Record<string, number | string> = {}
+    for (const n of NATIONAUX) {
+      const city = CITIES[n.ville]
+      const doc = await upsert(
+        'reseaux',
+        { and: [{ nom: { equals: n.nom } }, { niveau: { equals: 'national' } }] },
+        {
+          nom: n.nom,
+          niveau: 'national',
+          ville: n.ville,
+          source: 'importe',
+          statut: 'publiee',
+          partenaire: n.partenaire,
+          siteWeb: n.siteWeb,
+          description: `${n.description} ${DEMO_TAG}`,
+          latitude: city?.lat,
+          longitude: city?.lng,
+        },
+      )
+      reseauByNom[n.nom] = doc.id
+      geomReseaux.push({ id: doc.id, lat: doc.latitude, lng: doc.longitude })
+    }
+
+    // 4) Réseaux locaux
+    log('réseaux locaux')
+    for (const l of LOCAUX) {
+      const parentId = reseauByNom[l.parent]
+      if (!parentId) continue
+      const city = CITIES[l.ville]
+      const doc = await upsert(
+        'reseaux',
+        { and: [{ nom: { equals: l.nom } }, { niveau: { equals: 'local' } }] },
+        {
+          nom: l.nom,
+          niveau: 'local',
+          parent: parentId,
+          ville: l.ville,
+          source: 'importe',
+          statut: 'publiee',
+          description: `Chapitre local de ${l.parent} à ${l.ville}. ${DEMO_TAG}`,
+          latitude: city?.lat,
+          longitude: city?.lng,
+        },
+      )
+      reseauByNom[l.nom] = doc.id
+      geomReseaux.push({ id: doc.id, lat: doc.latitude, lng: doc.longitude })
+    }
+
+    // 5) Réseauteurs
+    log('réseauteurs')
+    let idx = 0
+    for (const r of RESEAUTEURS) {
+      idx++
+      const city = CITIES[r.ville]
+      const reseauxIds = r.reseaux.map((nom) => reseauByNom[nom]).filter(Boolean)
+      const doc = await upsert(
+        'reseauteurs',
+        { and: [{ prenom: { equals: r.prenom } }, { nom: { equals: r.nom } }] },
+        {
+          prenom: r.prenom,
+          nom: r.nom,
+          ville: r.ville,
+          departement: city?.dep,
+          region: city?.region,
+          entreprise: r.entreprise,
+          fonction: r.fonction,
+          description: `${r.fonction} chez ${r.entreprise}. ${DEMO_TAG}`,
+          secteur: secteurByValue[r.secteur],
+          competences: (r.competences ?? []).map((label) => ({ label })),
+          reseauxFrequentes: reseauxIds,
+          evenementsParMois: r.evMois,
+          linkedin: r.linkedin,
+          site: r.site,
+          statut: 'valide',
+          latitude: city ? jitter(city.lat, idx) : undefined,
+          longitude: city ? jitter(city.lng, idx) : undefined,
+        },
+      )
+      geomReseauteurs.push({ id: doc.id, lat: doc.latitude, lng: doc.longitude })
+    }
+
+    // 6) Événements
+    log('événements')
+    for (const e of EVENEMENTS) {
+      const reseauId = reseauByNom[e.reseau]
+      if (!reseauId) continue
+      const city = CITIES[e.ville]
+      const doc = await upsert(
+        'evenements',
+        { titre: { equals: e.titre } },
+        {
+          titre: e.titre,
+          reseau: reseauId,
+          type: typeByValue[e.type],
+          dateDebut: dateInDays(e.inDays, e.hour),
+          lieuNom: e.lieuNom,
+          lieuVille: e.ville,
+          description: `${e.description} ${DEMO_TAG}`,
+          lienInscription: 'https://example.com/inscription',
+          statut: 'publie',
+          lieuLatitude: city?.lat,
+          lieuLongitude: city?.lng,
+        },
+      )
+      geomEvenements.push({ id: doc.id, lat: doc.lieuLatitude, lng: doc.lieuLongitude })
+    }
+
+    // 7) Partenaires — logo requis : seulement si stockage média persistant (Vercel Blob)
+    let partenaires: 'seeded' | 'skipped-no-blob' = 'skipped-no-blob'
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      partenaires = 'seeded'
+      log('partenaires')
+      const sharp = (await import('sharp')).default
+      for (const p of PARTENAIRES) {
+        const existing = await payload.find({
           collection: 'partenaires',
-          data: { nom: p.nom, logo: media.id, lien: p.lien, description: `${p.description} ${DEMO_TAG}`, statut: 'actif' },
+          where: { nom: { equals: p.nom } },
+          limit: 1,
           overrideAccess: true,
         })
-        stats.created++
-      } catch {
-        // best-effort : on ignore un partenaire en échec
+        if (existing.docs.length > 0) {
+          stats.skipped++
+          continue
+        }
+        try {
+          const { r, g, b } = hexToRgb(p.couleur)
+          const buffer = await sharp({
+            create: { width: 400, height: 400, channels: 3, background: { r, g, b } },
+          })
+            .png()
+            .toBuffer()
+          const media = await payload.create({
+            collection: 'media',
+            data: { alt: `Logo ${p.nom} ${DEMO_TAG}` },
+            file: {
+              data: buffer,
+              mimetype: 'image/png',
+              name: `demo-${p.nom.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`,
+              size: buffer.length,
+            },
+            overrideAccess: true,
+          })
+          await payload.create({
+            collection: 'partenaires',
+            data: { nom: p.nom, logo: media.id, lien: p.lien, description: `${p.description} ${DEMO_TAG}`, statut: 'actif' },
+            overrideAccess: true,
+          })
+          stats.created++
+        } catch {
+          // best-effort : on ignore un partenaire en échec
+        }
       }
     }
-  }
 
-  return { created: stats.created, skipped: stats.skipped, partenaires }
+    // 8) Backfill geom PostGIS (miroir des hooks syncGeom, mais en statements
+    //    autonomes — pas de transaction longue → pas d'idle-in-transaction).
+    //    `WHERE geom IS NULL` : idempotent, ne réécrit pas les lignes déjà remplies.
+    log('backfill géo (PostGIS)')
+    const drizzle = payload.db.drizzle
+    for (const r of geomReseaux) {
+      if (r.lat == null || r.lng == null) continue
+      try {
+        await drizzle.execute(sql`UPDATE reseaux SET geom = ST_SetSRID(ST_MakePoint(${r.lng}, ${r.lat}), 4326)::geography WHERE id = ${r.id} AND geom IS NULL`.inlineParams())
+      } catch { /* PostGIS indisponible — best effort */ }
+    }
+    for (const r of geomReseauteurs) {
+      if (r.lat == null || r.lng == null) continue
+      try {
+        await drizzle.execute(sql`UPDATE reseauteurs SET geom = ST_SetSRID(ST_MakePoint(${r.lng}, ${r.lat}), 4326)::geography WHERE id = ${r.id} AND geom IS NULL`.inlineParams())
+      } catch { /* best effort */ }
+    }
+    for (const r of geomEvenements) {
+      if (r.lat == null || r.lng == null) continue
+      try {
+        await drizzle.execute(sql`UPDATE evenements SET geom = ST_SetSRID(ST_MakePoint(${r.lng}, ${r.lat}), 4326)::geography WHERE id = ${r.id} AND geom IS NULL`.inlineParams())
+      } catch { /* best effort */ }
+    }
+
+    // 9) Recalcul des compteurs dérivés des réseaux (nbReseauteurs / nbEvenements).
+    log('compteurs réseaux')
+    for (const { id } of geomReseaux) {
+      try {
+        const [{ totalDocs: nbR }, { totalDocs: nbE }] = await Promise.all([
+          payload.count({
+            collection: 'reseauteurs',
+            where: { and: [{ reseauxFrequentes: { contains: id } }, { statut: { equals: 'valide' } }] },
+            overrideAccess: true,
+          }),
+          payload.count({
+            collection: 'evenements',
+            where: { and: [{ reseau: { equals: id } }, { statut: { equals: 'publie' } }] },
+            overrideAccess: true,
+          }),
+        ])
+        await payload.update({
+          collection: 'reseaux',
+          id,
+          data: { nbReseauteurs: nbR, nbEvenements: nbE },
+          overrideAccess: true,
+        })
+      } catch { /* best effort */ }
+    }
+
+    return { created: stats.created, skipped: stats.skipped, partenaires }
+  } finally {
+    if (prevSeedDev === undefined) delete process.env.SEED_DEV
+    else process.env.SEED_DEV = prevSeedDev
+  }
 }

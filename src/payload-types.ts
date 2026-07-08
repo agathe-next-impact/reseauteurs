@@ -356,7 +356,7 @@ export interface Reseauteur {
    * Généré depuis prénom+nom à la création ; figé ensuite (contrat SEO — ADR-0005).
    */
   slug?: string | null;
-  prenom: string;
+  prenom?: string | null;
   nom: string;
   photo?: (number | null) | Media;
   fonction?: string | null;

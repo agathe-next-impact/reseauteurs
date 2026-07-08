@@ -46,7 +46,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     : 'reseauteur'
 
   return (
-    <html lang="fr" className={hanken.variable}>
+    <html lang="fr" className={hanken.variable} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://js.stripe.com" />
       </head>
