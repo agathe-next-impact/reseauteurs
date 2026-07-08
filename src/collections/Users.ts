@@ -298,6 +298,7 @@ export const Users: CollectionConfig = {
                 id: doc.id,
                 data: { onboardingEmails: { ...doc.onboardingEmails, welcomeSent: true } },
                 overrideAccess: true,
+                req,
               })
             }
           } catch (err) {

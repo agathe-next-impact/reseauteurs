@@ -1,6 +1,5 @@
 // @ts-nocheck — types en attente de generate:types (data-architect)
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
-import { sql } from '@payloadcms/db-postgres'
 import { revalidatePath } from 'next/cache'
 import { isAdmin, canCreateNational } from './access'
 import { geocodeAddress } from '../lib/geocode'
@@ -55,36 +54,6 @@ const notifyOnSuspension: CollectionAfterChangeHook = async ({ doc, previousDoc,
     })
   } catch (err) {
     console.error('[Reseaux afterChange] Impossible de notifier le propriétaire de la suspension:', err)
-  }
-  return doc
-}
-
-/**
- * Synchronise la colonne PostGIS geom depuis latitude/longitude après chaque changement.
- * Ceci est un hook afterChange car Payload ne peut pas écrire du SQL brut geography(Point)
- * dans son modèle de champs. La colonne geom est maintenue hors du modèle Payload,
- * gérée ici via l'API Drizzle (payload.db.drizzle).
- *
- * Appelé après geocodeAddress (beforeChange) pour que lat/lon soient à jour.
- */
-const syncGeom: CollectionAfterChangeHook = async ({ doc, req }) => {
-  if (process.env.SEED_DEV === 'true') return doc
-  if (!doc.latitude || !doc.longitude) return doc
-
-  try {
-    // Accès Drizzle sous-jacent (ADR-0001 / ADR-0002 : seul SQL brut autorisé)
-    await req.payload.db.drizzle.execute(sql`
-      UPDATE reseaux
-         SET geom = ST_SetSRID(ST_MakePoint(${doc.longitude}, ${doc.latitude}), 4326)::geography
-       WHERE id = ${doc.id}
-         AND (geom IS NULL
-           OR ST_X(geom::geometry) != ${doc.longitude}
-           OR ST_Y(geom::geometry) != ${doc.latitude})
-    `.inlineParams())
-  } catch (err) {
-    // Non-bloquant : la colonne geom sera backfillée si le hook échoue
-    // (ex. PostGIS pas encore activé en dev local).
-    console.error('[Reseaux afterChange] Impossible de synchroniser geom:', err)
   }
   return doc
 }
@@ -287,8 +256,6 @@ export const Reseaux: CollectionConfig = {
     ],
     afterChange: [
       cleanupOrphanedMediaOnChange,
-      // Synchronise la colonne geom PostGIS (ADR-0002).
-      syncGeom,
       // Revalidation ISR des pages dépendantes.
       ({ doc }) => {
         try {

@@ -19,7 +19,6 @@
  */
 
 import type { CollectionConfig, CollectionAfterChangeHook, Where } from 'payload'
-import { sql } from '@payloadcms/db-postgres'
 import { revalidatePath } from 'next/cache'
 import { isAdmin } from './access'
 import { geocodeAddress } from '../lib/geocode'
@@ -39,28 +38,6 @@ const EVENEMENT_TEXT_FIELDS = [
   'description',
   'lienInscription',
 ] as const
-
-/**
- * Synchronise la colonne PostGIS geom depuis lieuLatitude/lieuLongitude.
- * Pattern identique à Reseaux.ts — ADR-0002.
- */
-const syncGeom: CollectionAfterChangeHook = async ({ doc, req }) => {
-  if (process.env.SEED_DEV === 'true') return doc
-  if (!doc.lieuLatitude || !doc.lieuLongitude) return doc
-  try {
-    await req.payload.db.drizzle.execute(sql`
-      UPDATE evenements
-         SET geom = ST_SetSRID(ST_MakePoint(${doc.lieuLongitude}, ${doc.lieuLatitude}), 4326)::geography
-       WHERE id = ${doc.id}
-         AND (geom IS NULL
-           OR ST_X(geom::geometry) != ${doc.lieuLongitude}
-           OR ST_Y(geom::geometry) != ${doc.lieuLatitude})
-    `.inlineParams())
-  } catch (err) {
-    console.error('[Evenements afterChange] syncGeom failed:', err)
-  }
-  return doc
-}
 
 /**
  * Met à jour le compteur nbEvenements du réseau organisateur.
@@ -89,12 +66,14 @@ const updateReseauCompteurEvenements: CollectionAfterChangeHook = async ({ doc, 
           statut: { equals: 'publie' },
         },
         overrideAccess: true,
+        req,
       })
       await req.payload.update({
         collection: 'reseaux',
         id: reseauId,
         data: { nbEvenements: totalDocs },
         overrideAccess: true,
+        req,
       })
     } catch (err) {
       console.error(`[Evenements afterChange] updateReseauCompteur failed for reseau ${reseauId}:`, err)
@@ -264,7 +243,6 @@ export const Evenements: CollectionConfig = {
     ],
     afterChange: [
       cleanupOrphanedMediaOnChange,
-      syncGeom,
       updateReseauCompteurEvenements,
       ({ doc }) => {
         try {
@@ -296,12 +274,14 @@ export const Evenements: CollectionConfig = {
               collection: 'evenements',
               where: { reseau: { equals: reseauId }, statut: { equals: 'publie' } },
               overrideAccess: true,
+              req,
             })
             await req.payload.update({
               collection: 'reseaux',
               id: reseauId as string | number,
               data: { nbEvenements: totalDocs },
               overrideAccess: true,
+              req,
             })
           } catch (err) {
             console.error('[Evenements afterDelete] updateReseauCompteur failed:', err)

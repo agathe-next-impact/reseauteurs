@@ -102,7 +102,7 @@ export default async function DashboardPage() {
                         ? 'bg-green-50 text-green-700 border border-green-200'
                         : 'bg-amber-50 text-amber-700 border border-amber-200'
                     }`}>
-                      {reseauteur.statut === 'valide' ? 'Validé' : 'En attente de validation'}
+                      {reseauteur.statut === 'valide' ? 'Publié' : 'À compléter'}
                     </div>
                     <div className="mt-4">
                       <span className="text-sm text-[#2563EB] font-medium flex items-center gap-1">

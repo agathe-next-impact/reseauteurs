@@ -1,8 +1,8 @@
-import { SITE_URL, SITE_NAME, CONTACT_EMAIL } from '../site'
+import { SITE_URL, SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL } from '../site'
 import { emailTheme } from './theme'
 import { generateUnsubscribeToken } from './tokens'
 
-const COMPANY_LINE = `${SITE_NAME} — Annuaire B2B des revendeurs d'objets publicitaires`
+const COMPANY_LINE = `${SITE_NAME} — ${SITE_TAGLINE}`
 
 function legalLinks(): string {
   const linkStyle = `color:${emailTheme.color.textMuted};text-decoration:underline`

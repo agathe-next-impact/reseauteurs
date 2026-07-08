@@ -148,7 +148,7 @@ export default async function DashboardProfilPage() {
             {reseauteur.statut === 'en_attente' && (
               <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 mb-4" role="status">
                 <Shield size={14} className="shrink-0 mt-0.5" aria-hidden />
-                <p>Votre profil est en attente de validation. Il ne sera pas visible sur la carte tant qu&apos;il n&apos;est pas validé par notre équipe.</p>
+                <p>Votre profil n&apos;est pas encore visible sur la carte. Renseignez au moins votre prénom et votre nom : il sera publié automatiquement.</p>
               </div>
             )}
 

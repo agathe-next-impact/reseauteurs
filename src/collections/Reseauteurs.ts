@@ -24,7 +24,6 @@
  */
 
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
-import { sql } from '@payloadcms/db-postgres'
 import { revalidatePath } from 'next/cache'
 import { isAdmin } from './access'
 import { geocodeAddress } from '../lib/geocode'
@@ -47,28 +46,6 @@ const RESEAUTEUR_TEXT_FIELDS = [
   'site',
   'linkedin',
 ] as const
-
-/**
- * Synchronise la colonne PostGIS geom depuis latitude/longitude (centroïde ville).
- * Identique au pattern Reseaux.ts — ADR-0002.
- */
-const syncGeom: CollectionAfterChangeHook = async ({ doc, req }) => {
-  if (process.env.SEED_DEV === 'true') return doc
-  if (!doc.latitude || !doc.longitude) return doc
-  try {
-    await req.payload.db.drizzle.execute(sql`
-      UPDATE reseauteurs
-         SET geom = ST_SetSRID(ST_MakePoint(${doc.longitude}, ${doc.latitude}), 4326)::geography
-       WHERE id = ${doc.id}
-         AND (geom IS NULL
-           OR ST_X(geom::geometry) != ${doc.longitude}
-           OR ST_Y(geom::geometry) != ${doc.latitude})
-    `.inlineParams())
-  } catch (err) {
-    console.error('[Reseauteurs afterChange] syncGeom failed:', err)
-  }
-  return doc
-}
 
 /**
  * Recalcule le compteur nbReseauteurs des réseaux affectés.
@@ -100,12 +77,14 @@ const updateReseauxCompteurs: CollectionAfterChangeHook = async ({ doc, previous
           statut: { equals: 'valide' },
         },
         overrideAccess: true,
+        req,
       })
       await req.payload.update({
         collection: 'reseaux',
         id: reseauId as string | number,
         data: { nbReseauteurs: totalDocs },
         overrideAccess: true,
+        req,
       })
     } catch (err) {
       console.error(`[Reseauteurs afterChange] updateReseauxCompteurs failed for reseau ${reseauId}:`, err)
@@ -204,6 +183,25 @@ export const Reseauteurs: CollectionConfig = {
       },
     ],
     beforeChange: [
+      // ── Auto-publication (modération admin SUPPRIMÉE) : un profil `en_attente`
+      //    se publie tout seul dès qu'il est complété (prénom + nom renseignés).
+      //    Aucune validation admin requise. L'admin conserve la main sur le statut
+      //    (ex. 'suspendu' pour retirer un profil abusif) : on ne l'écrase pas.
+      async ({ data, originalDoc, req }) => {
+        if (req.user?.role === 'admin' && data.statut) return data
+        const current = data.statut ?? originalDoc?.statut
+        if (current === 'en_attente') {
+          const prenom = String(data.prenom ?? originalDoc?.prenom ?? '').trim()
+          const nom = String(data.nom ?? originalDoc?.nom ?? '').trim()
+          if (prenom && nom) {
+            data.statut = 'valide'
+            // Devient public → indexable (le hook noindex ci-dessous ne force le
+            // noindex que pour en_attente/suspendu ; il ne le lève pas de lui-même).
+            data.seo = { ...(data.seo ?? originalDoc?.seo ?? {}), noindex: false }
+          }
+        }
+        return data
+      },
       // ── Strip emojis (filet serveur)
       async ({ data }) => {
         for (const field of RESEAUTEUR_TEXT_FIELDS) {
@@ -279,7 +277,6 @@ export const Reseauteurs: CollectionConfig = {
     ],
     afterChange: [
       cleanupOrphanedMediaOnChange,
-      syncGeom,
       updateReseauxCompteurs,
       // ── Revalidation ISR
       ({ doc }) => {

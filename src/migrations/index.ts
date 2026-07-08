@@ -61,6 +61,8 @@ import * as migration_20260630_110000_evenements_drop_premium from './20260630_1
 import * as migration_20260630_120000_reseaux_niveau_national_default from './20260630_120000_reseaux_niveau_national_default';
 // ── Correctif inscription — restaure le DEFAULT de users.plan (2026-07-07)
 import * as migration_20260707_100000_users_plan_default from './20260707_100000_users_plan_default';
+// ── Correctif deadlock geom — triggers BEFORE INSERT/UPDATE (2026-07-08)
+import * as migration_20260708_100000_geom_triggers from './20260708_100000_geom_triggers';
 
 export const migrations = [
   {
@@ -365,5 +367,10 @@ export const migrations = [
     up: migration_20260707_100000_users_plan_default.up,
     down: migration_20260707_100000_users_plan_default.down,
     name: '20260707_100000_users_plan_default',
+  },
+  {
+    up: migration_20260708_100000_geom_triggers.up,
+    down: migration_20260708_100000_geom_triggers.down,
+    name: '20260708_100000_geom_triggers',
   },
 ];

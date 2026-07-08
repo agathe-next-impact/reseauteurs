@@ -1,4 +1,4 @@
-import { SITE_URL, SITE_NAME } from '../site'
+import { SITE_URL, SITE_NAME, SITE_TAGLINE } from '../site'
 import { emailTheme, accentColors, type Accent } from './theme'
 import { esc } from './esc'
 import { footerMarketing, footerTransactional } from './footer'
@@ -17,8 +17,6 @@ export interface RenderEmailOptions {
   /** Overrides the document <title>. Defaults to the heading. */
   title?: string
 }
-
-const LOGO_URL = `${SITE_URL}/img/logo.png`
 
 function headStyles(accent: Accent): string {
   const { bar } = accentColors(accent)
@@ -39,16 +37,16 @@ function headStyles(accent: Accent): string {
       .btn a { display:block !important; width:100% !important; box-sizing:border-box !important; }
     }
 
-    /* Dark mode */
+    /* Dark mode — dark band #0d0d10 + surfaces zinc (identité RÉSEAUTEURS) */
     @media (prefers-color-scheme: dark) {
-      body { background:#1a1815 !important; }
-      .page-bg { background:#1a1815 !important; }
-      .card { background:#262522 !important; color:#f5f5f4 !important; }
-      .h1, .body-text, .intro { color:#f5f5f4 !important; }
-      .text-muted { color:#d6d3d1 !important; }
-      .divider, .info-row, .info-row-border { border-color:#44403c !important; }
-      .footer { color:#a8a29e !important; border-color:#44403c !important; }
-      .footer a { color:#d6d3d1 !important; }
+      body { background:#0d0d10 !important; }
+      .page-bg { background:#0d0d10 !important; }
+      .card { background:#18181b !important; color:#f4f4f5 !important; }
+      .h1, .body-text, .intro { color:#f4f4f5 !important; }
+      .text-muted { color:#d4d4d8 !important; }
+      .divider, .info-row, .info-row-border { border-color:#3f3f46 !important; }
+      .footer { color:#a1a1aa !important; border-color:#3f3f46 !important; }
+      .footer a { color:#d4d4d8 !important; }
       .accent-bar { background:${bar} !important; }
     }
   </style>
@@ -107,9 +105,10 @@ export function renderEmail(opts: RenderEmailOptions): string {
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="wrap" style="width:600px;max-width:600px">
           <tr>
             <td align="center" style="padding:0 0 20px 0">
-              <a href="${SITE_URL}" target="_blank" style="text-decoration:none;border:0;outline:none">
-                <img src="${LOGO_URL}" width="160" height="auto" alt="${esc(SITE_NAME)}" style="display:block;border:0;outline:none;text-decoration:none;max-width:160px;height:auto" />
+              <a href="${SITE_URL}" target="_blank" style="text-decoration:none;border:0;outline:none;color:${emailTheme.color.textDark}">
+                <span class="h1" style="font-family:${emailTheme.font.sans};font-size:26px;font-weight:800;letter-spacing:0.5px;color:${emailTheme.color.textDark};line-height:1;text-transform:uppercase">${esc(SITE_NAME)}</span>
               </a>
+              <div class="text-muted" style="font-family:${emailTheme.font.sans};font-size:12px;font-weight:500;letter-spacing:0.2px;color:${emailTheme.color.textMuted};margin-top:6px">${esc(SITE_TAGLINE)}</div>
             </td>
           </tr>
           <tr>
