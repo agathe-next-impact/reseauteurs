@@ -212,13 +212,6 @@ export async function POST(request: Request) {
       // 2. PARTENAIRE ANNONCEUR — Subscription (admin only en V1)
       // ──────────────────────────────────────────────────────────────────────
       case 'partenaire_annonceur': {
-        if (freshUser.role !== 'admin') {
-          return NextResponse.json(
-            { error: 'Seul un admin peut gérer les abonnements annonceurs.' },
-            { status: 403 },
-          )
-        }
-
         const { partenaireId } = parsed.data
 
         const partenaire = await payload.findByID({
@@ -230,6 +223,18 @@ export async function POST(request: Request) {
 
         if (!partenaire) {
           return NextResponse.json({ error: 'Partenaire introuvable' }, { status: 404 })
+        }
+
+        // Autorisation : admin OU propriétaire de la fiche partenaire (self-service).
+        const ownerId =
+          typeof partenaire.user === 'object' && partenaire.user !== null
+            ? (partenaire.user as { id: number | string }).id
+            : (partenaire.user as number | string | null | undefined)
+        if (freshUser.role !== 'admin' && Number(ownerId) !== Number(freshUser.id)) {
+          return NextResponse.json(
+            { error: 'Vous ne pouvez gérer que votre propre abonnement partenaire.' },
+            { status: 403 },
+          )
         }
 
         const priceId = process.env.STRIPE_PARTENAIRE_ANNONCEUR_PRICE_ID
@@ -245,8 +250,9 @@ export async function POST(request: Request) {
         let customerId = (partenaire as unknown as Record<string, unknown>).stripeCustomerId as string | undefined
         if (!customerId) {
           const customer = await stripe.customers.create({
+            email: freshUser.email,
             name: (partenaire.nom as string) || undefined,
-            metadata: { partenaireId: String(partenaireId) },
+            metadata: { partenaireId: String(partenaireId), userId: String(freshUser.id) },
           })
           customerId = customer.id
           await payload.update({
@@ -254,6 +260,17 @@ export async function POST(request: Request) {
             id: partenaireId,
             data: { stripeCustomerId: customerId },
             overrideAccess: true,
+          })
+        }
+
+        // Miroir sur le user : le portail Stripe lit user.stripeCustomerId.
+        if (freshUser.stripeCustomerId !== customerId) {
+          await payload.update({
+            collection: 'users',
+            id: freshUser.id,
+            data: { stripeCustomerId: customerId },
+            overrideAccess: true,
+            context: { webhookTrusted: true },
           })
         }
 
@@ -274,8 +291,8 @@ export async function POST(request: Request) {
             type: 'partenaire_annonceur',
             partenaireId: String(partenaireId),
           },
-          success_url: `${SITE_URL}/admin/collections/partenaires/${partenaireId}`,
-          cancel_url: `${SITE_URL}/admin/collections/partenaires`,
+          success_url: `${SITE_URL}/dashboard/partenaire?checkout=success`,
+          cancel_url: `${SITE_URL}/dashboard/partenaire?checkout=cancel`,
         })
 
         return NextResponse.json({ url: session.url })

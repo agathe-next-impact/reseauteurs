@@ -1,18 +1,38 @@
 /**
- * Partenaires.ts — Annonceurs B2B (ADR-0011 §3).
+ * Partenaires.ts — Annonceurs B2B (ADR-0011 §3) — self-service.
  *
  * Distinct de `reseaux.partenaire` (drapeau sur la fiche réseau).
- * `partenaires` = entreprises ANNONCEURS qui souhaitent être visibles
- * auprès des réseauteurs (logo page d'accueil + page Partenaires + lien).
+ * `partenaires` = entreprises ANNONCEURS visibles auprès des réseauteurs
+ * (logo page d'accueil + page Partenaires + fiche perso /partenaire/<slug>).
  *
- * Le statut d'abonnement est posé par `accounts-and-billing` via webhook Stripe.
- * L'agent data-architect fournit la structure ; le recâblage Stripe est J2.A.
+ * Self-service : 1 compte `user` (role 'partenaire') = 1 fiche partenaire.
+ * L'activation (statut 'actif') est posée par le webhook Stripe après abonnement.
+ * Le partenaire édite sa fiche + son offre ; il ne peut PAS toucher statut/stripe
+ * (field-access admin/webhook uniquement).
  *
- * Table DB : `partenaires` (migration 20260628_110000_partenaires.ts)
+ * Offre : promotion réservée aux réseauteurs connectés (visible dans leur espace).
+ *
+ * Table DB : `partenaires` (migrations 20260628_110000 + 20260709 participation… +
+ * 20260710 self-service).
  */
 
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 import { cleanupOrphanedMediaOnChange, cleanupMediaOnDelete } from '../lib/media-cleanup'
+
+/** Validation d'URL http(s) partagée (lien site + lien offre). */
+const urlValidate = (value: unknown): true | string => {
+  if (!value || typeof value !== 'string') return true
+  try {
+    const url = new URL(value)
+    if (!['http:', 'https:'].includes(url.protocol)) return 'L\'URL doit commencer par http:// ou https://'
+    return true
+  } catch {
+    return 'URL invalide'
+  }
+}
+
+const isAdmin = ({ req: { user } }: { req: { user?: { role?: string } | null } }) =>
+  user?.role === 'admin'
 
 export const Partenaires: CollectionConfig = {
   slug: 'partenaires',
@@ -20,24 +40,91 @@ export const Partenaires: CollectionConfig = {
     useAsTitle: 'nom',
     defaultColumns: ['nom', 'statut', 'lien', 'createdAt'],
     group: 'Contenu',
-    description: 'Annonceurs B2B affichés en page d\'accueil + page Partenaires.',
+    description: 'Annonceurs B2B — logo page d\'accueil + page Partenaires + fiche perso.',
   },
   access: {
-    // Lecture publique pour les actifs (page Partenaires, bandeau home)
+    // Lecture : public pour les actifs ; admin ; propriétaire (voit sa fiche même expirée).
     read: ({ req: { user } }) => {
       if (user?.role === 'admin') return true
+      if (user) {
+        return {
+          or: [{ statut: { equals: 'actif' } }, { user: { equals: user.id } }],
+        } as Where
+      }
       return { statut: { equals: 'actif' } }
     },
-    // CRUD admin uniquement (géré par accounts-and-billing via webhook Stripe)
+    // Création : admin (la fiche est auto-créée au signup via hook Users, overrideAccess).
     create: ({ req: { user } }) => user?.role === 'admin',
-    update: ({ req: { user } }) => user?.role === 'admin',
+    // Mise à jour : admin ou propriétaire. Les champs statut/stripe restent verrouillés
+    // par field-access ci-dessous.
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === 'admin') return true
+      return { user: { equals: user.id } } as Where
+    },
     delete: ({ req: { user } }) => user?.role === 'admin',
   },
   hooks: {
+    beforeValidate: [
+      // Génération du slug depuis le nom (figé après création — contrat SEO fiche perso).
+      async ({ data, req, operation }) => {
+        if (!data) return data
+        if (operation !== 'create') return data
+        if (data.slug) return data
+        const base =
+          String(data.nom ?? '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '') || 'partenaire'
+        const { docs } = await req.payload.find({
+          collection: 'partenaires',
+          where: { slug: { like: `${base}%` } },
+          limit: 100,
+          overrideAccess: true,
+          req,
+          select: { slug: true } as Record<string, boolean>,
+        })
+        const taken = new Set(docs.map((d) => (d as { slug?: string }).slug))
+        if (!taken.has(base)) {
+          data.slug = base
+          return data
+        }
+        let i = 2
+        while (taken.has(`${base}-${i}`) && i < 100) i++
+        data.slug = `${base}-${i}`
+        return data
+      },
+    ],
     afterChange: [cleanupOrphanedMediaOnChange],
     afterDelete: [cleanupMediaOnDelete],
   },
   fields: [
+    // ── Propriété (1 user 'partenaire' = 1 fiche partenaire)
+    {
+      name: 'user',
+      type: 'relationship',
+      relationTo: 'users',
+      unique: true,
+      index: true,
+      access: { update: isAdmin },
+      admin: {
+        position: 'sidebar',
+        description: 'Compte propriétaire (1 user = 1 partenaire).',
+      },
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Généré depuis le nom à la création ; figé ensuite (URL /partenaire/<slug>).',
+      },
+    },
     {
       name: 'nom',
       type: 'text',
@@ -48,30 +135,47 @@ export const Partenaires: CollectionConfig = {
       name: 'logo',
       type: 'upload',
       relationTo: 'media',
-      required: true,
+      // Optionnel : la fiche est un squelette au signup ; le logo est ajouté ensuite.
+      // La fiche n'est publiée (bandeau/page/fiche perso) que si actif ET logo présent.
       label: 'Logo',
       admin: {
-        description: 'Logo affiché sur la page d\'accueil et la page Partenaires (fond clair, format carré recommandé).',
+        description: 'Logo affiché sur la page d\'accueil, la page Partenaires et votre fiche (fond clair, carré recommandé).',
       },
     },
     {
       name: 'lien',
       type: 'text',
       label: 'URL du site',
+      validate: urlValidate,
       admin: {
-        description: 'Lien vers le site de l\'annonceur (s\'ouvre dans un nouvel onglet).',
-      },
-      validate: (value: unknown) => {
-        if (!value || typeof value !== 'string') return true
-        try {
-          const url = new URL(value)
-          if (!['http:', 'https:'].includes(url.protocol)) return 'L\'URL doit commencer par http:// ou https://'
-          return true
-        } catch {
-          return 'URL invalide'
-        }
+        description: 'Lien vers votre site (s\'ouvre dans un nouvel onglet).',
       },
     },
+    {
+      name: 'description',
+      type: 'textarea',
+      label: 'Description courte',
+      maxLength: 500,
+      admin: {
+        description: 'Une phrase de présentation affichée sur la page Partenaires et votre fiche.',
+      },
+    },
+    // ── Offre réservée aux réseauteurs (visible dans leur espace « Offres partenaires »)
+    {
+      name: 'offre',
+      type: 'group',
+      label: 'Offre réservée aux réseauteurs',
+      admin: {
+        description:
+          'Offre promotionnelle visible UNIQUEMENT par les réseauteurs connectés. Laissez le titre vide pour ne pas proposer d\'offre.',
+      },
+      fields: [
+        { name: 'titre', type: 'text', maxLength: 120, label: 'Titre de l\'offre' },
+        { name: 'description', type: 'textarea', maxLength: 1000, label: 'Description' },
+        { name: 'lien', type: 'text', label: 'Lien pour en profiter (optionnel)', validate: urlValidate },
+      ],
+    },
+    // ── Abonnement (posé par le webhook Stripe — jamais éditable par le partenaire)
     {
       name: 'statut',
       type: 'select',
@@ -82,60 +186,31 @@ export const Partenaires: CollectionConfig = {
       ],
       defaultValue: 'expire',
       index: true,
-      access: {
-        // Seul l'admin peut modifier le statut (posé par le webhook Stripe via accounts-and-billing)
-        update: ({ req: { user } }) => user?.role === 'admin',
-      },
+      access: { update: isAdmin },
       admin: {
         position: 'sidebar',
-        description: 'Statut d\'abonnement. Posé automatiquement par le webhook Stripe (J2.A).',
+        description: 'Statut d\'abonnement. Posé automatiquement par le webhook Stripe.',
       },
     },
     {
       name: 'stripeCustomerId',
       type: 'text',
       index: true,
-      access: {
-        read: ({ req: { user } }) => user?.role === 'admin',
-        update: ({ req: { user } }) => user?.role === 'admin',
-      },
-      admin: {
-        position: 'sidebar',
-        description: 'Customer Stripe rattaché à cet annonceur (géré par accounts-and-billing).',
-      },
+      access: { read: isAdmin, update: isAdmin },
+      admin: { position: 'sidebar', description: 'Customer Stripe rattaché.' },
     },
     {
       name: 'stripeSubscriptionId',
       type: 'text',
       index: true,
-      access: {
-        read: ({ req: { user } }) => user?.role === 'admin',
-        update: ({ req: { user } }) => user?.role === 'admin',
-      },
-      admin: {
-        position: 'sidebar',
-        description: 'ID de l\'abonnement Stripe (géré par accounts-and-billing).',
-      },
+      access: { read: isAdmin, update: isAdmin },
+      admin: { position: 'sidebar', description: 'ID de l\'abonnement Stripe.' },
     },
     {
       name: 'abonnementExpireAt',
       type: 'date',
-      access: {
-        read: ({ req: { user } }) => user?.role === 'admin',
-        update: ({ req: { user } }) => user?.role === 'admin',
-      },
-      admin: {
-        position: 'sidebar',
-        description: 'Date d\'expiration de l\'abonnement.',
-      },
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      label: 'Description courte (optionnelle)',
-      admin: {
-        description: 'Une phrase de présentation affichée sur la page Partenaires.',
-      },
+      access: { read: isAdmin, update: isAdmin },
+      admin: { position: 'sidebar', description: 'Date d\'expiration de l\'abonnement.' },
     },
   ],
 }

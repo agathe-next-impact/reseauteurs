@@ -63,6 +63,10 @@ import * as migration_20260630_120000_reseaux_niveau_national_default from './20
 import * as migration_20260707_100000_users_plan_default from './20260707_100000_users_plan_default';
 // ── Correctif deadlock geom — triggers BEFORE INSERT/UPDATE (2026-07-08)
 import * as migration_20260708_100000_geom_triggers from './20260708_100000_geom_triggers';
+// ── Participation réseauteur ↔ événement (M2M) (2026-07-09)
+import * as migration_20260709_100000_reseauteurs_participation from './20260709_100000_reseauteurs_participation';
+// ── Partenaires self-service : rôle partenaire + fiche + offre (2026-07-10)
+import * as migration_20260710_100000_partenaires_self_service from './20260710_100000_partenaires_self_service';
 
 export const migrations = [
   {
@@ -372,5 +376,15 @@ export const migrations = [
     up: migration_20260708_100000_geom_triggers.up,
     down: migration_20260708_100000_geom_triggers.down,
     name: '20260708_100000_geom_triggers',
+  },
+  {
+    up: migration_20260709_100000_reseauteurs_participation.up,
+    down: migration_20260709_100000_reseauteurs_participation.down,
+    name: '20260709_100000_reseauteurs_participation',
+  },
+  {
+    up: migration_20260710_100000_partenaires_self_service.up,
+    down: migration_20260710_100000_partenaires_self_service.down,
+    name: '20260710_100000_partenaires_self_service',
   },
 ];

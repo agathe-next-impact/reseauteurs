@@ -97,6 +97,8 @@ export interface Reseauteur {
   secteur?: (number | null) | Categorie
   competences?: Array<{ label: string; id?: string | null }> | null
   reseauxFrequentes?: (number | Reseau)[] | null
+  /** Événements (des réseaux fréquentés) auxquels le réseauteur signale sa présence. */
+  evenementsParticipes?: (number | EvenementRsn)[] | null
   evenementsParMois?: number | null
   badge?: BadgeValue | null
   latitude?: number | null
@@ -149,11 +151,15 @@ export interface EvenementRsn {
 // ─── Partenaire (annonceur B2B) ──────────────────────────────────────
 export interface Partenaire {
   id: number | string
+  slug?: string | null
+  user?: (number | null) | { id: number | string }
   nom: string
   logo?: (number | null) | PayloadMedia
   lien?: string | null
   description?: string | null
+  offre?: { titre?: string | null; description?: string | null; lien?: string | null } | null
   statut: 'actif' | 'expire'
+  stripeCustomerId?: string | null
   stripeSubscriptionId?: string | null
   abonnementExpireAt?: string | null
   updatedAt: string

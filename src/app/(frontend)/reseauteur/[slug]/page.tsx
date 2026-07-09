@@ -9,7 +9,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Globe, Phone, Mail, Users, ArrowRight, Building2, ExternalLink } from 'lucide-react'
+import { MapPin, Globe, Phone, Mail, Users, ArrowRight, Building2, ExternalLink, CalendarDays } from 'lucide-react'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildPersonJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -17,9 +17,10 @@ import { MaillageReseauteur } from '@/components/seo/MaillageReseauteur'
 import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { SITE_NAME } from '@/lib/site'
+import { todayParisDateString } from '@/lib/dates'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
-import type { Reseauteur, Media, Reseau, Categorie } from '@/types/reseauteurs-domain'
+import type { Reseauteur, Media, Reseau, Categorie, EvenementRsn } from '@/types/reseauteurs-domain'
 
 export const revalidate = 300
 
@@ -86,6 +87,17 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
   const secteurDoc = r.secteur as Categorie | null | undefined
   const reseauxFrequentes = (r.reseauxFrequentes as Reseau[] | null | undefined) ?? []
   const competences = (r.competences as Array<{ label: string; id?: string }> | null | undefined) ?? []
+
+  // Événements auxquels le réseauteur participe (publiés + à venir, triés par date).
+  // Borne "aujourd'hui" via lib (le "now" reste hors du rendu — règle de pureté).
+  const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
+  const evenementsParticipes = ((r.evenementsParticipes as EvenementRsn[] | null | undefined) ?? [])
+    .filter((e): e is EvenementRsn => !!e && typeof e === 'object' && e.statut === 'publie')
+    .filter((e) => {
+      const finMs = e.dateFin ? new Date(e.dateFin).getTime() : new Date(e.dateDebut).getTime()
+      return finMs >= todayStartMs
+    })
+    .sort((a, b) => new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime())
 
   // JSON-LD Person + BreadcrumbList (seo-engineer)
   // RGPD : uniquement si le profil est indexable (noindex !== true).
@@ -300,6 +312,48 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                           {reseau.partenaire && (
                             <span className="ml-0.5 text-[#f5851f]" title="Réseau partenaire" aria-label="Réseau partenaire">•</span>
                           )}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Événements auxquels il participe */}
+            {evenementsParticipes.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="evenements-titre">
+                  <h2 id="evenements-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <CalendarDays size={14} aria-hidden />
+                    Participe à ces événements
+                  </h2>
+                  <div className="space-y-2" role="list" aria-label="Événements">
+                    {evenementsParticipes.map((ev) => {
+                      const d = new Date(ev.dateDebut)
+                      const jour = d.toLocaleDateString('fr-FR', { day: 'numeric' })
+                      const mois = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')
+                      const evReseau = ev.reseau as Reseau | null | undefined
+                      return (
+                        <Link
+                          key={ev.id}
+                          href={`/evenement/${ev.slug}`}
+                          role="listitem"
+                          className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-[#eff6ff] flex flex-col items-center justify-center text-[#2563EB] shrink-0 leading-none">
+                            <span className="text-sm font-extrabold">{jour}</span>
+                            <span className="text-[9px] font-bold uppercase tracking-wide">{mois}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#2563EB] transition-colors truncate">
+                              {ev.titre}
+                            </p>
+                            <p className="text-xs text-[#71717a] truncate">
+                              {ev.lieuVille}{evReseau?.nom ? ` · ${evReseau.nom}` : ''}
+                            </p>
+                          </div>
+                          <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
                         </Link>
                       )
                     })}

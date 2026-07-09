@@ -9,7 +9,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { CalendarDays, MapPin, ExternalLink, Network, ArrowRight } from 'lucide-react'
+import { CalendarDays, MapPin, ExternalLink, Network, ArrowRight, Users } from 'lucide-react'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildEvenementRsnJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -19,7 +19,7 @@ import { MAP_COLORS } from '@/lib/maplibre/config'
 import { SITE_NAME } from '@/lib/site'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
-import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement } from '@/types/reseauteurs-domain'
+import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement, Reseauteur } from '@/types/reseauteurs-domain'
 
 export const revalidate = 300
 
@@ -52,6 +52,35 @@ async function getEvenement(slug: string): Promise<Evenement | null> {
     overrideAccess: true,
   })
   return (docs[0] as Evenement | undefined) ?? null
+}
+
+/**
+ * Réseauteurs (validés) ayant signalé leur présence à cet événement.
+ * RGPD : uniquement les profils publics (statut === 'valide').
+ */
+async function getParticipants(eventId: number | string): Promise<Reseauteur[]> {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'reseauteurs',
+    where: {
+      and: [
+        { evenementsParticipes: { in: [eventId] } },
+        { statut: { equals: 'valide' } },
+      ],
+    },
+    depth: 1,
+    limit: 60,
+    overrideAccess: true,
+    select: {
+      prenom: true,
+      nom: true,
+      slug: true,
+      entreprise: true,
+      photo: true,
+      badge: true,
+    } as Record<string, boolean>,
+  })
+  return docs as unknown as Reseauteur[]
 }
 
 function formatDatetimeFR(dateStr: string): string {
@@ -92,6 +121,8 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
   const { slug } = await params
   const e = await getEvenement(slug)
   if (!e) notFound()
+
+  const participants = await getParticipants(e.id)
 
   const imageMedia = e.image as Media | null | undefined
   const imageUrl = imageMedia?.sizes?.full?.url ?? imageMedia?.url ?? null
@@ -260,6 +291,50 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                 </section>
               </Reveal>
             )}
+            {/* Réseauteurs présents (participations signalées) */}
+            {participants.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="participants-titre">
+                  <h2 id="participants-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <Users size={14} aria-hidden />
+                    Réseauteurs présents
+                    <span className="text-[#a1a1aa] font-normal">({participants.length})</span>
+                  </h2>
+                  <div className="flex flex-wrap gap-2" role="list" aria-label="Réseauteurs présents">
+                    {participants.map((p) => {
+                      const pPhoto = p.photo as Media | null | undefined
+                      const pPhotoUrl = pPhoto?.sizes?.thumbnail?.url ?? pPhoto?.url ?? null
+                      return (
+                        <Link
+                          key={p.id}
+                          href={`/reseauteur/${p.slug}`}
+                          role="listitem"
+                          className="rsn-linkrow inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-[#f4f4f5] border border-[#e4e4e7] hover:border-[#2563EB] no-underline transition-colors group"
+                        >
+                          {pPhotoUrl ? (
+                            <Image src={pPhotoUrl} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" aria-hidden />
+                          ) : (
+                            <span
+                              className="w-6 h-6 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-[10px] font-bold flex items-center justify-center"
+                              aria-hidden
+                            >
+                              {p.prenom?.charAt(0)}{p.nom?.charAt(0)}
+                            </span>
+                          )}
+                          <span className="text-xs font-medium text-[#52525b] group-hover:text-[#2563EB] transition-colors">
+                            {p.prenom} {p.nom}
+                          </span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                  <p className="text-xs text-[#a1a1aa] mt-2">
+                    Réseauteurs de la plateforme ayant signalé leur présence.
+                  </p>
+                </section>
+              </Reveal>
+            )}
+
             {/* Lieu — mini-carte de l'événement */}
             {typeof e.lieuLatitude === 'number' && typeof e.lieuLongitude === 'number' && (
               <Reveal>

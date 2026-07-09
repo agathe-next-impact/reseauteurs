@@ -7,7 +7,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, ArrowRight, ExternalLink } from 'lucide-react'
+import { Building2, ArrowRight } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
 import { withDbRetry } from '@/lib/db-retry'
 import { SITE_NAME } from '@/lib/site'
@@ -94,27 +94,23 @@ export default async function PartenairesPage() {
                   {p.description && (
                     <p className="text-xs text-[#71717a] text-center line-clamp-2">{p.description}</p>
                   )}
-                  {p.lien && (
-                    <span className="text-xs text-[#f5851f] flex items-center gap-0.5 mt-auto group-hover:underline">
-                      <ExternalLink size={11} aria-hidden />
-                      Visiter
-                    </span>
-                  )}
+                  <span className="text-xs text-[#f5851f] flex items-center gap-0.5 mt-auto group-hover:underline">
+                    Voir la fiche
+                    <ArrowRight size={11} aria-hidden />
+                  </span>
                 </div>
               )
 
               return (
                 <div key={p.id} role="listitem">
-                  {p.lien ? (
-                    <a
-                      href={p.lien}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {p.slug ? (
+                    <Link
+                      href={`/partenaire/${p.slug}`}
                       className="block no-underline"
-                      aria-label={`Visiter le site de ${p.nom} (lien externe)`}
+                      aria-label={`Voir la fiche de ${p.nom}`}
                     >
                       {inner}
-                    </a>
+                    </Link>
                   ) : (
                     inner
                   )}
@@ -137,12 +133,11 @@ export default async function PartenairesPage() {
               networking partout en France. Logo en page d&apos;accueil, page dédiée, visibilité
               maximale.
             </p>
-            {/* TODO accounts-and-billing : brancher le lien vers le formulaire de contact partenariat */}
             <Link
-              href="/contact"
+              href="/inscription?type=partenaire"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#c2410c] font-bold text-sm hover:bg-[#fff7ed] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              Nous contacter
+              Devenir partenaire
               <ArrowRight size={16} aria-hidden className="rsn-arrow" />
             </Link>
           </div>

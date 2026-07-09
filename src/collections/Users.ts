@@ -341,6 +341,36 @@ export const Users: CollectionConfig = {
           }
         }
 
+        // ── Auto-création d'une fiche partenaire pour les nouveaux annonceurs (ADR-0011 §3).
+        // Squelette 'expire' (invisible) : le partenaire complète sa fiche puis s'abonne
+        // → le webhook Stripe pose statut='actif'.
+        if (operation === 'create' && doc.role === 'partenaire') {
+          try {
+            const existing = await req.payload.find({
+              collection: 'partenaires',
+              where: { user: { equals: doc.id } },
+              limit: 1,
+              overrideAccess: true,
+              req,
+            })
+            if (existing.docs.length === 0) {
+              await req.payload.create({
+                collection: 'partenaires',
+                data: {
+                  user: doc.id,
+                  nom: doc.nomSociete || '',
+                  statut: 'expire',
+                },
+                req,
+                overrideAccess: true,
+              })
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err)
+            console.error(`[Users afterChange] Failed to auto-create partenaire for userId=${doc.id}: ${message}`)
+          }
+        }
+
         // ── Auto-création d'un réseau NATIONAL pour les nouveaux organisateurs (ADR-0003 ; ADR-0012 E1.5).
         //
         // Roles concernés : 'organisateur' uniquement.
@@ -478,6 +508,7 @@ export const Users: CollectionConfig = {
         // 'fournisseur' retiré de l'enum (migration 20260628_160000_users_roles.ts convertit fournisseur → reseauteur).
         { label: 'Réseauteur (gratuit)', value: 'reseauteur' },
         { label: 'Organisateur', value: 'organisateur' },
+        { label: 'Partenaire (annonceur)', value: 'partenaire' },
         { label: 'Admin', value: 'admin' },
       ],
       defaultValue: 'reseauteur',

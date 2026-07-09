@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
 import Image from 'next/image'
-import { User, MapPin, Globe, Phone, Mail, Network, Shield, ExternalLink } from 'lucide-react'
+import { User, MapPin, Globe, Phone, Mail, Network, Shield, ExternalLink, CalendarCheck, ArrowRight, Tag } from 'lucide-react'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { ProfilForm } from './ProfilForm'
 import { DeleteAccountButton } from './DeleteAccountButton'
@@ -92,6 +92,50 @@ export default async function DashboardProfilPage() {
           )}
         </div>
       </Reveal>
+
+      {reseauteur && (
+        <Reveal className="mb-6">
+          <Link
+            href="/dashboard/participations"
+            className="rsn-lift flex items-center gap-3 p-4 rounded-2xl border border-[#e4e4e7] bg-white hover:border-[#2563EB]/40 transition-colors no-underline group"
+          >
+            <span className="w-10 h-10 rounded-xl bg-[#eff6ff] text-[#2563EB] flex items-center justify-center shrink-0" aria-hidden>
+              <CalendarCheck size={18} />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-semibold text-[#16284f] group-hover:text-[#2563EB] transition-colors">
+                Mes participations aux événements
+              </span>
+              <span className="block text-xs text-[#71717a]">
+                Signalez votre présence aux événements de vos réseaux.
+              </span>
+            </span>
+            <ArrowRight size={16} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+          </Link>
+        </Reveal>
+      )}
+
+      {reseauteur && (
+        <Reveal className="mb-6">
+          <Link
+            href="/dashboard/offres"
+            className="rsn-lift flex items-center gap-3 p-4 rounded-2xl border border-[#e4e4e7] bg-white hover:border-[#f5851f]/40 transition-colors no-underline group"
+          >
+            <span className="w-10 h-10 rounded-xl bg-[#fff7ed] text-[#f5851f] flex items-center justify-center shrink-0" aria-hidden>
+              <Tag size={18} />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-semibold text-[#16284f] group-hover:text-[#f5851f] transition-colors">
+                Offres partenaires
+              </span>
+              <span className="block text-xs text-[#71717a]">
+                Avantages exclusifs réservés aux réseauteurs.
+              </span>
+            </span>
+            <ArrowRight size={16} className="text-[#a1a1aa] group-hover:text-[#f5851f] transition-colors shrink-0 rsn-arrow" aria-hidden />
+          </Link>
+        </Reveal>
+      )}
 
       {!reseauteur ? (
         /* État vide — le profil est auto-créé au signup. S'il manque, c'est une anomalie. */

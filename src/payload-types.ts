@@ -145,7 +145,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: 'reseauteur' | 'organisateur' | 'admin';
+  role: 'reseauteur' | 'organisateur' | 'partenaire' | 'admin';
   /**
    * [DORMANT — ADR-0011] Ancien champ de plan. Sera supprimé par accounts-and-billing (J2.A).
    */
@@ -404,6 +404,10 @@ export interface Reseauteur {
    * Chapitres/sections de réseaux d'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.
    */
   reseauxFrequentes?: (number | Reseau)[] | null;
+  /**
+   * Événements des réseaux que vous fréquentez auxquels vous signalez votre présence. Affiché sur votre fiche publique et sur la fiche de chaque événement.
+   */
+  evenementsParticipes?: (number | Evenement)[] | null;
   /**
    * Question obligatoire à l'inscription. Détermine votre badge (Bronze/Argent/Gold/Platinum).
    */
@@ -720,42 +724,58 @@ export interface Evenement {
   createdAt: string;
 }
 /**
- * Annonceurs B2B affichés en page d'accueil + page Partenaires.
+ * Annonceurs B2B — logo page d'accueil + page Partenaires + fiche perso.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "partenaires".
  */
 export interface Partenaire {
   id: number;
+  /**
+   * Compte propriétaire (1 user = 1 partenaire).
+   */
+  user?: (number | null) | User;
+  /**
+   * Généré depuis le nom à la création ; figé ensuite (URL /partenaire/<slug>).
+   */
+  slug?: string | null;
   nom: string;
   /**
-   * Logo affiché sur la page d'accueil et la page Partenaires (fond clair, format carré recommandé).
+   * Logo affiché sur la page d'accueil, la page Partenaires et votre fiche (fond clair, carré recommandé).
    */
-  logo: number | Media;
+  logo?: (number | null) | Media;
   /**
-   * Lien vers le site de l'annonceur (s'ouvre dans un nouvel onglet).
+   * Lien vers votre site (s'ouvre dans un nouvel onglet).
    */
   lien?: string | null;
   /**
-   * Statut d'abonnement. Posé automatiquement par le webhook Stripe (J2.A).
+   * Une phrase de présentation affichée sur la page Partenaires et votre fiche.
+   */
+  description?: string | null;
+  /**
+   * Offre promotionnelle visible UNIQUEMENT par les réseauteurs connectés. Laissez le titre vide pour ne pas proposer d'offre.
+   */
+  offre?: {
+    titre?: string | null;
+    description?: string | null;
+    lien?: string | null;
+  };
+  /**
+   * Statut d'abonnement. Posé automatiquement par le webhook Stripe.
    */
   statut: 'actif' | 'expire';
   /**
-   * Customer Stripe rattaché à cet annonceur (géré par accounts-and-billing).
+   * Customer Stripe rattaché.
    */
   stripeCustomerId?: string | null;
   /**
-   * ID de l'abonnement Stripe (géré par accounts-and-billing).
+   * ID de l'abonnement Stripe.
    */
   stripeSubscriptionId?: string | null;
   /**
    * Date d'expiration de l'abonnement.
    */
   abonnementExpireAt?: string | null;
-  /**
-   * Une phrase de présentation affichée sur la page Partenaires.
-   */
-  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1131,6 +1151,7 @@ export interface ReseauteursSelect<T extends boolean = true> {
         id?: T;
       };
   reseauxFrequentes?: T;
+  evenementsParticipes?: T;
   evenementsParMois?: T;
   badge?: T;
   latitude?: T;
@@ -1243,14 +1264,23 @@ export interface EvenementsSelect<T extends boolean = true> {
  * via the `definition` "partenaires_select".
  */
 export interface PartenairesSelect<T extends boolean = true> {
+  user?: T;
+  slug?: T;
   nom?: T;
   logo?: T;
   lien?: T;
+  description?: T;
+  offre?:
+    | T
+    | {
+        titre?: T;
+        description?: T;
+        lien?: T;
+      };
   statut?: T;
   stripeCustomerId?: T;
   stripeSubscriptionId?: T;
   abonnementExpireAt?: T;
-  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }

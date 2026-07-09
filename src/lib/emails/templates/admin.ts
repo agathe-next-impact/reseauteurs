@@ -39,8 +39,8 @@ export function stripeMisconfigAlertEmail(ctx: {
 export function userRegisteredAdminEmail(ctx: {
   userId: number | string
   email: string
-  // ADR-0011 : 3 rôles. 'fournisseur' conservé pour rétrocompat (alias → reseauteur).
-  role: 'reseauteur' | 'organisateur' | 'fournisseur'
+  // Rôles ouverts à l'inscription. 'fournisseur' conservé pour rétrocompat (alias → reseauteur).
+  role: 'reseauteur' | 'organisateur' | 'partenaire' | 'fournisseur'
   nomSociete: string
   ville: string
   optInMarketing: boolean

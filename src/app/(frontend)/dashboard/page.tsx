@@ -30,6 +30,9 @@ export default async function DashboardPage() {
     overrideAccess: true,
   })
 
+  // Le partenaire a son propre espace.
+  if (freshUser.role === 'partenaire') redirect('/dashboard/partenaire')
+
   const role: 'reseauteur' | 'organisateur' | 'admin' =
     (freshUser.role as string) === 'organisateur' ? 'organisateur'
     : (freshUser.role as string) === 'admin' ? 'admin'

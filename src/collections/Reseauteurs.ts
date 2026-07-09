@@ -242,6 +242,53 @@ export const Reseauteurs: CollectionConfig = {
         }
         return data
       },
+      // ── Participation aux événements : scope serveur (jamais confiance au client).
+      //    On ne garde que les événements PUBLIÉS dont le réseau organisateur fait
+      //    partie des réseaux fréquentés du réseauteur. Les entrées hors-scope sont
+      //    filtrées silencieusement. L'admin n'est pas restreint.
+      async ({ data, originalDoc, req }) => {
+        if (req.user?.role === 'admin') return data
+        const raw = data.evenementsParticipes
+        if (!Array.isArray(raw)) return data // champ non modifié → on ne touche pas
+        const eventIds = raw
+          .map((r) => (typeof r === 'object' && r !== null ? (r as { id?: unknown }).id : r))
+          .filter((v) => v != null)
+        if (eventIds.length === 0) {
+          data.evenementsParticipes = []
+          return data
+        }
+        const reseauxRaw = data.reseauxFrequentes ?? originalDoc?.reseauxFrequentes ?? []
+        const reseauIds = new Set(
+          (Array.isArray(reseauxRaw) ? reseauxRaw : []).map((r) =>
+            String(typeof r === 'object' && r !== null ? (r as { id?: unknown }).id : r),
+          ),
+        )
+        if (reseauIds.size === 0) {
+          data.evenementsParticipes = []
+          return data
+        }
+        const { docs: evs } = await req.payload.find({
+          collection: 'evenements',
+          where: { id: { in: eventIds } },
+          depth: 0,
+          limit: 500,
+          overrideAccess: true,
+          req,
+          select: { statut: true, reseau: true } as Record<string, boolean>,
+        })
+        const allowed = new Set(
+          evs
+            .filter((e) => {
+              const reseauId = String(
+                typeof e.reseau === 'object' && e.reseau !== null ? (e.reseau as { id?: unknown }).id : e.reseau,
+              )
+              return e.statut === 'publie' && reseauIds.has(reseauId)
+            })
+            .map((e) => String(e.id)),
+        )
+        data.evenementsParticipes = eventIds.filter((id) => allowed.has(String(id)))
+        return data
+      },
       // ── Dérivation du badge depuis evenementsParMois
       async ({ data }) => {
         if (data.evenementsParMois !== undefined) {
@@ -510,6 +557,29 @@ export const Reseauteurs: CollectionConfig = {
         description:
           'Chapitres/sections de réseaux d\'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). ' +
           'Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.',
+      },
+    },
+    // ============================================================
+    // PARTICIPATION AUX ÉVÉNEMENTS (M2M — réseauteur ↔ événements)
+    // Le réseauteur signale sa présence aux événements des réseaux qu'il fréquente.
+    // Le scope (réseau organisateur ∈ réseaux fréquentés, statut publié) est
+    // garanti côté serveur par un hook beforeChange — jamais confiance au client.
+    // ============================================================
+    {
+      name: 'evenementsParticipes',
+      type: 'relationship',
+      relationTo: 'evenements',
+      hasMany: true,
+      label: 'Événements auxquels je participe',
+      index: true,
+      filterOptions: {
+        // UI-only : ne proposer que les événements publiés (le hook serveur est le garde).
+        statut: { equals: 'publie' },
+      },
+      admin: {
+        description:
+          'Événements des réseaux que vous fréquentez auxquels vous signalez votre présence. ' +
+          'Affiché sur votre fiche publique et sur la fiche de chaque événement.',
       },
     },
     // ============================================================

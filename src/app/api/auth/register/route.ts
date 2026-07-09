@@ -26,8 +26,9 @@ export async function POST(request: Request) {
       ville?: string
       // 'reseauteur' = compte réseauteur gratuit (ADR-0011 — défaut).
       // 'organisateur' = compte organisateur (réseau B2B).
+      // 'partenaire' = compte annonceur (fiche partenaire + abonnement).
       // 'fournisseur' = valeur legacy PanoramaPub ; redirigée vers 'reseauteur'.
-      type?: 'reseauteur' | 'organisateur' | 'fournisseur'
+      type?: 'reseauteur' | 'organisateur' | 'partenaire' | 'fournisseur'
       cguAccepted?: boolean
       optInMarketing?: boolean
       pendingGroupeCode?: string
@@ -44,10 +45,14 @@ export async function POST(request: Request) {
     )
   }
 
-  // ADR-0011 : 3 rôles — reseauteur (défaut, gratuit), organisateur, admin.
+  // Rôles ouverts à l'inscription : reseauteur (défaut, gratuit), organisateur, partenaire.
   // 'fournisseur' est un alias legacy redirigé vers 'reseauteur'.
-  const role: 'reseauteur' | 'organisateur' =
-    type === 'organisateur' ? 'organisateur' : 'reseauteur'
+  const role: 'reseauteur' | 'organisateur' | 'partenaire' =
+    type === 'organisateur'
+      ? 'organisateur'
+      : type === 'partenaire'
+        ? 'partenaire'
+        : 'reseauteur'
 
   if (password.length < 8) {
     return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 8 caracteres.' }, { status: 400 })

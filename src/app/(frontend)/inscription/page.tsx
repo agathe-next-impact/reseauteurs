@@ -35,12 +35,16 @@ export default function InscriptionPage() {
     ? `/login?redirect=${encodeURIComponent(`/dashboard/groupe?code=${groupeCodeParam}`)}`
     : '/login'
 
-  const [accountType, setAccountType] = useState<'reseauteur' | 'organisateur' | null>(null)
+  const typeParam = searchParams.get('type')
+  const [accountType, setAccountType] = useState<'reseauteur' | 'organisateur' | 'partenaire' | null>(
+    typeParam === 'partenaire' ? 'partenaire' : typeParam === 'organisateur' ? 'organisateur' : null,
+  )
   const [step, setStep] = useState(0)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const STEPS = accountType === 'organisateur' ? STEPS_ORGANISATEUR : STEPS_RESEAUTEUR
+  const STEPS =
+    accountType === 'organisateur' || accountType === 'partenaire' ? STEPS_ORGANISATEUR : STEPS_RESEAUTEUR
 
   // Step 1
   const [email, setEmail] = useState('')
@@ -113,7 +117,11 @@ export default function InscriptionPage() {
           ville,
           cguAccepted,
           optInMarketing,
-          ...(accountType === 'organisateur' ? { type: 'organisateur' } : {}),
+          ...(accountType === 'organisateur'
+            ? { type: 'organisateur' }
+            : accountType === 'partenaire'
+              ? { type: 'partenaire' }
+              : {}),
           ...(groupeCodeParam ? { pendingGroupeCode: groupeCodeParam } : {}),
         }),
       })
@@ -206,6 +214,16 @@ export default function InscriptionPage() {
               et vos événements.
             </p>
           </button>
+          <button
+            onClick={() => setAccountType('partenaire')}
+            className="p-5 border border-gray-200 rounded-xl hover:border-[#f5851f] hover:bg-[#fff7ed] transition-all text-left cursor-pointer"
+          >
+            <h3 className="font-semibold text-text-dark mb-1">Partenaire (annonceur)</h3>
+            <p className="text-sm text-text-light">
+              Vous représentez une entreprise et souhaitez être visible auprès des réseauteurs :
+              logo en page d&apos;accueil, fiche dédiée et offre exclusive. Sur abonnement.
+            </p>
+          </button>
         </div>
       </AuthShell>
     )
@@ -213,7 +231,13 @@ export default function InscriptionPage() {
 
   return (
     <AuthShell
-      title={accountType === 'organisateur' ? 'Créez votre compte organisateur' : 'Créez votre profil réseauteur — gratuit'}
+      title={
+        accountType === 'organisateur'
+          ? 'Créez votre compte organisateur'
+          : accountType === 'partenaire'
+            ? 'Créez votre compte partenaire'
+            : 'Créez votre profil réseauteur — gratuit'
+      }
       footer={
         <>
           <p>
