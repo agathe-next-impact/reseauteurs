@@ -119,9 +119,8 @@ export function buildRootMetadata(): Metadata {
       description: SITE_DESCRIPTION,
       images: [DEFAULT_OG_IMAGE],
     },
-    icons: {
-      icon: '/icon.png',
-    },
+    // Les favicons sont fournis par les conventions de fichiers Next.js
+    // (src/app/icon.svg + icon.png + apple-icon.png) → balises <link> auto-générées.
     formatDetection: { telephone: false, email: false, address: false },
   }
 }

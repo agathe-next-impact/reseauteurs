@@ -365,28 +365,6 @@ body {
   border-color: rgba(var(--ir-line-rgb), 0.12);
 }
 
-.ir-plasma-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--ir-grad-main);
-  box-shadow: 0 10px 28px rgba(var(--ir-accent-rgb), 0.28);
-  flex: none;
-}
-
-.ir-plasma-mark span {
-  width: 15px;
-  height: 15px;
-  border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow:
-    9px 2px 0 -3px rgba(255, 255, 255, 0.75),
-    3px 11px 0 -3px rgba(255, 255, 255, 0.58);
-}
-
 .ir-plasma-nav-link {
   color: var(--ir-text-3);
 }

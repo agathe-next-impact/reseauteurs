@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -69,9 +70,15 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             className="ir-plasma-brand font-bold text-lg no-underline inline-flex items-center gap-2 py-2"
             aria-label={`Accueil ${SITE_NAME}`}
           >
-            <span className="ir-plasma-mark" aria-hidden>
-              <span />
-            </span>
+            <Image
+              src="/img/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              priority
+              className="h-9 w-9 flex-none"
+              aria-hidden
+            />
             <span className="text-xl font-extrabold tracking-tight">
               {SITE_NAME.toUpperCase()}
             </span>

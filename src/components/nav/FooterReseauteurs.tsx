@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { CONTACT_EMAIL, SITE_NAME } from '@/lib/site'
 
 export default function FooterReseauteurs({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
@@ -107,6 +108,7 @@ export default function FooterReseauteurs({ isAuthenticated = false }: { isAuthe
       <div className="border-t border-[#e4e4e7]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-[#71717a]">
           <Link href="/" className="flex items-center gap-2 no-underline text-[#71717a] hover:text-[#2563EB] font-medium transition-colors" aria-label="Accueil RÉSEAUTEURS">
+            <Image src="/img/logo.png" alt="" width={24} height={24} className="h-5 w-5 flex-none" aria-hidden />
             <span className="font-extrabold text-[#16284f] tracking-tight">{SITE_NAME.toUpperCase()}</span>
             <span>&copy; {year} Tous droits réservés.</span>
           </Link>

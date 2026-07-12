@@ -21,7 +21,9 @@ const PUBLIC_PATHS = [
   '/img/',          // Images publiques
   '/leaflet/',      // Assets Leaflet
   '/favicon.ico',   // Favicon
-  '/icon.png',       // App icon
+  '/icon.png',      // App icon (PNG)
+  '/icon.svg',      // App icon (SVG scalable)
+  '/apple-icon.png', // Icône écran d'accueil iOS
 ]
 
 function isPublicPath(pathname: string): boolean {
