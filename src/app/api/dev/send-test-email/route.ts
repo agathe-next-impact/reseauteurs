@@ -35,6 +35,10 @@ import {
   emailChangedEmail,
   confirmEmailChangeEmail,
   stripeMisconfigAlertEmail,
+  plusActiveEmail,
+  plusExpireEmail,
+  packAcheteEmail,
+  licenceActiveeEmail,
 } from '@/lib/emails'
 import { sendEmail, type EmailKind } from '@/lib/email-sender'
 import { SITE_URL } from '@/lib/site'
@@ -216,6 +220,23 @@ const TEMPLATES: Record<EmailKind, { subject: string; html: string }> = {
       subscriptionId: 'sub_demo',
       priceId: 'price_demo',
     }),
+  },
+  // ── ADR-0013 : Réseauteur Plus + packs de licences
+  'plus-active': {
+    subject: 'RÉSEAUTEURS — Bienvenue en Réseauteur Plus',
+    html: plusActiveEmail(FIXTURE_NOM),
+  },
+  'plus-expire': {
+    subject: 'RÉSEAUTEURS — Votre accès Réseauteur Plus a pris fin',
+    html: plusExpireEmail(FIXTURE_NOM),
+  },
+  'pack-achete': {
+    subject: 'RÉSEAUTEURS — Votre pack de licences Plus est actif',
+    html: packAcheteEmail(FIXTURE_NOM, 'RSN-DEMO2345', 10),
+  },
+  'licence-activee': {
+    subject: 'RÉSEAUTEURS — Votre licence Réseauteur Plus est activée',
+    html: licenceActiveeEmail(FIXTURE_NOM, 'Acme SARL', '2027-07-12T00:00:00.000Z'),
   },
 }
 

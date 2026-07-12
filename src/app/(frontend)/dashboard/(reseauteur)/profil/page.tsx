@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
 import Image from 'next/image'
-import { User, MapPin, Globe, Phone, Mail, Network, Shield, ExternalLink, CalendarCheck, ArrowRight, Tag } from 'lucide-react'
+import { User, MapPin, Globe, Phone, Mail, Network, Shield, ExternalLink, CalendarCheck, ArrowRight, Tag, Sparkles } from 'lucide-react'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { ProfilForm } from './ProfilForm'
 import { DeleteAccountButton } from './DeleteAccountButton'
@@ -117,6 +117,23 @@ export default async function DashboardProfilPage() {
 
       {reseauteur && (
         <Reveal className="mb-6">
+          <Link
+            href="/dashboard/plus"
+            className="rsn-lift flex items-center gap-3 p-4 rounded-2xl border border-[#e4e4e7] bg-white hover:border-[#f5851f]/40 transition-colors no-underline group mb-3"
+          >
+            <span className="w-10 h-10 rounded-xl bg-[#fff7ed] text-[#f5851f] flex items-center justify-center shrink-0" aria-hidden>
+              <Sparkles size={18} />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-semibold text-[#16284f] group-hover:text-[#f5851f] transition-colors">
+                Réseauteur Plus
+              </span>
+              <span className="block text-xs text-[#71717a]">
+                Créez vos propres événements (abonnement ou code partenaire).
+              </span>
+            </span>
+            <ArrowRight size={16} className="text-[#a1a1aa] group-hover:text-[#f5851f] transition-colors shrink-0 rsn-arrow" aria-hidden />
+          </Link>
           <Link
             href="/dashboard/offres"
             className="rsn-lift flex items-center gap-3 p-4 rounded-2xl border border-[#e4e4e7] bg-white hover:border-[#f5851f]/40 transition-colors no-underline group"

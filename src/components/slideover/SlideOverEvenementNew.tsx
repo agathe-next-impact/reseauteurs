@@ -44,6 +44,15 @@ interface EvenementDetail {
     siteWeb: string | null
     logoUrl: string | null
   } | null
+  /** ADR-0013 : organisateur réseauteur Plus (exclusif avec reseau). */
+  organisateurReseauteur: {
+    id: number | string
+    slug: string | null
+    prenom: string | null
+    nom: string | null
+    ville: string | null
+    photoUrl: string | null
+  } | null
   type: { label: string | null; couleur: string | null } | null
 }
 
@@ -108,12 +117,19 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
   }
 
   useEffect(() => {
+    // Pas de setState synchrone ici (règle react-hooks/set-state-in-effect) :
+    // loading/error sont déjà posés par le bloc prevSlug au rendu ; on ne fait
+    // que la partie asynchrone. fetchData reste utilisé par le bouton Réessayer.
     if (!slug) return
-    fetchData(slug)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetch(`/api/evenements/public/v2/${encodeURIComponent(slug)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => setData(json ?? null))
+      .catch(() => {
+        setData(null)
+        setError(true)
+      })
+      .finally(() => setLoading(false))
   }, [slug])
-
-  const accentColor = data?.type?.couleur ?? '#16284f'
 
   return (
     <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet>
@@ -240,6 +256,45 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
             </div>
           )}
 
+          {/* Réseauteur organisateur (ADR-0013) */}
+          {data.organisateurReseauteur && (
+            <div className="mb-4 pb-4 border-b border-[#e4e4e7]">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+                Organisé par
+              </h3>
+              <div className="flex items-center gap-3">
+                {data.organisateurReseauteur.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={data.organisateurReseauteur.photoUrl}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full object-cover border border-[#e4e4e7]"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] font-bold text-sm" aria-hidden>
+                    {data.organisateurReseauteur.prenom?.charAt(0)}
+                    {data.organisateurReseauteur.nom?.charAt(0)}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-[#16284f] truncate">
+                    {data.organisateurReseauteur.prenom} {data.organisateurReseauteur.nom}
+                  </p>
+                  {data.organisateurReseauteur.slug && (
+                    <Link
+                      href={`/reseauteur/${data.organisateurReseauteur.slug}`}
+                      className="text-xs text-[#2563EB] hover:underline"
+                    >
+                      Voir le profil réseauteur
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Réseau organisateur */}
           {data.reseau && (
             <div className="mb-4 pb-4 border-b border-[#e4e4e7]">
@@ -248,6 +303,7 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
               </h3>
               <div className="flex items-center gap-3">
                 {data.reseau.logoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={data.reseau.logoUrl}
                     alt={data.reseau.nom ?? ''}

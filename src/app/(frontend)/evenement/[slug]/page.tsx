@@ -10,6 +10,7 @@ import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
 import { CalendarDays, MapPin, ExternalLink, Network, ArrowRight, Users } from 'lucide-react'
+// (Users sert aussi à la section « Organisé par » — ADR-0013)
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildEvenementRsnJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -127,6 +128,13 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
   const imageMedia = e.image as Media | null | undefined
   const imageUrl = imageMedia?.sizes?.full?.url ?? imageMedia?.url ?? null
   const reseau = e.reseau as Reseau | null | undefined
+  // ADR-0013 : événement organisé par un réseauteur Plus (XOR avec reseau)
+  const organisateurRz =
+    typeof e.organisateurReseauteur === 'object' && e.organisateurReseauteur !== null
+      ? (e.organisateurReseauteur as Reseauteur)
+      : null
+  const organisateurPhoto = organisateurRz?.photo as Media | null | undefined
+  const organisateurPhotoUrl = organisateurPhoto?.sizes?.thumbnail?.url ?? organisateurPhoto?.url ?? null
   const reseauLogoMedia = reseau?.logo as Media | null | undefined
   const reseauLogoUrl = reseauLogoMedia?.sizes?.thumbnail?.url ?? reseauLogoMedia?.url
   const typeDoc = e.type as TypesEvenement | null | undefined
@@ -253,6 +261,45 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                 <section aria-labelledby="desc-titre">
                   <h2 id="desc-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos de cet événement</h2>
                   <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.description}</p>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Réseauteur organisateur (ADR-0013 — événement d'un réseauteur Plus) */}
+            {organisateurRz && (
+              <Reveal>
+                <section aria-labelledby="organisateur-titre">
+                  <h2 id="organisateur-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <Users size={14} aria-hidden />
+                    Organisé par
+                  </h2>
+                  <Link
+                    href={`/reseauteur/${organisateurRz.slug}`}
+                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                  >
+                    {organisateurPhotoUrl ? (
+                      <Image
+                        src={organisateurPhotoUrl}
+                        alt={`Photo de ${organisateurRz.prenom} ${organisateurRz.nom}`}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-full object-cover border border-[#e4e4e7] shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] font-bold text-sm shrink-0" aria-hidden>
+                        {organisateurRz.prenom?.charAt(0)}{organisateurRz.nom?.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#2563EB] transition-colors">
+                        {organisateurRz.prenom} {organisateurRz.nom}
+                      </p>
+                      <p className="text-xs text-[#71717a]">
+                        Réseauteur{organisateurRz.ville ? ` · ${organisateurRz.ville}` : ''}
+                      </p>
+                    </div>
+                    <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                  </Link>
                 </section>
               </Reveal>
             )}

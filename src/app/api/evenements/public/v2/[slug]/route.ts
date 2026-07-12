@@ -75,6 +75,13 @@ export async function GET(
 
   const image = pickMedia(doc['image'])
   const reseau = doc['reseau'] as ReseauLite | null | undefined
+  // ADR-0013 : organisateur réseauteur (XOR avec reseau)
+  const organisateurRz = doc['organisateurReseauteur'] as
+    | { id: number | string; slug?: string | null; prenom?: string | null; nom?: string | null; ville?: string | null; photo?: MediaLite | null }
+    | null
+    | undefined
+  const organisateurPhoto =
+    organisateurRz && typeof organisateurRz === 'object' ? pickMedia(organisateurRz.photo) : null
   const typeDoc = doc['type'] as TypeLite | null | undefined
   const reseauLogo = reseau ? pickMedia(reseau.logo) : null
 
@@ -121,6 +128,18 @@ export async function GET(
             reseauLogo?.sizes?.['thumbnail']?.url ?? reseauLogo?.url ?? null,
         }
       : null,
+    // Organisateur réseauteur (ADR-0013 — exclusif avec reseau)
+    organisateurReseauteur:
+      organisateurRz && typeof organisateurRz === 'object'
+        ? {
+            id: organisateurRz.id,
+            slug: organisateurRz.slug ?? null,
+            prenom: organisateurRz.prenom ?? null,
+            nom: organisateurRz.nom ?? null,
+            ville: organisateurRz.ville ?? null,
+            photoUrl: organisateurPhoto?.sizes?.['thumbnail']?.url ?? organisateurPhoto?.url ?? null,
+          }
+        : null,
     // Type / catégorie
     type: typeDoc
       ? {

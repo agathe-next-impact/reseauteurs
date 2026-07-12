@@ -269,6 +269,11 @@ export default async function EvenementsPage({
                       const imageMedia = ev.image as Media | null | undefined
                       const imageUrl = imageMedia?.sizes?.thumbnail?.url ?? imageMedia?.url
                       const reseau = ev.reseau as Reseau | null | undefined
+                      // ADR-0013 : organisateur réseauteur (XOR avec reseau)
+                      const orgRz =
+                        typeof ev.organisateurReseauteur === 'object' && ev.organisateurReseauteur !== null
+                          ? (ev.organisateurReseauteur as { slug?: string | null; prenom?: string; nom?: string })
+                          : null
                       const dateStr = new Date(ev.dateDebut).toLocaleDateString('fr-FR', {
                         day: 'numeric',
                         month: 'short',
@@ -332,6 +337,14 @@ export default async function EvenementsPage({
                                 className="text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
                               >
                                 {reseau.nom}
+                              </Link>
+                            )}
+                            {!reseau && orgRz && (
+                              <Link
+                                href={`/reseauteur/${orgRz.slug}`}
+                                className="text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
+                              >
+                                Par {orgRz.prenom} {orgRz.nom}
                               </Link>
                             )}
                             {lienSafe && (

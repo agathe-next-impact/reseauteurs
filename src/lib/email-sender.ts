@@ -34,6 +34,10 @@ export type EmailKind =
   | 'email-changed'
   | 'email-change-confirm'
   | 'admin-alert'
+  | 'plus-active'
+  | 'plus-expire'
+  | 'pack-achete'
+  | 'licence-activee'
 
 export interface SendEmailInput {
   payload: Payload

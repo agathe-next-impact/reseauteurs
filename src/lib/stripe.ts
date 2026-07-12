@@ -125,9 +125,53 @@ export const PRODUITS = {
     },
     mode: 'subscription' as const,
   },
+  // ── ADR-0013 (gate P0 D2/D3) : Réseauteur Plus 59 €/an (Subscription) ;
+  //    packs de licences 10/50/100 à 300/600/1 000 € (Checkout one-shot).
+  reseauteurPlus: {
+    label: 'Réseauteur Plus',
+    get priceId() {
+      return process.env.STRIPE_PLUS_PRICE_ID
+    },
+    mode: 'subscription' as const,
+  },
+  licencesPack: {
+    label: 'Pack de licences Réseauteur Plus',
+    mode: 'payment' as const,
+  },
 } as const
 
 export type ProduitB2B = keyof typeof PRODUITS
+
+/**
+ * Packs de licences Plus (ADR-0013 §3 — tailles/prix actés au gate P0 D2).
+ * priceId lus depuis l'env — JAMAIS en dur. Quota réconcilié serveur depuis la taille.
+ */
+export const PACKS_LICENCES: Record<
+  string,
+  { quota: number; label: string; get priceId(): string | undefined }
+> = {
+  '10': {
+    quota: 10,
+    label: 'Pack 10 licences — 300 €',
+    get priceId() {
+      return process.env.STRIPE_PACK_10_PRICE_ID
+    },
+  },
+  '50': {
+    quota: 50,
+    label: 'Pack 50 licences — 600 €',
+    get priceId() {
+      return process.env.STRIPE_PACK_50_PRICE_ID
+    },
+  },
+  '100': {
+    quota: 100,
+    label: 'Pack 100 licences — 1 000 €',
+    get priceId() {
+      return process.env.STRIPE_PACK_100_PRICE_ID
+    },
+  },
+}
 
 // ─────────────────────────────────────────────────────────────────
 // HELPERS DE RECONCILIATION STRIPE
@@ -169,5 +213,7 @@ export function resolveProduitFromMetadata(
   const t = metadata?.type
   if (t === 'reseau_partenaire') return 'reseauPartenaire'
   if (t === 'partenaire_annonceur') return 'partenaireAnnonceur'
+  if (t === 'reseauteur_plus') return 'reseauteurPlus'
+  if (t === 'licences_pack') return 'licencesPack'
   return null
 }

@@ -7,6 +7,9 @@
     "src/app/api/cron/downgrade-expires/route.ts": {
       "maxDuration": 300
     },
+    "src/app/api/cron/expiration-plus/route.ts": {
+      "maxDuration": 300
+    },
     "src/app/api/cron/onboarding-emails/route.ts": {
       "maxDuration": 60
     }
@@ -23,6 +26,10 @@
     {
       "path": "/api/cron/downgrade-expires",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/expiration-plus",
+      "schedule": "30 2 * * *"
     },
     {
       "path": "/api/cron/onboarding-emails",

@@ -328,12 +328,25 @@ export function buildEvenementRsnJsonLd(event: EvenementRsn): JsonLd {
   if (imageUrl) jsonLd.image = imageUrl
   if (typeDoc?.label) jsonLd.about = typeDoc.label
 
-  // organizer = le réseau d'affaires (RÉSEAUTEURS ne l'est jamais)
+  // organizer = le réseau d'affaires OU le réseauteur Plus (ADR-0013 — XOR ;
+  // RÉSEAUTEURS lui-même ne l'est jamais)
   if (reseau) {
     jsonLd.organizer = {
       '@type': 'Organization',
       name: reseau.nom,
       ...(reseau.slug && { url: absUrl(`/reseau/${reseau.slug}`) }),
+    }
+  } else {
+    const organisateurRz =
+      typeof event.organisateurReseauteur === 'object' && event.organisateurReseauteur !== null
+        ? (event.organisateurReseauteur as { prenom?: string; nom?: string; slug?: string | null })
+        : null
+    if (organisateurRz) {
+      jsonLd.organizer = {
+        '@type': 'Person',
+        name: `${organisateurRz.prenom ?? ''} ${organisateurRz.nom ?? ''}`.trim(),
+        ...(organisateurRz.slug && { url: absUrl(`/reseauteur/${organisateurRz.slug}`) }),
+      }
     }
   }
 

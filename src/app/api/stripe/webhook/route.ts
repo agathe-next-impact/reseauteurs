@@ -9,6 +9,8 @@
  * Produits gérés :
  *   - reseau_partenaire    : Subscription nationale → national.partenaire / national.palier / partenaireExpireAt
  *   - partenaire_annonceur : Subscription → partenaire.statut / abonnementExpireAt
+ *   - reseauteur_plus      : Subscription → users.plusActif / plusExpireAt (ADR-0013)
+ *   - licences_pack        : Checkout one-shot → création licences-packs + code (ADR-0013)
  *
  * Events traités :
  *   - checkout.session.completed
@@ -33,7 +35,11 @@ import {
   subscriptionConfirmationEmail,
   subscriptionCanceledEmail,
   paymentFailedEmail,
+  plusActiveEmail,
+  plusExpireEmail,
+  packAcheteEmail,
 } from '@/lib/emails'
+import { PACKS_LICENCES } from '@/lib/stripe'
 import type Stripe from 'stripe'
 
 // ─────────────────────────────────────────────────────────────────
@@ -244,6 +250,128 @@ async function desactiverPartenaireAnnonceur(
 }
 
 // ─────────────────────────────────────────────────────────────────
+// Réseauteur Plus + packs de licences (ADR-0013 P2.A)
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Active le Plus d'un réseauteur (abonnement individuel).
+ * plusExpireAt = fin de période Stripe (renouvellement → refresh au prochain event).
+ */
+async function activerReseauteurPlus(
+  payload: Payload,
+  userId: string | number,
+  subscription: Stripe.Subscription,
+): Promise<void> {
+  const periodEnd = getSubscriptionPeriodEnd(subscription)
+  const expiresAt = periodEnd ? new Date(periodEnd * 1000).toISOString() : null
+
+  await payload.update({
+    collection: 'users',
+    id: userId,
+    data: {
+      plusActif: true,
+      plusSource: 'abonnement',
+      ...(expiresAt ? { plusExpireAt: expiresAt } : {}),
+    },
+    overrideAccess: true,
+    context: { webhookTrusted: true },
+  })
+}
+
+/** Désactive le Plus d'un réseauteur (annulation/impayé/fin d'abonnement). */
+async function desactiverReseauteurPlus(
+  payload: Payload,
+  userId: string | number,
+): Promise<void> {
+  await payload.update({
+    collection: 'users',
+    id: userId,
+    data: { plusActif: false },
+    overrideAccess: true,
+    context: { webhookTrusted: true },
+  })
+}
+
+/** Retrouve le user d'une subscription Plus via son customer Stripe (fallback metadata absente). */
+async function findUserByCustomerId(
+  payload: Payload,
+  customerId: string,
+): Promise<{ id: number | string; email?: string; nomSociete?: string | null } | null> {
+  const { docs } = await payload.find({
+    collection: 'users',
+    where: { stripeCustomerId: { equals: customerId } },
+    limit: 1,
+    overrideAccess: true,
+    depth: 0,
+  })
+  return (docs[0] as { id: number | string; email?: string; nomSociete?: string | null } | undefined) ?? null
+}
+
+/**
+ * Crée le pack de licences après paiement (Checkout one-shot — gate P0 D3).
+ * IDEMPOTENT : clé sur stripeCheckoutSessionId (retry webhook → pas de doublon).
+ * Quota réconcilié SERVEUR depuis la taille (jamais confiance à la metadata seule).
+ * Expiration alignée sur l'abonnement annonceur du partenaire (gate P0 D4) — sinon +1 an.
+ */
+async function creerPackLicences(
+  payload: Payload,
+  session: Stripe.Checkout.Session,
+): Promise<{ id: number | string; code?: string | null } | null> {
+  const partenaireId = session.metadata?.partenaireId
+  const taille = session.metadata?.taille
+  if (!partenaireId || !taille) {
+    console.error('[stripe-webhook] licences_pack: metadata incomplète', session.metadata)
+    return null
+  }
+
+  const packCfg = PACKS_LICENCES[taille]
+  if (!packCfg) {
+    console.error(`[stripe-webhook] licences_pack: taille inconnue "${taille}"`)
+    return null
+  }
+
+  // Idempotence : un pack par session de paiement.
+  const { docs: existing } = await payload.find({
+    collection: 'licences-packs',
+    where: { stripeCheckoutSessionId: { equals: session.id } },
+    limit: 1,
+    overrideAccess: true,
+    depth: 0,
+  })
+  if (existing.length > 0) {
+    return existing[0] as { id: number | string; code?: string | null }
+  }
+
+  // Expiration alignée sur l'abonnement annonceur (D4) ; défaut +1 an.
+  const partenaire = await payload.findByID({
+    collection: 'partenaires',
+    id: partenaireId,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const abonnementExpireAt = (partenaire as unknown as { abonnementExpireAt?: string | null })
+    ?.abonnementExpireAt
+  const expireAt =
+    abonnementExpireAt && new Date(abonnementExpireAt).getTime() > Date.now()
+      ? abonnementExpireAt
+      : new Date(Date.now() + 365 * 86400e3).toISOString()
+
+  const pack = await payload.create({
+    collection: 'licences-packs',
+    data: {
+      partenaire: Number(partenaireId),
+      quota: packCfg.quota,
+      quotaUtilise: 0,
+      statut: 'actif',
+      expireAt,
+      stripeCheckoutSessionId: session.id,
+    },
+    overrideAccess: true,
+  })
+  return pack as { id: number | string; code?: string | null }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Recherche d'entité depuis subscriptionId
 // ─────────────────────────────────────────────────────────────────
 
@@ -442,6 +570,85 @@ export async function POST(request: Request) {
         await activerPartenaireAnnonceur(payload, partenaireId, subscription)
       }
 
+      // ── 3. Réseauteur Plus (ADR-0013)
+      else if (produit === 'reseauteurPlus') {
+        const userId = session.metadata?.userId
+        const subscriptionId = session.subscription as string | null
+        if (!userId || !subscriptionId) {
+          console.error('[stripe-webhook] reseauteur_plus: userId/subscriptionId absent')
+          break
+        }
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        await activerReseauteurPlus(payload, Number(userId), subscription)
+
+        try {
+          const owner = await payload.findByID({
+            collection: 'users',
+            id: Number(userId),
+            overrideAccess: true,
+          })
+          await sendEmail({
+            payload,
+            kind: 'plus-active',
+            to: owner.email,
+            subject: 'RÉSEAUTEURS — Bienvenue en Réseauteur Plus',
+            html: plusActiveEmail(owner.nomSociete ?? ''),
+            userId: owner.id,
+          })
+        } catch (err) {
+          console.error('[stripe-webhook] Email plus-active failed:', err)
+        }
+
+        try {
+          await logPlanChange(payload, {
+            userId: Number(userId),
+            oldPlan: null,
+            newPlan: 'reseauteur_plus',
+            reason: 'checkout_completed',
+            extra: { subscriptionId },
+          })
+        } catch { /* audit non bloquant */ }
+      }
+
+      // ── 4. Pack de licences Plus (ADR-0013 — Checkout one-shot)
+      else if (produit === 'licencesPack') {
+        const pack = await creerPackLicences(payload, session)
+        if (pack) {
+          // Email au partenaire : code à diffuser — non bloquant.
+          try {
+            const partenaireId = session.metadata?.partenaireId
+            const partenaire = partenaireId
+              ? await payload.findByID({
+                  collection: 'partenaires',
+                  id: partenaireId,
+                  depth: 1,
+                  overrideAccess: true,
+                })
+              : null
+            const ownerRel = (partenaire as unknown as { user?: { id?: number | string; email?: string; nomSociete?: string | null } | number | null })?.user
+            const owner = ownerRel && typeof ownerRel === 'object' ? ownerRel : null
+            if (owner?.email) {
+              const quota = Number(session.metadata?.quota ?? 0)
+              await sendEmail({
+                payload,
+                kind: 'pack-achete',
+                to: owner.email,
+                subject: 'RÉSEAUTEURS — Votre pack de licences Plus est actif',
+                html: packAcheteEmail(
+                  (partenaire?.nom as string) ?? '',
+                  pack.code ?? '',
+                  quota,
+                ),
+                userId: owner.id,
+                skipBlacklistCheck: true,
+              })
+            }
+          } catch (err) {
+            console.error('[stripe-webhook] Email pack-achete failed:', err)
+          }
+        }
+      }
+
       break
     }
 
@@ -557,6 +764,46 @@ export async function POST(request: Request) {
         } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
           await desactiverPartenaireAnnonceur(payload, partenaireId)
         }
+      } else if (produit === 'reseauteurPlus') {
+        // ADR-0013 : cycle de vie de l'abonnement Plus.
+        let userId: string | number | undefined =
+          (subMetadata as Record<string, string | undefined>).userId
+        let owner: { id: number | string; email?: string; nomSociete?: string | null } | null = null
+        if (!userId) {
+          owner = await findUserByCustomerId(payload, String(subscription.customer))
+          if (owner) userId = owner.id
+        }
+        if (!userId) {
+          console.warn(`[stripe-webhook] subscription.updated reseauteur_plus: user introuvable sub=${subscription.id}`)
+          break
+        }
+
+        if (subscription.status === 'active') {
+          await activerReseauteurPlus(payload, userId, subscription)
+        } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+          await desactiverReseauteurPlus(payload, userId)
+          try {
+            if (!owner) {
+              owner = (await payload.findByID({
+                collection: 'users',
+                id: userId,
+                overrideAccess: true,
+              })) as unknown as { id: number | string; email?: string; nomSociete?: string | null }
+            }
+            if (owner?.email) {
+              await sendEmail({
+                payload,
+                kind: 'plus-expire',
+                to: owner.email,
+                subject: 'RÉSEAUTEURS — Votre abonnement Réseauteur Plus a pris fin',
+                html: plusExpireEmail(owner.nomSociete ?? ''),
+                userId: owner.id,
+              })
+            }
+          } catch (err) {
+            console.error('[stripe-webhook] Email plus-expire failed:', err)
+          }
+        }
       } else {
         // Subscription non gérée (groupes dormants, ancien flux PanoramaPub, evenement_premium retiré)
         // On ignore silencieusement pour éviter les faux positifs.
@@ -605,6 +852,17 @@ export async function POST(request: Request) {
         }
         if (partenaireId) {
           await desactiverPartenaireAnnonceur(payload, partenaireId)
+        }
+      } else if (produit === 'reseauteurPlus') {
+        // ADR-0013 : fin d'abonnement Plus.
+        let userId: string | number | undefined =
+          (subMetadata as Record<string, string | undefined>).userId
+        if (!userId) {
+          const owner = await findUserByCustomerId(payload, String(subscription.customer))
+          if (owner) userId = owner.id
+        }
+        if (userId) {
+          await desactiverReseauteurPlus(payload, userId)
         }
       }
 

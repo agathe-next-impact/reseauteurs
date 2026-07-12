@@ -53,3 +53,10 @@ export {
 } from './templates/moderation'
 
 export { stripeMisconfigAlertEmail, userRegisteredAdminEmail } from './templates/admin'
+
+export {
+  plusActiveEmail,
+  plusExpireEmail,
+  packAcheteEmail,
+  licenceActiveeEmail,
+} from './templates/plus'
