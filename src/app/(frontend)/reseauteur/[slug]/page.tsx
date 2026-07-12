@@ -18,6 +18,7 @@ import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { SITE_NAME } from '@/lib/site'
 import { todayParisDateString } from '@/lib/dates'
+import { getPartenaireDeReseauteur } from '@/lib/affiliation'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { Reseauteur, Media, Reseau, Categorie, EvenementRsn } from '@/types/reseauteurs-domain'
@@ -98,6 +99,15 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
       return finMs >= todayStartMs
     })
     .sort((a, b) => new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime())
+
+  // Partenaire d'appartenance (si Plus via licence — ADR-0013).
+  const userId =
+    typeof r.user === 'object' && r.user !== null
+      ? ((r.user as { id?: number }).id ?? null)
+      : ((r.user as number | null | undefined) ?? null)
+  const partenaireLien = userId
+    ? await getPartenaireDeReseauteur(await getPayload({ config }), userId)
+    : null
 
   // JSON-LD Person + BreadcrumbList (seo-engineer)
   // RGPD : uniquement si le profil est indexable (noindex !== true).
@@ -316,6 +326,31 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                       )
                     })}
                   </div>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Partenaire d'appartenance (licence Plus — ADR-0013) */}
+            {partenaireLien && partenaireLien.slug && (
+              <Reveal>
+                <section aria-labelledby="partenaire-titre">
+                  <h2 id="partenaire-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <Building2 size={14} className="text-[#f5851f]" aria-hidden />
+                    Partenaire
+                  </h2>
+                  <Link
+                    href={`/partenaire/${partenaireLien.slug}`}
+                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#fed7aa] bg-[#fff7ed] no-underline transition-colors group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-white border border-[#fed7aa] flex items-center justify-center shrink-0" aria-hidden>
+                      <Building2 size={16} className="text-[#f5851f]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-[#c2410c] truncate group-hover:underline">{partenaireLien.nom}</p>
+                      <p className="text-xs text-[#9a3412]">Réseauteur Plus grâce à ce partenaire</p>
+                    </div>
+                    <ArrowRight size={14} className="text-[#f5851f] shrink-0 rsn-arrow" aria-hidden />
+                  </Link>
                 </section>
               </Reveal>
             )}
