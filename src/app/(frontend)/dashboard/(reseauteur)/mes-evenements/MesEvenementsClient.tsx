@@ -15,6 +15,8 @@ export interface TypeEvLite {
 export interface MonEvenement {
   id: number
   slug: string | null
+  /** Calculé côté serveur (règle de pureté — pas de Date.now() en rendu client). */
+  past: boolean
   titre: string
   type: number
   description: string | null
@@ -207,7 +209,7 @@ export function MesEvenementsClient({
         <ul className="space-y-3" role="list">
           {evenements.map((ev) => {
             const d = new Date(ev.dateDebut)
-            const past = d.getTime() < Date.now()
+            const past = ev.past
             return (
               <li key={ev.id} className="rsn-card rounded-2xl p-4 flex items-center gap-3">
                 <div className="flex-1 min-w-0">

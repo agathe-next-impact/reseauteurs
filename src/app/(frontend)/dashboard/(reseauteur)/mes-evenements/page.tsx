@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { ArrowLeft, CalendarPlus } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
+import { todayParisDateString } from '@/lib/dates'
 import { MesEvenementsClient, type MonEvenement, type TypeEvLite } from './MesEvenementsClient'
 
 export const metadata = {
@@ -52,7 +53,11 @@ export default async function MesEvenementsPage() {
     overrideAccess: true,
   })
 
+  // Borne « aujourd'hui » calculée via lib (règle de pureté — pas de Date.now() en rendu)
+  const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
+
   const evenements: MonEvenement[] = evDocs.map((e) => ({
+    past: new Date((e.dateDebut as string) ?? '').getTime() < todayStartMs,
     id: e.id as number,
     slug: (e.slug as string | null) ?? null,
     titre: (e.titre as string) ?? '',
