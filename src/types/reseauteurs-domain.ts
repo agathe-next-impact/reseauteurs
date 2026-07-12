@@ -121,6 +121,8 @@ export interface EvenementRsn {
   id: number | string
   slug?: string | null
   reseau?: (number | null) | Reseau
+  /** [ADR-0013] Réseauteur Plus organisateur (exclusif avec reseau — XOR). */
+  organisateurReseauteur?: (number | null) | Reseauteur
   titre: string
   type?: (number | null) | TypesEvenement
   dateDebut: string

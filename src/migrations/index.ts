@@ -67,6 +67,8 @@ import * as migration_20260708_100000_geom_triggers from './20260708_100000_geom
 import * as migration_20260709_100000_reseauteurs_participation from './20260709_100000_reseauteurs_participation';
 // ── Partenaires self-service : rôle partenaire + fiche + offre (2026-07-10)
 import * as migration_20260710_100000_partenaires_self_service from './20260710_100000_partenaires_self_service';
+// ── ADR-0013 P1 : Réseauteur Plus + packs de licences (2026-07-12)
+import * as migration_20260712_100000_reseauteur_plus_licences from './20260712_100000_reseauteur_plus_licences';
 
 export const migrations = [
   {
@@ -386,5 +388,10 @@ export const migrations = [
     up: migration_20260710_100000_partenaires_self_service.up,
     down: migration_20260710_100000_partenaires_self_service.down,
     name: '20260710_100000_partenaires_self_service',
+  },
+  {
+    up: migration_20260712_100000_reseauteur_plus_licences.up,
+    down: migration_20260712_100000_reseauteur_plus_licences.down,
+    name: '20260712_100000_reseauteur_plus_licences',
   },
 ];

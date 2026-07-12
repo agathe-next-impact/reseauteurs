@@ -531,6 +531,48 @@ export const Users: CollectionConfig = {
         description: '[DORMANT — ADR-0011] Ancien champ de plan. Sera supprimé par accounts-and-billing (J2.A).',
       },
     },
+    // ── Réseauteur Plus (ADR-0013) — statut posé par le webhook Stripe (abonnement)
+    //    ou par la route d'activation de licence (P2.A). JAMAIS éditable par le client
+    //    (field-access admin ; les écritures serveur passent par overrideAccess).
+    //    Source unique de lecture : lib/acces-plus.ts (estPlus).
+    {
+      name: 'plusActif',
+      type: 'checkbox',
+      defaultValue: false,
+      access: { update: isAdmin },
+      admin: {
+        position: 'sidebar',
+        description: '[ADR-0013] Réseauteur Plus actif (droit de créer des événements). Posé par webhook/serveur.',
+      },
+    },
+    {
+      name: 'plusExpireAt',
+      type: 'date',
+      access: { update: isAdmin },
+      admin: {
+        position: 'sidebar',
+        description: '[ADR-0013] Expiration du Plus (fin d\'abonnement ou du pack de licences).',
+      },
+    },
+    {
+      name: 'plusSource',
+      type: 'text',
+      access: { update: isAdmin },
+      admin: {
+        position: 'sidebar',
+        description: '[ADR-0013] Origine du Plus : "abonnement" (Stripe individuel) ou "licence" (code partenaire).',
+      },
+    },
+    {
+      name: 'plusLicencePack',
+      type: 'relationship',
+      relationTo: 'licences-packs',
+      access: { update: isAdmin },
+      admin: {
+        position: 'sidebar',
+        description: '[ADR-0013] Pack de licences dont provient le Plus (si plusSource = licence).',
+      },
+    },
     {
       name: 'groupe',
       type: 'relationship',

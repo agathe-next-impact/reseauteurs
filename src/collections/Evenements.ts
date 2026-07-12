@@ -27,6 +27,7 @@ import { stripEmojis } from '../lib/sanitize'
 import { seoField } from './fields/seoField'
 import { peutPublierEvenement, peutGererReseau } from '../lib/reseau-hierarchie'
 import type { ReseauForHierarchy, UserForHierarchy } from '../lib/reseau-hierarchie'
+import { estPlus } from '../lib/acces-plus'
 
 // Champs texte protégés contre les emojis
 const EVENEMENT_TEXT_FIELDS = [
@@ -98,28 +99,39 @@ export const Evenements: CollectionConfig = {
           or: [
             { statut: { equals: 'publie' } },
             { 'reseau.user': { equals: user.id } },
+            { 'organisateurReseauteur.user': { equals: user.id } },
           ],
         } as Where
       }
       return { statut: { equals: 'publie' } }
     },
-    // Création : organisateur ou admin.
-    // La vérification reseau.partenaire === true est faite dans le hook beforeValidate (J2.A, ADR-0011).
+    // Création : organisateur, réseauteur (Plus — vérifié dans le hook) ou admin.
+    // Les vérifications ownership + statut payant sont faites dans le hook beforeValidate
+    // (abonnement du national pour un réseau ; estPlus pour un réseauteur — ADR-0013).
     create: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
-      // L'organisateur passe ici ; le hook beforeValidate vérifie ensuite l'ownership et le statut partenaire.
-      return user.role === 'organisateur'
+      return user.role === 'organisateur' || user.role === 'reseauteur'
     },
     update: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
-      return { 'reseau.user': { equals: user.id } } as Where
+      return {
+        or: [
+          { 'reseau.user': { equals: user.id } },
+          { 'organisateurReseauteur.user': { equals: user.id } },
+        ],
+      } as Where
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
-      return { 'reseau.user': { equals: user.id } } as Where
+      return {
+        or: [
+          { 'reseau.user': { equals: user.id } },
+          { 'organisateurReseauteur.user': { equals: user.id } },
+        ],
+      } as Where
     },
   },
   hooks: {
@@ -159,6 +171,79 @@ export const Evenements: CollectionConfig = {
           slug = candidate
         }
         data.slug = slug
+        return data
+      },
+      // ── Invariant « exactement un organisateur » + gate Réseauteur Plus (ADR-0013).
+      //
+      // XOR : un événement a soit un réseau organisateur, soit un réseauteur organisateur —
+      // jamais les deux, jamais aucun. Si la branche réseauteur est utilisée : le profil doit
+      // appartenir à l'utilisateur ET le user (lu FRAIS — jamais le JWT) doit être Plus actif.
+      async ({ data, req, operation, originalDoc }) => {
+        if (!data) return data
+
+        const resolveId = (v: unknown): number | string | null => {
+          if (v == null) return null
+          return typeof v === 'object' ? ((v as { id?: number | string }).id ?? null) : (v as number | string)
+        }
+        const effective = (key: 'reseau' | 'organisateurReseauteur'): number | string | null => {
+          if (Object.prototype.hasOwnProperty.call(data, key)) return resolveId(data[key])
+          return resolveId(originalDoc?.[key])
+        }
+
+        const reseauId = effective('reseau')
+        const organisateurId = effective('organisateurReseauteur')
+
+        // XOR — exactement un organisateur.
+        if (reseauId != null && organisateurId != null) {
+          throw new Error(
+            'Un événement a un seul organisateur : un réseau OU un réseauteur, pas les deux.',
+          )
+        }
+        if (reseauId == null && organisateurId == null) {
+          throw new Error(
+            'Un événement doit avoir un organisateur : sélectionnez un réseau ou un réseauteur.',
+          )
+        }
+
+        // Branche réseauteur — ownership + gate Plus (admin exempté).
+        if (organisateurId != null && req.user && req.user.role !== 'admin') {
+          const incomingOrganisateur =
+            operation === 'update' && Object.prototype.hasOwnProperty.call(data, 'organisateurReseauteur')
+              ? resolveId(data.organisateurReseauteur)
+              : undefined
+          const originalOrganisateur = resolveId(originalDoc?.organisateurReseauteur)
+          const organisateurChanged =
+            operation === 'update' && incomingOrganisateur !== undefined &&
+            String(incomingOrganisateur ?? '') !== String(originalOrganisateur ?? '')
+
+          if (operation === 'create' || organisateurChanged) {
+            // 1. Le profil réseauteur doit appartenir à l'utilisateur courant.
+            const profil = await req.payload.findByID({
+              collection: 'reseauteurs',
+              id: organisateurId,
+              depth: 0,
+              overrideAccess: true,
+            })
+            const profilUserId = resolveId((profil as { user?: unknown }).user)
+            if (profilUserId == null || String(profilUserId) !== String(req.user.id)) {
+              throw new Error('Vous ne pouvez organiser un événement qu\'en votre propre nom.')
+            }
+
+            // 2. Gate Plus — lecture fraîche du user (le statut est posé serveur, jamais dans le JWT).
+            const freshUser = await req.payload.findByID({
+              collection: 'users',
+              id: req.user.id,
+              depth: 0,
+              overrideAccess: true,
+            })
+            if (!estPlus(freshUser as { id: number | string; plusActif?: boolean | null; plusExpireAt?: string | null })) {
+              throw new Error(
+                'La création d\'événements est réservée aux réseauteurs Plus. ' +
+                'Passez Plus depuis votre tableau de bord (abonnement ou code partenaire).',
+              )
+            }
+          }
+        }
         return data
       },
       // ── Vérification ownership + gate de publication (ADR-0012 E1.3).
@@ -309,17 +394,29 @@ export const Evenements: CollectionConfig = {
       },
     },
     // ============================================================
-    // RÉSEAU ORGANISATEUR (N-1 vers reseaux)
+    // ORGANISATEUR — réseau XOR réseauteur (ADR-0013, gate P0 D1)
+    // Invariant « exactement un organisateur » garanti par le hook beforeValidate.
     // ============================================================
     {
       name: 'reseau',
       type: 'relationship',
       relationTo: 'reseaux',
-      required: true,
+      // ADR-0013 : optionnel — un événement peut être organisé par un réseauteur Plus.
       index: true,
       label: 'Réseau organisateur',
       admin: {
-        description: 'Réseau qui organise cet événement.',
+        description: 'Réseau qui organise cet événement (exclusif avec « Réseauteur organisateur »).',
+      },
+    },
+    {
+      name: 'organisateurReseauteur',
+      type: 'relationship',
+      relationTo: 'reseauteurs',
+      index: true,
+      label: 'Réseauteur organisateur',
+      admin: {
+        description:
+          '[ADR-0013] Réseauteur Plus qui organise cet événement (exclusif avec « Réseau organisateur »).',
       },
     },
     // ============================================================
@@ -335,6 +432,9 @@ export const Evenements: CollectionConfig = {
       name: 'type',
       type: 'relationship',
       relationTo: 'types-evenement',
+      // Aligné sur la contrainte DB (type_id NOT NULL) : sans required, un create sans
+      // catégorie échouait en erreur SQL brute au lieu d'une validation Payload propre.
+      required: true,
       label: 'Catégorie',
       index: true,
     },

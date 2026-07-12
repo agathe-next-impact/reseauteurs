@@ -14,6 +14,9 @@ import { Reseauteurs } from './collections/Reseauteurs'
 import { Reseaux } from './collections/Reseaux'
 import { Evenements } from './collections/Evenements'
 import { Partenaires } from './collections/Partenaires'
+// ── Monétisation ADR-0013 (Réseauteur Plus — packs de licences partenaires)
+import { LicencesPacks } from './collections/LicencesPacks'
+import { LicencesActivations } from './collections/LicencesActivations'
 // ── Référentiels
 import { Categories } from './collections/Categories'
 import { TypesEvenement } from './collections/TypesEvenement'
@@ -84,6 +87,9 @@ export default buildConfig({
     Reseaux,
     Evenements,
     Partenaires,
+    // ── Monétisation ADR-0013
+    LicencesPacks,
+    LicencesActivations,
     // ── Référentiels
     Categories,
     TypesEvenement,

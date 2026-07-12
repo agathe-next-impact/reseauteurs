@@ -73,6 +73,8 @@ export interface Config {
     reseaux: Reseau;
     evenements: Evenement;
     partenaires: Partenaire;
+    'licences-packs': LicencesPack;
+    'licences-activations': LicencesActivation;
     categories: Category;
     'types-evenement': TypesEvenement;
     badges: Badge;
@@ -93,6 +95,8 @@ export interface Config {
     reseaux: ReseauxSelect<false> | ReseauxSelect<true>;
     evenements: EvenementsSelect<false> | EvenementsSelect<true>;
     partenaires: PartenairesSelect<false> | PartenairesSelect<true>;
+    'licences-packs': LicencesPacksSelect<false> | LicencesPacksSelect<true>;
+    'licences-activations': LicencesActivationsSelect<false> | LicencesActivationsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'types-evenement': TypesEvenementSelect<false> | TypesEvenementSelect<true>;
     badges: BadgesSelect<false> | BadgesSelect<true>;
@@ -150,6 +154,22 @@ export interface User {
    * [DORMANT — ADR-0011] Ancien champ de plan. Sera supprimé par accounts-and-billing (J2.A).
    */
   plan?: string | null;
+  /**
+   * [ADR-0013] Réseauteur Plus actif (droit de créer des événements). Posé par webhook/serveur.
+   */
+  plusActif?: boolean | null;
+  /**
+   * [ADR-0013] Expiration du Plus (fin d'abonnement ou du pack de licences).
+   */
+  plusExpireAt?: string | null;
+  /**
+   * [ADR-0013] Origine du Plus : "abonnement" (Stripe individuel) ou "licence" (code partenaire).
+   */
+  plusSource?: string | null;
+  /**
+   * [ADR-0013] Pack de licences dont provient le Plus (si plusSource = licence).
+   */
+  plusLicencePack?: (number | null) | LicencesPack;
   /**
    * Groupe d'affiliation (optionnel)
    */
@@ -269,29 +289,97 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Packs de licences Réseauteur Plus achetés par les partenaires (ADR-0013).
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "groupes".
+ * via the `definition` "licences-packs".
  */
-export interface Groupe {
+export interface LicencesPack {
   id: number;
+  /**
+   * Partenaire propriétaire du pack.
+   */
+  partenaire: number | Partenaire;
+  /**
+   * Nombre de licences du pack (10 / 50 / 100 — gate P0 D2).
+   */
+  quota: number;
+  /**
+   * Licences déjà activées. Incrémenté transactionnellement par la route d'activation.
+   */
+  quotaUtilise?: number | null;
+  /**
+   * Code promo à diffuser aux réseauteurs. Généré serveur à la création.
+   */
+  code?: string | null;
+  /**
+   * Posé par le webhook (achat), la route d'activation (épuisement) et le cron (expiration).
+   */
+  statut: 'actif' | 'epuise' | 'expire';
+  /**
+   * Expiration du pack (alignée sur l'abonnement annonceur — gate P0 D4). Reconduction au rachat.
+   */
+  expireAt?: string | null;
+  /**
+   * Session Checkout one-shot du paiement du pack.
+   */
+  stripeCheckoutSessionId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Annonceurs B2B — logo page d'accueil + page Partenaires + fiche perso.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partenaires".
+ */
+export interface Partenaire {
+  id: number;
+  /**
+   * Compte propriétaire (1 user = 1 partenaire).
+   */
+  user?: (number | null) | User;
+  /**
+   * Généré depuis le nom à la création ; figé ensuite (URL /partenaire/<slug>).
+   */
+  slug?: string | null;
   nom: string;
   /**
-   * Code d'affiliation pour rejoindre le groupe (auto-genere)
+   * Logo affiché sur la page d'accueil, la page Partenaires et votre fiche (fond clair, carré recommandé).
    */
-  code: string;
-  owner: number | User;
+  logo?: (number | null) | Media;
   /**
-   * Palier de reduction actif (calcule automatiquement)
+   * Lien vers votre site (s'ouvre dans un nouvel onglet).
    */
-  palierActuel: '0' | '5' | '10' | '15';
+  lien?: string | null;
   /**
-   * ID du coupon Stripe applique au groupe
+   * Une phrase de présentation affichée sur la page Partenaires et votre fiche.
    */
-  stripeCouponId?: string | null;
+  description?: string | null;
   /**
-   * Soft-delete : un groupe deletedAt != null n'est plus joignable par code et n'apparait plus pour ses membres. Conservation pour audit.
+   * Offre promotionnelle visible UNIQUEMENT par les réseauteurs connectés. Laissez le titre vide pour ne pas proposer d'offre.
    */
-  deletedAt?: string | null;
+  offre?: {
+    titre?: string | null;
+    description?: string | null;
+    lien?: string | null;
+  };
+  /**
+   * Statut d'abonnement. Posé automatiquement par le webhook Stripe.
+   */
+  statut: 'actif' | 'expire';
+  /**
+   * Customer Stripe rattaché.
+   */
+  stripeCustomerId?: string | null;
+  /**
+   * ID de l'abonnement Stripe.
+   */
+  stripeSubscriptionId?: string | null;
+  /**
+   * Date d'expiration de l'abonnement.
+   */
+  abonnementExpireAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -339,6 +427,33 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "groupes".
+ */
+export interface Groupe {
+  id: number;
+  nom: string;
+  /**
+   * Code d'affiliation pour rejoindre le groupe (auto-genere)
+   */
+  code: string;
+  owner: number | User;
+  /**
+   * Palier de reduction actif (calcule automatiquement)
+   */
+  palierActuel: '0' | '5' | '10' | '15';
+  /**
+   * ID du coupon Stripe applique au groupe
+   */
+  stripeCouponId?: string | null;
+  /**
+   * Soft-delete : un groupe deletedAt != null n'est plus joignable par code et n'apparait plus pour ses membres. Conservation pour audit.
+   */
+  deletedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Personnes inscrites sur la plateforme (profil public, carte des réseauteurs).
@@ -663,11 +778,15 @@ export interface Evenement {
    */
   slug?: string | null;
   /**
-   * Réseau qui organise cet événement.
+   * Réseau qui organise cet événement (exclusif avec « Réseauteur organisateur »).
    */
-  reseau: number | Reseau;
+  reseau?: (number | null) | Reseau;
+  /**
+   * [ADR-0013] Réseauteur Plus qui organise cet événement (exclusif avec « Réseau organisateur »).
+   */
+  organisateurReseauteur?: (number | null) | Reseauteur;
   titre: string;
-  type?: (number | null) | TypesEvenement;
+  type: number | TypesEvenement;
   /**
    * Date et heure de début de l'événement.
    */
@@ -724,58 +843,25 @@ export interface Evenement {
   createdAt: string;
 }
 /**
- * Annonceurs B2B — logo page d'accueil + page Partenaires + fiche perso.
+ * Activations de licences Réseauteur Plus (qui a activé quel code, quand).
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "partenaires".
+ * via the `definition` "licences-activations".
  */
-export interface Partenaire {
+export interface LicencesActivation {
   id: number;
   /**
-   * Compte propriétaire (1 user = 1 partenaire).
+   * Pack dont provient la licence.
    */
-  user?: (number | null) | User;
+  pack: number | LicencesPack;
   /**
-   * Généré depuis le nom à la création ; figé ensuite (URL /partenaire/<slug>).
+   * Réseauteur ayant activé la licence (une seule activation par compte).
    */
-  slug?: string | null;
-  nom: string;
+  user: number | User;
   /**
-   * Logo affiché sur la page d'accueil, la page Partenaires et votre fiche (fond clair, carré recommandé).
+   * Date d'activation.
    */
-  logo?: (number | null) | Media;
-  /**
-   * Lien vers votre site (s'ouvre dans un nouvel onglet).
-   */
-  lien?: string | null;
-  /**
-   * Une phrase de présentation affichée sur la page Partenaires et votre fiche.
-   */
-  description?: string | null;
-  /**
-   * Offre promotionnelle visible UNIQUEMENT par les réseauteurs connectés. Laissez le titre vide pour ne pas proposer d'offre.
-   */
-  offre?: {
-    titre?: string | null;
-    description?: string | null;
-    lien?: string | null;
-  };
-  /**
-   * Statut d'abonnement. Posé automatiquement par le webhook Stripe.
-   */
-  statut: 'actif' | 'expire';
-  /**
-   * Customer Stripe rattaché.
-   */
-  stripeCustomerId?: string | null;
-  /**
-   * ID de l'abonnement Stripe.
-   */
-  stripeSubscriptionId?: string | null;
-  /**
-   * Date d'expiration de l'abonnement.
-   */
-  abonnementExpireAt?: string | null;
+  activeAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -940,6 +1026,14 @@ export interface PayloadLockedDocument {
         value: number | Partenaire;
       } | null)
     | ({
+        relationTo: 'licences-packs';
+        value: number | LicencesPack;
+      } | null)
+    | ({
+        relationTo: 'licences-activations';
+        value: number | LicencesActivation;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
@@ -1016,6 +1110,10 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
   plan?: T;
+  plusActif?: T;
+  plusExpireAt?: T;
+  plusSource?: T;
+  plusLicencePack?: T;
   groupe?: T;
   pendingGroupeCode?: T;
   nomSociete?: T;
@@ -1233,6 +1331,7 @@ export interface ReseauxSelect<T extends boolean = true> {
 export interface EvenementsSelect<T extends boolean = true> {
   slug?: T;
   reseau?: T;
+  organisateurReseauteur?: T;
   titre?: T;
   type?: T;
   dateDebut?: T;
@@ -1281,6 +1380,32 @@ export interface PartenairesSelect<T extends boolean = true> {
   stripeCustomerId?: T;
   stripeSubscriptionId?: T;
   abonnementExpireAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licences-packs_select".
+ */
+export interface LicencesPacksSelect<T extends boolean = true> {
+  partenaire?: T;
+  quota?: T;
+  quotaUtilise?: T;
+  code?: T;
+  statut?: T;
+  expireAt?: T;
+  stripeCheckoutSessionId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licences-activations_select".
+ */
+export interface LicencesActivationsSelect<T extends boolean = true> {
+  pack?: T;
+  user?: T;
+  activeAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
