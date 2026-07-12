@@ -2,13 +2,38 @@
 
 > Architecture cible. Réalignée le **2026-06-28** sur le **modèle à trois entités** (ADR-0011),
 > puis **amendée le 2026-06-30** par l'**ADR-0012** (hiérarchie réseaux national↔local, abonnement national,
-> locaux délégables, suppression de l'événement Premium, deux pages à bascules).
+> locaux délégables, suppression de l'événement Premium, deux pages à bascules),
+> puis **amendée le 2026-07-12** par l'**ADR-0013** (palier **Réseauteur Plus**, rôle **`partenaire`**,
+> **packs de licences Plus** activés par code promo).
 > Entrées : `docs/adr/0011-...md`, `docs/adr/0012-hierarchie-reseaux-national-local-abonnement-national.md`,
+> `docs/adr/0013-reseauteur-plus-licences-partenaires.md`,
 > `AUDIT.md` (verdict **REFACTOR_IN_PLACE**) + `AUDIT-DELTA-RESEAUTEURS.md`, `CLAUDE.md`. Séquencement : `PLAN.md`.
 > **Aucune implémentation ne commence avant validation humaine de ce document + du schéma** (règle d'or,
 > CLAUDE.md §13).
 
 ---
+
+## ⚠️ Encart d'amendement — ADR-0013 (2026-07-12) — À METTRE EN ŒUVRE (PLAN.md Partie D)
+
+L'ADR-0013 fait passer le revenu en **mix B2C + B2B** et **lève deux invariants** antérieurs :
+
+1. **Réseauteur : 2 niveaux.** « Réseauteurs strictement gratuits » est levé — **Gratuit** (inchangé) et
+   **Plus** (abonnement individuel **ou** licence activée par code promo partenaire), dont le seul avantage
+   V1 est le **droit de créer des événements**. Statut porté par `users` (`plusActif`/`plusExpireAt`/
+   `plusSource`), **posé serveur uniquement**. → §3, §4.6.
+2. **Gate d'événements étendu** : `peutCreerEvenement(user)` = organisateur d'un national abonné (ADR-0012,
+   inchangé) **OU réseauteur Plus actif**. Modèle **acté (gate P0, 2026-07-12)** : le réseauteur **est**
+   l'organisateur — `evenements.organisateurReseauteur` (optionnel) + `reseau` relâché, invariant
+   « exactement un organisateur » (réseau XOR réseauteur). → §2, §4.4.
+3. **Rôle `partenaire` acté** (« pas de 4ᵉ rôle » levé) : 1 compte ↔ 1 fiche `partenaires` self-service,
+   fiche publique `/partenaire/<slug>`, **offre réservée aux réseauteurs** — **déjà livrés** (2026-07-10).
+4. **Packs de licences Plus** vendus aux partenaires (**10 / 50 / 100+**), activés par **code promo** avec
+   quota transactionnel, une activation par réseauteur, traçabilité (`licences_packs` +
+   `licences_activations` — nouvelles collections ; groupes ADR-0009 **restent dormants**). → §4.6.
+
+**Les réseaux sont inchangés** (hiérarchie, abonnement national, délégation — ADR-0012 intégralement
+réaffirmé). Sections ci-dessous : les mentions « réseauteurs gratuits / pas de palier payant » se lisent
+désormais **au sens ADR-0013**.
 
 ## ⚠️ Encart d'amendement — ADR-0012 (2026-06-30)
 
@@ -237,20 +262,26 @@ Source de vérité du statut payant = **webhooks Stripe** (jamais le client) —
   (ADR-0012). Les **délégués** sont créés via le **flow d'invitation** (pas d'auto-création de national —
   réutilisation du pattern claim-flow `req.context`).
 
-### 4.6 Monétisation B2B — Stripe (recalibrée ADR-0012)
+### 4.6 Monétisation — Stripe (recalibrée ADR-0012, étendue ADR-0013)
 - Plomberie conservée (**Subscription**, **Customer Portal**, **webhooks signés idempotents**, factures PDF,
-  crons expiration). **Deux produits** :
+  crons expiration). **Quatre produits** :
   - (a) **Abonnement réseau national** = Subscription annuelle, posée sur le réseau `niveau=national` →
     `national.partenaire` actif. **Débloque** : création de réseaux locaux **et** publication d'événements
-    (par le national **et** par ses locaux), fiche enrichie, logo accueil, badge partenaire.
-  - (b) **Partenaire annonceur** = Subscription → page d'accueil + page Partenaires (collection `partenaires`,
-    **inchangée**).
-- **Supprimé (ADR-0012)** : **événement Premium ponctuel** → retrait du champ `evenements.premium`,
-  `evenements.stripeCheckoutSessionId`, du **Checkout one-shot** et du **marqueur Premium**. **Plus de tier
-  payant par événement.**
-- **Pas** de freemium réseauteur, **pas** de quota, **pas** de 3 paliers. Les avantages dérivent du statut B2B
-  **du national** (`abonnementActif`) et du statut **annonceur**, posés par webhooks et **évalués
-  séparément** (jamais comme un niveau cumulatif). La fonction `getEffectiveFeatureLevel` reste **supprimée**.
+    (par le national **et** par ses locaux), fiche enrichie, logo accueil, badge partenaire. *(Inchangé.)*
+  - (b) **Partenaire annonceur** = Subscription → logo page d'accueil + page Partenaires + **fiche perso
+    `/partenaire/<slug>`** + **offre réservée aux réseauteurs** (espace « Offres partenaires » — livré).
+  - (c) **Réseauteur Plus (ADR-0013)** = Subscription individuelle → `users.plusActif` (+ `plusExpireAt`,
+    `plusSource='abonnement'`). **Débloque** : création d'événements par le réseauteur.
+  - (d) **Packs de licences Plus (ADR-0013)** = achat par pack (**10 / 50 / 100+**) porté par le partenaire →
+    `licences_packs` (quota + **code promo** unique) + `licences_activations` (1 par réseauteur, quota
+    décrémenté **transactionnellement**) → active `users.plusActif` (`plusSource='licence'`).
+- **Supprimé (ADR-0012, toujours en vigueur)** : **événement Premium ponctuel** → pas de tier payant par
+  événement.
+- **Pas** de quota d'événements, **pas** de 3 paliers historiques. Le « freemium réseauteur » historique
+  (39 €/an) reste caduc — le **Plus** (ADR-0013) est un palier **nouveau et distinct**, à avantage unique.
+  Les statuts payants (`abonnementActif` du national, statut **annonceur**, **Plus**) sont posés par
+  webhooks/serveur et **évalués séparément** (jamais comme un niveau cumulatif). La fonction
+  `getEffectiveFeatureLevel` reste **supprimée**.
 
 ### 4.7 SEO (ADR-0005, « comme PanoramaPub »)
 - JSON-LD **`Person`** (réseauteurs), **`Event`** (événements, `organizer` = réseau organisateur),
@@ -387,8 +418,9 @@ src/
 | 0008 | Occurrences récurrentes | Hors V1 ; `serieId` retiré (0011) |
 | 0009 | Paiements de groupe / affiliation dormants | Accepté (inchangé) — **angle « fédération » réalisé par la hiérarchie 0012**, mais groupes restent dormants |
 | 0010 | Annuaire mono-entité (membre seul) | Supersédé sur 3 points par 0011 |
-| 0011 | Plateforme à 3 entités, monétisation B2B, simplicité d'abord | **Accepté — amendé sur 4 points par 0012** |
-| **0012** | **Hiérarchie réseaux national↔local, abonnement national, locaux délégables, pages à bascules** | **Accepté (en vigueur)** |
+| 0011 | Plateforme à 3 entités, monétisation B2B, simplicité d'abord | **Accepté — amendé sur 4 points par 0012, sur l'invariant « réseauteurs gratuits » par 0013** |
+| 0012 | Hiérarchie réseaux national↔local, abonnement national, locaux délégables, pages à bascules | **Accepté (en vigueur)** — gate d'événements étendu et « pas de 4ᵉ rôle » levé par 0013 ; réseaux inchangés |
+| **0013** | **Réseauteur Plus (création d'événements), rôle partenaire self-service, packs de licences Plus par code promo** | **Accepté (2026-07-12) — à mettre en œuvre (PLAN.md Partie D)** |
 
 ---
 

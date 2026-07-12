@@ -3,6 +3,11 @@
 > Document de travail. Traduit le cadrage (`Reseauteurs - Document de cadrage.md` v2.0) et l'ADR-0011 en un
 > périmètre actionnable. Décision de fond : `docs/adr/0011-plateforme-trois-entites-monetisation-b2b.md`.
 > **Date :** 2026-06-28 · **Statut :** à valider · **Stack :** reprise sur Payload (refactor in place).
+>
+> ⚠️ **Amendé le 2026-06-30 (ADR-0012)** — hiérarchie réseaux, abonnement national, suppression du Premium —
+> **et le 2026-07-12 (ADR-0013)** : palier **Réseauteur Plus** (création d'événements), rôle **`partenaire`**
+> self-service, **packs de licences Plus** (10/50/100+) activés par code promo. Les lignes D3/D4/D5
+> ci-dessous sont annotées ; plan d'exécution : `PLAN.md` Parties B et D.
 
 ---
 
@@ -12,9 +17,9 @@
 |---|---|---|
 | D1 | **Reprise de l'existant sur Payload** | Pas de nouvelle stack ; domaine (re)construit *dans* le repo. |
 | D2 | **Trois entités reliées** | `reseauteurs` (personne) · `evenements` (événement) · `reseaux` (réseau-entité **+** taxonomie M2M). |
-| D3 | **Réseauteurs gratuits** | Aucun palier payant côté réseauteur. La gratuité fait la densité. |
-| D4 | **Monétisation B2B (Stripe, dès V1)** | **Réseau partenaire** (abonnement) · **Événement Premium** (ponctuel) · **Partenaire annonceur** (abonnement). |
-| D5 | **Trois rôles** | `reseauteur` / `organisateur` (1 user ↔ 1 réseau) / `admin`. |
+| D3 | **Réseauteurs gratuits** | *Amendé (ADR-0013)* : l'inscription et le socle restent gratuits (densité), mais un palier **Plus** (abonnement ou licence partenaire) débloque la **création d'événements**. |
+| D4 | **Monétisation (Stripe)** | *Amendée (ADR-0012 + 0013)* : **Réseau national partenaire** (abonnement, paliers) · **Partenaire annonceur** (abonnement + **packs de licences Plus** 10/50/100+ par code promo) · **Réseauteur Plus** (abonnement individuel). ~~Événement Premium~~ supprimé (0012). |
+| D5 | **Trois rôles** | *Amendé (ADR-0013)* : **quatre rôles** — `reseauteur` / `organisateur` (1 user ↔ 1 réseau) / `partenaire` (1 user ↔ 1 fiche) / `admin`. |
 | D6 | **Deux cartes** | Carte des réseauteurs + carte des événements (MapLibre + PostGIS). |
 | D7 | **Badges déclaratifs** | Bronze / Argent / Gold / Platinum (nb d'événements/mois). |
 | D8 | **Recherche simple** | Filtres dans Postgres via Payload ; **pas** de moteur FTS à facettes, **pas** d'agent dédié. |

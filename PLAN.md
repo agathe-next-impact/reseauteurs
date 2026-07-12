@@ -11,6 +11,8 @@
 > **Structure de ce document :**
 > - **Partie A — Base V1 (ADR-0011)** : jalons J1→J4. **Référence** (collections déjà échafaudées, commits « v1 »).
 > - **Partie B — Évolution ADR-0012** : jalons E1→E4. **Plan forward actif** à exécuter après le gate humain ADR-0012.
+> - **Partie D — Évolution ADR-0013** : jalons P1→P4. **Plan forward actif** (Réseauteur Plus + licences
+>   partenaires) — **gate P0 tranché le 2026-07-12**, P1 peut démarrer.
 > - **Partie C — Questions ouvertes (gate humain ADR-0012)** : autorité pour les points à trancher.
 
 ---
@@ -276,3 +278,78 @@ E1 data-architect ──┬──▶ E2.A accounts-and-billing (abo national + d
 > supprimé ; locaux délégables ; réseauteurs gratuits ; SSR/SEO/géoloc ville/RGPD/simplicité/stack).
 > **Le gate ADR-0012 est LEVÉ** : E1 (schéma) peut démarrer ; un **gate humain subsiste en sortie de E1**
 > (re-migration + drop colonnes destructif) avant E2.
+>
+> *(NB 2026-07-12 : l'invariant « réseauteurs gratuits » ci-dessus est depuis **levé par l'ADR-0013** —
+> voir Partie D. Les décisions Q1→Q8 restent valides pour le périmètre réseaux.)*
+
+---
+
+# Partie D — Évolution ADR-0013 — PLAN FORWARD (Réseauteur Plus + licences partenaires)
+
+> Source : `docs/adr/0013-reseauteur-plus-licences-partenaires.md` (accepté le 2026-07-12).
+> **Déjà livré en amont (2026-07-10/12, hors jalons)** : rôle `partenaire`, espace partenaire self-service
+> (fiche + offre + abonnement annonceur), fiche publique `/partenaire/<slug>`, offres côté réseauteur
+> (`/dashboard/offres`), participation réseauteur↔événements. La Partie D construit **par-dessus**.
+
+Jalons : **P0 Gate décisions → P1 Schéma (Plus + licences + organisateur d'événement) → P2 Chantiers
+parallèles → P3 Intégration → P4 QA/Gate.**
+
+## P0 — Décisions du gate humain ADR-0013  ·  TRANCHÉ le 2026-07-12
+
+| # | Question | **Décision retenue** | Note d'implémentation |
+|---|---|---|---|
+| D1 | Relation organisateur de l'événement | **Le réseauteur EST l'organisateur de ses événements** | `evenements.organisateurReseauteur` (N-1 optionnel) + `reseau` relâché ; invariant serveur « **exactement un** organisateur » (réseau XOR réseauteur) ; fiche/carte/SEO : « Organisé par \<prénom nom\> » (lien fiche réseauteur, `Event.organizer` = `Person`). |
+| D2 | Tarifs | **Plus = 59 €** · packs : **10 licences = 300 €** · **50 = 600 €** · **100 = 1 000 €** | Périodicité du Plus : **annuelle** (cohérente avec les autres produits — à signaler si mensuel voulu). Produits/prix à créer dans Stripe ; env vars `STRIPE_PLUS_PRICE_ID` + `STRIPE_PACK_{10,50,100}_PRICE_ID`. |
+| D3 | Paiement des packs | **Checkout one-shot par pack** | `mode: 'payment'` ; webhook `checkout.session.completed` → création/activation du pack + génération du code. |
+| D4 | Renouvellement des licences | **Expiration alignée sur le pack + reconduction au rachat** | Cron d'expiration : pack expiré → désactivation en cascade des Plus `licence` du pack ; rachat/renouvellement du pack → réactivation (même code, quota rechargé). |
+
+> **Le gate P0 est LEVÉ** : P1 (schéma) peut démarrer. Un **gate humain léger subsiste en sortie de P1**
+> (validation du schéma) avant P2.
+
+## P1 — Schéma : Plus, licences, organisateur d'événement  [SÉRIALISÉ après P0]  ·  Owner : `data-architect`
+- P1.1 `users` : `plusActif` (bool, serveur-only), `plusExpireAt`, `plusSource` (`abonnement|licence`),
+  `plusLicencePack` (N-1). Migration + field-access (jamais éditable client).
+- P1.2 Collections **`licences_packs`** (partenaire N-1, taille 10/50/100+, quota/quotaUtilise, `code`
+  unique non devinable généré serveur, statut, expireAt, champs Stripe) et **`licences_activations`**
+  (pack N-1, user N-1 **unique**, activeAt). Index + contraintes (1 activation/user, quota ≥ utilisé).
+- P1.3 `evenements` : selon D1 — `organisateurReseauteur` + `reseau` nullable + invariant serveur
+  « exactement un organisateur » ; compteurs `nbEvenements` inchangés (réseaux seulement).
+- P1.4 Helpers serveur centralisés : `estPlus(user)` ; `peutCreerEvenement(user)` (organisateur national
+  abonné OU réseauteur Plus OU admin) — remplace le gate actuel partout (une seule source).
+- ⚠️ Gate humain léger en sortie de P1 (validation schéma) avant P2.
+
+## P2 — Chantiers parallèles  [PARALLÈLE après P1]
+### P2.A — Billing Plus & packs  ·  Owner : `accounts-and-billing`
+- Produits/prix Stripe : abonnement Plus + 3 packs (config D2). Checkout Plus (réseauteur) ; checkout pack
+  (partenaire, D3). Webhooks idempotents : activation/expiration Plus (`plusSource='abonnement'`),
+  création/activation du pack + génération du code. Crons : expiration Plus, expiration packs → désactivation
+  en cascade des Plus `licence` du pack. Portal : retours par rôle. Emails transactionnels (confirmation
+  Plus, pack acheté, licence activée, expiration) via les templates rebrandés.
+- **Activation par code** : route serveur (rate-limitée) — vérifs atomiques (code actif, quota, unicité par
+  user) → décrément transactionnel + activation + trace.
+### P2.B — Frontend réseauteur & partenaire  ·  Owner : `frontend-builder`
+- Espace réseauteur : bloc « Passer Plus » (abonnement OU saisie de code) ; état Plus visible ; **CRUD de
+  ses événements** (création/édition, statut de modération existant) gaté par `peutCreerEvenement`.
+- Espace partenaire : section « Licences Réseauteur Plus » (acheter un pack, voir quota/activations, code à
+  diffuser).
+### P2.C — Fiches & cartes  ·  Owner : `frontend-builder` + `map-engineer`
+- Fiche événement : « Organisé par <réseauteur> » (lien fiche) quand organisateurReseauteur ; carte des
+  événements : aucun marqueur nouveau (simplicité — un seul type, ADR-0012 réaffirmé).
+### P2.D — SEO  ·  Owner : `seo-engineer`
+- JSON-LD `Event.organizer` = `Person` (réseauteur) quand applicable ; sitemap inchangé.
+
+## P3 — Intégration  [SÉRIALISÉ après P2]
+- Parcours complets : réseauteur → Plus (abonnement) → crée un événement → visible carte/fiche/SEO ;
+  partenaire → achète pack 10 → diffuse code → réseauteur active → crée un événement ; expiration pack →
+  Plus retombe → création bloquée (l'existant reste publié).
+
+## P4 — Vérification & gate  [SÉRIALISÉ — final]  ·  Owner : `qa-reviewer`
+- Autorisation stricte (jamais confiance au client : statut Plus, quota, propriété du pack) ; concurrence
+  d'activation (pas de sur-allocation) ; monétisation (webhooks idempotents, crons) ; a11y ; RGPD
+  (traçabilité activations minimale) ; simplicité (< 30 s : le gratuit reste le message principal).
+- **`docs/qa/REVIEW-<date>.md`** avant merge.
+
+## Récapitulatif des dépendances (ADR-0013)
+P0 ✅ (tranché 2026-07-12) → P1 (schéma+helpers) → gate léger → P2.A/B/C/D en parallèle → P3 → P4.
+**Avant P2.A :** créer les produits/prix dans Stripe (Plus 59 € ; packs 300/600/1 000 €) et renseigner les
+env vars correspondantes.

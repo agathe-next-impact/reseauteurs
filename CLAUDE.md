@@ -10,6 +10,13 @@
 > `docs/adr/0011-plateforme-trois-entites-monetisation-b2b.md` (décision structurante),
 > `docs/evolution/Reseauteurs - Document de cadrage.md`, `docs/evolution/ROADMAP-V1.md`,
 > `docs/evolution/AUDIT-DELTA-RESEAUTEURS.md` (+ son amendement 3-entités).
+>
+> **Évolution monétisation actée le 2026-07-12** (à mettre en œuvre — détail en §4). Elle **lève deux
+> invariants** du modèle 2026-06-28 : (1) le **réseauteur** a désormais **2 niveaux** — *Gratuit* (actuel)
+> et ***Plus*** (abonnement) qui ouvre la **création d'événements** ; (2) le **partenaire** peut **acheter
+> des packs de licences « Réseauteur Plus »** (10 / 50 / 100+) et les distribuer via **code promo** à ses
+> réseauteurs. Les **réseaux restent inchangés**. Partout ci-dessous, les mentions « réseauteurs strictement
+> gratuits » / « pas de palier payant côté réseauteur » sont **remplacées** par ce cap.
 
 ## 1. Produit
 
@@ -38,6 +45,9 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
    **réseau organisateur** (relation), **lien d'inscription externe**, géolocalisation, **drapeau Premium**
    (mise en avant payante, §4). Le bouton « S'inscrire » **redirige vers le site du réseau** — RÉSEAUTEURS
    **n'organise pas** et ne gère pas l'inscription en V1.
+   **Création (évolution §4) :** ouverte aux **organisateurs** (réseau partenaire) **et aux réseauteurs
+   Plus** (abonnés). Le modèle exact de la relation organisateur (réseau et/ou réseauteur) sera précisé à
+   l'implémentation.
 3. **Le réseau** (`reseaux`) — un **réseau d'affaires** (BNI, DCF…). Fiche publique (`/reseau/<slug>`).
    Champs : nom, logo, description, présentation, lien internet, **nombre de réseauteurs** (dérivé),
    **nombre d'événements** (dérivé), drapeau **partenaire** (abonnement actif, §4). Un réseau est **à la
@@ -46,33 +56,62 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
 **Relations :** réseauteur **↔** réseaux = many-to-many (réseaux fréquentés) · événement **→** réseau = N-1
 (réseau organisateur) · réseau **→** réseauteurs/événements = dérivés (compteurs).
 
-## 3. Audiences & comptes (trois rôles — ne jamais les confondre)
+## 3. Audiences & comptes (quatre rôles — ne jamais les confondre)
 
 - **Visiteur** (gratuit, sans compte) : explore les **deux cartes**, consulte les fiches réseauteur /
   événement / réseau, recherche. **Zéro friction.** Compte/email uniquement pour devenir réseauteur ou
   recevoir des alertes.
-- **Réseauteur** (`role: reseauteur`, **gratuit**) : crée et gère **son** profil, le rend visible sur la
-  carte. Tout le monde peut être réseauteur gratuitement (la gratuité fait la densité, donc la valeur).
+- **Réseauteur** (`role: reseauteur`) — **2 niveaux (évolution §4)** : **Gratuit** (actuel : profil, carte,
+  participation aux événements, offres partenaires) et **Plus** (abonnement individuel **ou** licence activée
+  par un **code promo** de partenaire) qui ouvre le **droit de créer des événements**. L'inscription reste
+  **gratuite et sans friction** — la gratuité fait la densité ; le Plus est optionnel.
 - **Organisateur** (`role: organisateur`) : gère **uniquement** la fiche **de son réseau** et **ses
   événements** (1 compte ↔ 1 réseau). C'est le compte d'un **réseau partenaire** (§4).
+- **Partenaire** (`role: partenaire`) : entreprise **annonceuse** (1 compte ↔ 1 fiche partenaire). Gère sa
+  fiche perso + son **offre réservée aux réseauteurs**, souscrit l'**abonnement annonceur**, et achète les
+  **packs de licences Réseauteur Plus** qu'il distribue par code promo (§4.3).
 - **Administrateur** (`role: admin`) : back-office complet — créer / modifier / supprimer **réseauteurs,
   événements, réseaux, partenaires, abonnements, tarifs, badges, catégories, utilisateurs**.
 
-## 4. Monétisation — B2B, dès la V1 (Stripe)
+## 4. Monétisation (Stripe)
 
-**Les réseauteurs sont et restent gratuits.** Le revenu est **B2B**, branché sur le **compte Stripe
-existant** (paiement, renouvellement, expiration, gestion des abonnements, factures) — ADR-0011 §3.
+> **Évolution 2026-07-12 (à mettre en œuvre).** Le modèle passe d'un revenu **100 % B2B** à un **mix
+> B2C (réseauteur Plus) + B2B (réseaux, partenaires + licences)**. Cela **lève** l'invariant historique
+> « les réseauteurs sont et restent gratuits / pas de palier payant côté réseauteur ». La plomberie Stripe
+> existante (checkout, Customer Portal, webhooks idempotents signés, factures PDF, crons d'expiration) est
+> **réutilisée**. Le statut payant est **toujours** posé côté serveur (webhook), jamais par le client (§11).
 
+### 4.1 Réseauteur — 2 niveaux d'accès
+| Niveau | Type | Accès |
+|---|---|---|
+| **Gratuit** *(actuel)* | — | Profil, fiche publique, carte, réseaux fréquentés, participation aux événements, offres partenaires. |
+| **Plus** | Abonnement (Subscription) | Tout le gratuit **+ droit de créer des événements**. |
+
+Le niveau est porté par le **compte réseauteur** (statut d'abonnement posé par le webhook Stripe). Un
+réseauteur passe **Plus** de **deux façons** : (a) **abonnement individuel**, ou (b) **licence** activée en
+saisissant un **code promo** fourni par un partenaire (§4.3).
+
+### 4.2 Réseau — inchangé
+**Réseau partenaire** : abonnement **annuel** porté par le réseau **national**. Inclut logo page d'accueil,
+badge partenaire, fiche réseau enrichie, **droit de publier des événements** (via le compte organisateur),
+lien vers le site. *(Aucun changement vs le modèle actuel.)*
+
+### 4.3 Partenaire (annonceur) — abonnement + packs de licences
 | Produit | Type | Inclus |
 |---|---|---|
-| **Réseau partenaire** | Abonnement **annuel** (Subscription) | Logo en page d'accueil · badge partenaire · **fiche réseau enrichie** · **droit de publier des événements** · lien vers le site. |
-| **Événement Premium** | Paiement **ponctuel** / événement (Checkout one-shot) | **Marqueur spécifique** + **couleur différente** · **mise en avant** dans les résultats · **badge Premium**. |
-| **Partenaire (annonceur)** | Abonnement | Logo en **page d'accueil** + **page Partenaires** + lien vers le site. |
+| **Partenaire annonceur** | Abonnement | **Espace publicitaire** : logo page d'accueil + page Partenaires + **fiche perso** (`/partenaire/<slug>`) + **offre réservée aux réseauteurs** (visible dans leur espace « Offres partenaires »). *(= fonctionnalité déjà livrée.)* |
+| **Packs de licences « Réseauteur Plus »** | Achat par paliers : **10 / 50 / 100+** licences | Le partenaire achète un **lot** de licences Plus et **diffuse un code promo** à ses réseauteurs ; chacun active sa licence en saisissant le code, **dans la limite du quota** du pack. |
 
-> Il n'y a **pas** de palier payant côté réseauteur. Le « freemium membre 39 €/an », le quota d'événements
-> et les 3 paliers 90/130/190 € sont **supprimés du périmètre**. La plomberie Stripe (checkout, portal,
-> webhooks idempotents signés, factures PDF, crons d'expiration) est **conservée** et **recalibrée** sur ces
-> trois produits B2B.
+**Mécanique licences & codes (à concevoir proprement, extensible).** Un pack = un **quota** de licences Plus
++ un ou plusieurs **codes promo** rattachés au partenaire. À la saisie d'un code par un réseauteur :
+décrément du quota, **passage du réseauteur en Plus**, traçabilité (qui a activé quel code, quand),
+expiration alignée sur l'abonnement/pack du partenaire. **Autorisation stricte, jamais confiance au client** :
+quota disponible, **une seule activation par réseauteur**, appartenance du code au partenaire — **vérifiés
+serveur** (§11).
+
+> **Toujours caduc :** l'« Événement Premium » ponctuel (ADR-0012) reste **supprimé** ; le « freemium membre
+> 39 €/an » et les 3 paliers 90/130/190 € historiques restent **supprimés**. Le **Réseauteur Plus** est un
+> **nouveau** palier distinct, dont le seul avantage V1 est la **création d'événements**.
 
 ## 5. Badge réseauteur (déclaratif, simple)
 
@@ -93,7 +132,7 @@ le référentiel des badges.
   événements). Géocodage via **data.gouv** (existant, conservé).
 - **Recherche :** **simple, par filtres** dans Postgres via Payload (`find` + colonnes indexées, `pg_trgm`
   optionnel pour la tolérance de frappe). **Pas de moteur FTS à facettes, pas de moteur externe** (§10, §8).
-- **Auth :** **Payload** (JWT, lockout, verify, reset). Rôles `admin/organisateur/reseauteur`.
+- **Auth :** **Payload** (JWT, lockout, verify, reset). Rôles `admin/organisateur/reseauteur/partenaire`.
 - **Paiement :** Stripe (Subscriptions + Checkout one-shot + Customer Portal + webhooks + factures PDF),
   recalibré sur les 3 produits B2B.
 - **Emails :** Resend (onboarding, sécurité, modération, expiration d'abonnement) — conservé, à rebrander.
@@ -193,6 +232,13 @@ cette contrainte : un parcours évident, pas de fonctionnalité « parce qu'on p
   partenaire + événement Premium + partenaire annonceur) ; **page Partenaires** ; validation des
   inscriptions + modération ; SEO `Person`/`Event`/`Organization` + RGPD proportionné ; responsive
   (desktop / tablette / mobile).
+- **Évolution monétisation (2026-07-12, à mettre en œuvre — voir §4) :** palier **Réseauteur Plus**
+  (abonnement débloquant la **création d'événements**) + **packs de licences Plus** vendus aux partenaires
+  (**10 / 50 / 100+**), activés par **code promo**. Cela **remplace** l'invariant « pas de palier payant
+  réseauteur » ; les **réseaux restent inchangés** ; la création d'événements devient ouverte aux
+  **réseauteurs Plus** (en plus des organisateurs). *(Le rôle `partenaire`, l'espace partenaire, la fiche
+  perso et les offres réservées aux réseauteurs sont **déjà livrés** ; restent à faire : Réseauteur Plus,
+  ouverture de la création d'événements, packs de licences + codes promo.)*
 - **Conçu dès le départ dans le modèle de données, mais NON développé en V1 (évolutions futures) :**
   application mobile · messagerie entre réseauteurs · agenda personnel · import automatique d'événements
   (CSV / iCal / API) · check-in aux événements · badge vérifié · statistiques · association RÉSEAUTEURS ·
