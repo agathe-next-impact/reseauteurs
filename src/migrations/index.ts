@@ -69,6 +69,8 @@ import * as migration_20260709_100000_reseauteurs_participation from './20260709
 import * as migration_20260710_100000_partenaires_self_service from './20260710_100000_partenaires_self_service';
 // ── ADR-0013 P1 : Réseauteur Plus + packs de licences (2026-07-12)
 import * as migration_20260712_100000_reseauteur_plus_licences from './20260712_100000_reseauteur_plus_licences';
+// ── Slug réseauteur = prénom-nom : slug nullable pour les squelettes (2026-07-12)
+import * as migration_20260712_110000_reseauteurs_slug_nullable from './20260712_110000_reseauteurs_slug_nullable';
 
 export const migrations = [
   {
@@ -393,5 +395,10 @@ export const migrations = [
     up: migration_20260712_100000_reseauteur_plus_licences.up,
     down: migration_20260712_100000_reseauteur_plus_licences.down,
     name: '20260712_100000_reseauteur_plus_licences',
+  },
+  {
+    up: migration_20260712_110000_reseauteurs_slug_nullable.up,
+    down: migration_20260712_110000_reseauteurs_slug_nullable.down,
+    name: '20260712_110000_reseauteurs_slug_nullable',
   },
 ];

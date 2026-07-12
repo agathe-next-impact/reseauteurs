@@ -47,6 +47,15 @@ const RESEAUTEUR_TEXT_FIELDS = [
   'linkedin',
 ] as const
 
+/** Slugifie un libellé (minuscules, sans accents, tirets). */
+const toSlug = (s: string): string =>
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
 /**
  * Recalcule le compteur nbReseauteurs des réseaux affectés.
  * Déclenché quand reseauxFrequentes change.
@@ -128,17 +137,36 @@ export const Reseauteurs: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [
-      // ── Génération du slug (prénom-nom, collision → -2, -3…, jamais Date.now())
-      async ({ data, req, operation }) => {
+      // ── Slug = /reseauteur/<prénom-nom>, dérivé des CHAMPS STRUCTURÉS prénom+nom
+      //    (jamais du placeholder `nomSociete` du squelette d'inscription).
+      //
+      //    À l'inscription, le profil est un SQUELETTE (prénom vide, statut en_attente) :
+      //    on ne fige AUCUN slug tant que prénom+nom ne sont pas renseignés (slug reste
+      //    NULL — l'index unique tolère NULL). Le slug est généré au moment où le
+      //    réseauteur complète prénom+nom (depuis le dashboard), puis FIGÉ dès que le
+      //    profil devient public (statut 'valide') — contrat SEO ADR-0005.
+      //
+      //    Collision → suffixe -2, -3, … (déterministe, jamais Date.now()).
+      async ({ data, req, originalDoc }) => {
         if (!data) return data
-        if (operation !== 'create') return data
+        const orig = originalDoc as
+          | { slug?: string; statut?: string; prenom?: string; nom?: string; ville?: string; id?: number | string }
+          | undefined
+
+        // 1. Profil DÉJÀ public → slug figé : ne jamais le changer (même si prénom/nom sont édités).
+        if (orig?.statut === 'valide' && orig.slug) {
+          data.slug = orig.slug
+          return data
+        }
+        // 2. Slug explicitement fourni (import/admin) et pas encore figé → le respecter.
         if (data.slug) return data
 
-        const prenom = String(data.prenom ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-        const nom = String(data.nom ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-        const baseSlug = [prenom, nom].filter(Boolean).join('-') || 'reseauteur'
+        // 3. (Re)génération depuis prénom + nom structurés, dès qu'ils sont disponibles.
+        const prenom = toSlug(String(data.prenom ?? orig?.prenom ?? ''))
+        const nom = toSlug(String(data.nom ?? orig?.nom ?? ''))
+        if (!prenom || !nom) return data // squelette incomplet → slug reste NULL
 
-        // Recherche des slugs existants avec ce préfixe
+        const baseSlug = `${prenom}-${nom}`
         const existing = await req.payload.find({
           collection: 'reseauteurs',
           where: { slug: { like: `${baseSlug}%` } },
@@ -146,12 +174,15 @@ export const Reseauteurs: CollectionConfig = {
           overrideAccess: true,
           select: { slug: true } as Record<string, boolean>,
         })
-
-        const slugSet = new Set(existing.docs.map((d: { slug?: string }) => d.slug))
+        // Exclut le doc courant (une régénération ne doit pas entrer en collision avec lui-même).
+        const slugSet = new Set(
+          existing.docs
+            .filter((d: { id?: number | string }) => String(d.id) !== String(orig?.id ?? ''))
+            .map((d: { slug?: string }) => d.slug),
+        )
         if (!slugSet.has(baseSlug)) {
           data.slug = baseSlug
         } else {
-          // Suffixe déterministe : cherche le prochain entier disponible
           let suffix = 2
           let candidate = `${baseSlug}-${suffix}`
           while (slugSet.has(candidate) && suffix < 50) {
@@ -159,8 +190,7 @@ export const Reseauteurs: CollectionConfig = {
             candidate = `${baseSlug}-${suffix}`
           }
           if (suffix >= 50) {
-            // Fallback : ajouter la ville si renseignée
-            const ville = String(data.ville ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+            const ville = toSlug(String(data.ville ?? orig?.ville ?? ''))
             candidate = ville ? `${baseSlug}-${ville}` : `${baseSlug}-${suffix}`
           }
           data.slug = candidate
