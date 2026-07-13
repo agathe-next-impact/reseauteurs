@@ -42,15 +42,41 @@ export interface Reseau {
   ville?: string | null
   adresse?: string | null
   codePostal?: string | null
+  departement?: string | null
+  region?: string | null
   latitude?: number | null
   longitude?: number | null
   description?: string | null
   presentation?: string | null
+  objectif?: string | null
+  differenciateur?: string | null
+  nombreMembres?: number | null
   logo?: (number | null) | PayloadMedia
   banniere?: (number | null) | PayloadMedia
+  illustrations?: Array<{ image?: (number | null) | PayloadMedia; id?: string | null }> | null
+  videoYoutube?: string | null
+  plaquetteUrl?: string | null
   siteWeb?: string | null
   emailContact?: string | null
   telephone?: string | null
+  reseauxSociaux?: Array<{ plateforme?: string | null; url?: string | null; id?: string | null }> | null
+  // Type & portée (descriptifs — portee ≠ niveau hiérarchique)
+  typeJuridique?: 'association' | 'prive' | 'franchise' | 'institution' | 'autre' | null
+  portee?: 'local' | 'regional' | 'national' | 'international' | null
+  categorie?: (number | null) | TypesEvenement
+  // Responsable local
+  responsableNom?: string | null
+  responsableFonction?: string | null
+  responsablePhoto?: (number | null) | PayloadMedia
+  // Fonctionnement
+  publicConcerne?: string | null
+  ouvertATous?: 'oui' | 'non' | null
+  participationInvite?: 'oui' | 'non' | null
+  adhesionObligatoire?: 'oui' | 'non' | null
+  uneProfessionParGroupe?: 'oui' | 'non' | null
+  cotisation?: string | null
+  // Validation
+  rempliPar?: string | null
   partenaire?: boolean | null
   nbReseauteurs?: number | null
   nbEvenements?: number | null

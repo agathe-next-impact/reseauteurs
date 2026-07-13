@@ -632,6 +632,22 @@ export interface Reseau {
   adresse?: string | null;
   codePostal?: string | null;
   /**
+   * Ex : Rhône, Paris, Gironde.
+   */
+  departement?: string | null;
+  /**
+   * Ex : Auvergne-Rhône-Alpes, Île-de-France.
+   */
+  region?: string | null;
+  /**
+   * Nature juridique du réseau.
+   */
+  typeJuridique?: ('association' | 'prive' | 'franchise' | 'institution' | 'autre') | null;
+  /**
+   * Échelle géographique (descriptif). Distinct du champ « niveau » qui pilote la hiérarchie umbrella (national/local).
+   */
+  portee?: ('local' | 'regional' | 'national' | 'international') | null;
+  /**
    * Catégorie principale du réseau (Réseaux d'affaires, Afterworks, Congrès…).
    */
   categorie?: (number | null) | TypesEvenement;
@@ -647,9 +663,16 @@ export interface Reseau {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Lien vers la plaquette de présentation (PDF hébergé). Le média interne n'accepte que des images.
+   */
+  plaquetteUrl?: string | null;
   siteWeb?: string | null;
   emailContact?: string | null;
   telephone?: string | null;
+  responsableNom?: string | null;
+  responsableFonction?: string | null;
+  responsablePhoto?: (number | null) | Media;
   /**
    * Lien vers une vidéo YouTube (ex: https://www.youtube.com/watch?v=xxx).
    */
@@ -673,6 +696,27 @@ export interface Reseau {
    * Texte de présentation complet du réseau (affiché sur la fiche publique).
    */
   presentation?: string | null;
+  objectif?: string | null;
+  /**
+   * Ce qui distingue ce réseau des autres (3 à 5 lignes).
+   */
+  differenciateur?: string | null;
+  /**
+   * Nombre de membres déclaré par le réseau — distinct du compteur « nbReseauteurs » (réseauteurs de la plateforme).
+   */
+  nombreMembres?: number | null;
+  /**
+   * Ex : dirigeants, entrepreneurs, indépendants, commerciaux…
+   */
+  publicConcerne?: string | null;
+  ouvertATous?: ('oui' | 'non') | null;
+  participationInvite?: ('oui' | 'non') | null;
+  adhesionObligatoire?: ('oui' | 'non') | null;
+  uneProfessionParGroupe?: ('oui' | 'non') | null;
+  /**
+   * Ex : « à partir de 400 €/an » — texte libre.
+   */
+  cotisation?: string | null;
   /**
    * [Significatif sur le national uniquement — ADR-0012] Abonnement partenaire actif. Débloque : création de locaux, publication d'événements, badge partenaire, logo page d'accueil. Posé par webhook Stripe. Inerte sur un local.
    */
@@ -697,6 +741,10 @@ export interface Reseau {
    * Statut de visibilité publique du réseau.
    */
   statut: 'publiee' | 'suspendue';
+  /**
+   * Nom de la personne ayant renseigné/mis à jour la fiche (traçabilité).
+   */
+  rempliPar?: string | null;
   /**
    * Champs SEO optionnels. Laissez vide pour utiliser les valeurs par defaut calculees depuis la fiche.
    */
@@ -1307,6 +1355,10 @@ export interface ReseauxSelect<T extends boolean = true> {
   ville?: T;
   adresse?: T;
   codePostal?: T;
+  departement?: T;
+  region?: T;
+  typeJuridique?: T;
+  portee?: T;
   categorie?: T;
   description?: T;
   logo?: T;
@@ -1317,9 +1369,13 @@ export interface ReseauxSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  plaquetteUrl?: T;
   siteWeb?: T;
   emailContact?: T;
   telephone?: T;
+  responsableNom?: T;
+  responsableFonction?: T;
+  responsablePhoto?: T;
   videoYoutube?: T;
   reseauxSociaux?:
     | T
@@ -1331,12 +1387,22 @@ export interface ReseauxSelect<T extends boolean = true> {
   latitude?: T;
   longitude?: T;
   presentation?: T;
+  objectif?: T;
+  differenciateur?: T;
+  nombreMembres?: T;
+  publicConcerne?: T;
+  ouvertATous?: T;
+  participationInvite?: T;
+  adhesionObligatoire?: T;
+  uneProfessionParGroupe?: T;
+  cotisation?: T;
   partenaire?: T;
   stripeSubscriptionId?: T;
   partenaireExpireAt?: T;
   nbReseauteurs?: T;
   nbEvenements?: T;
   statut?: T;
+  rempliPar?: T;
   seo?:
     | T
     | {

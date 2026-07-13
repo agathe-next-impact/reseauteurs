@@ -17,10 +17,19 @@ const RESEAU_TEXT_FIELDS = [
   'ville',
   'adresse',
   'codePostal',
+  'departement',
+  'region',
   'siteWeb',
   'emailContact',
   'telephone',
+  'responsableNom',
+  'responsableFonction',
   'description',
+  'objectif',
+  'differenciateur',
+  'publicConcerne',
+  'cotisation',
+  'rempliPar',
   'videoYoutube',
 ] as const
 
@@ -452,6 +461,51 @@ export const Reseaux: CollectionConfig = {
       type: 'text',
       label: 'Code postal',
     },
+    {
+      name: 'departement',
+      type: 'text',
+      index: true,
+      label: 'Département',
+      admin: { description: 'Ex : Rhône, Paris, Gironde.' },
+    },
+    {
+      name: 'region',
+      type: 'text',
+      index: true,
+      label: 'Région',
+      admin: { description: 'Ex : Auvergne-Rhône-Alpes, Île-de-France.' },
+    },
+    // ============================================================
+    // TYPE & PORTÉE (descriptifs — la portée est DISTINCTE du `niveau` hiérarchique)
+    // ============================================================
+    {
+      name: 'typeJuridique',
+      type: 'select',
+      label: 'Type de structure',
+      options: [
+        { label: 'Association', value: 'association' },
+        { label: 'Privé / société', value: 'prive' },
+        { label: 'Franchise', value: 'franchise' },
+        { label: 'Institution', value: 'institution' },
+        { label: 'Autre', value: 'autre' },
+      ],
+      admin: { description: 'Nature juridique du réseau.' },
+    },
+    {
+      name: 'portee',
+      type: 'select',
+      label: 'Portée géographique',
+      options: [
+        { label: 'Local', value: 'local' },
+        { label: 'Régional', value: 'regional' },
+        { label: 'National', value: 'national' },
+        { label: 'International', value: 'international' },
+      ],
+      admin: {
+        description:
+          'Échelle géographique (descriptif). Distinct du champ « niveau » qui pilote la hiérarchie umbrella (national/local).',
+      },
+    },
     // ============================================================
     // CATÉGORIE
     // ============================================================
@@ -491,8 +545,8 @@ export const Reseaux: CollectionConfig = {
     {
       name: 'illustrations',
       type: 'array',
-      maxRows: 6,
-      label: 'Galerie (6 photos max)',
+      maxRows: 10,
+      label: 'Galerie (10 photos max)',
       fields: [
         {
           name: 'image',
@@ -501,6 +555,24 @@ export const Reseaux: CollectionConfig = {
           required: true,
         },
       ],
+    },
+    {
+      name: 'plaquetteUrl',
+      type: 'text',
+      label: 'Plaquette PDF (lien)',
+      admin: {
+        description: 'Lien vers la plaquette de présentation (PDF hébergé). Le média interne n\'accepte que des images.',
+      },
+      validate: (value: unknown) => {
+        if (!value || typeof value !== 'string') return true
+        try {
+          const url = new URL(value)
+          if (!['http:', 'https:'].includes(url.protocol)) return 'L\'URL doit commencer par http:// ou https://'
+          return true
+        } catch {
+          return 'URL invalide'
+        }
+      },
     },
     // ============================================================
     // CONTACTS
@@ -529,6 +601,25 @@ export const Reseaux: CollectionConfig = {
       name: 'telephone',
       type: 'text',
       label: 'Téléphone',
+    },
+    // ============================================================
+    // RESPONSABLE LOCAL (personne référente)
+    // ============================================================
+    {
+      name: 'responsableNom',
+      type: 'text',
+      label: 'Nom du responsable local',
+    },
+    {
+      name: 'responsableFonction',
+      type: 'text',
+      label: 'Fonction du responsable',
+    },
+    {
+      name: 'responsablePhoto',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Photo du responsable (facultatif)',
     },
     {
       name: 'videoYoutube',
@@ -610,6 +701,78 @@ export const Reseaux: CollectionConfig = {
       admin: {
         description: 'Texte de présentation complet du réseau (affiché sur la fiche publique).',
       },
+    },
+    {
+      name: 'objectif',
+      type: 'textarea',
+      label: 'Objectif du réseau',
+    },
+    {
+      name: 'differenciateur',
+      type: 'textarea',
+      label: 'Ce qui le différencie',
+      admin: { description: 'Ce qui distingue ce réseau des autres (3 à 5 lignes).' },
+    },
+    {
+      name: 'nombreMembres',
+      type: 'number',
+      min: 0,
+      label: 'Nombre de membres (déclaré)',
+      admin: {
+        description:
+          'Nombre de membres déclaré par le réseau — distinct du compteur « nbReseauteurs » (réseauteurs de la plateforme).',
+      },
+    },
+    // ============================================================
+    // FONCTIONNEMENT (ADR-0012 amendé 2026-07-13 — présentation du réseau)
+    // ============================================================
+    {
+      name: 'publicConcerne',
+      type: 'text',
+      label: 'Public concerné',
+      admin: { description: 'Ex : dirigeants, entrepreneurs, indépendants, commerciaux…' },
+    },
+    {
+      name: 'ouvertATous',
+      type: 'select',
+      label: 'Tout le monde peut participer ?',
+      options: [
+        { label: 'Oui', value: 'oui' },
+        { label: 'Non', value: 'non' },
+      ],
+    },
+    {
+      name: 'participationInvite',
+      type: 'select',
+      label: 'Participation possible en tant qu\'invité ?',
+      options: [
+        { label: 'Oui', value: 'oui' },
+        { label: 'Non', value: 'non' },
+      ],
+    },
+    {
+      name: 'adhesionObligatoire',
+      type: 'select',
+      label: 'Adhésion obligatoire ?',
+      options: [
+        { label: 'Oui', value: 'oui' },
+        { label: 'Non', value: 'non' },
+      ],
+    },
+    {
+      name: 'uneProfessionParGroupe',
+      type: 'select',
+      label: 'Une seule profession par groupe ?',
+      options: [
+        { label: 'Oui', value: 'oui' },
+        { label: 'Non', value: 'non' },
+      ],
+    },
+    {
+      name: 'cotisation',
+      type: 'text',
+      label: 'Cotisation (facultatif)',
+      admin: { description: 'Ex : « à partir de 400 €/an » — texte libre.' },
     },
     // ============================================================
     // DRAPEAU PARTENAIRE (posé par accounts-and-billing via webhook Stripe)
@@ -708,6 +871,15 @@ export const Reseaux: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Statut de visibilité publique du réseau.',
+      },
+    },
+    {
+      name: 'rempliPar',
+      type: 'text',
+      label: 'Fiche remplie par',
+      admin: {
+        position: 'sidebar',
+        description: 'Nom de la personne ayant renseigné/mis à jour la fiche (traçabilité).',
       },
     },
     seoField,

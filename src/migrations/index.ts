@@ -73,6 +73,8 @@ import * as migration_20260712_100000_reseauteur_plus_licences from './20260712_
 import * as migration_20260712_110000_reseauteurs_slug_nullable from './20260712_110000_reseauteurs_slug_nullable';
 // ── ADR-0013 §3bis : inscriptions aux événements Plus (2026-07-13)
 import * as migration_20260713_100000_inscriptions from './20260713_100000_inscriptions';
+// ── Fiche réseau complète : responsable, fonctionnement, type/portée… (2026-07-13)
+import * as migration_20260713_110000_reseaux_fiche_complete from './20260713_110000_reseaux_fiche_complete';
 
 export const migrations = [
   {
@@ -407,5 +409,10 @@ export const migrations = [
     up: migration_20260713_100000_inscriptions.up,
     down: migration_20260713_100000_inscriptions.down,
     name: '20260713_100000_inscriptions',
+  },
+  {
+    up: migration_20260713_110000_reseaux_fiche_complete.up,
+    down: migration_20260713_110000_reseaux_fiche_complete.down,
+    name: '20260713_110000_reseaux_fiche_complete',
   },
 ];

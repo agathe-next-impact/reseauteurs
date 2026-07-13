@@ -78,7 +78,28 @@ const ReseauSchema = z.object({
   ville: z.string().max(100).optional(),
   departement: z.string().max(100).optional(),
   region: z.string().max(100).optional(),
+  // Fiche complète (spec 2026-07-13) — champs texte/sélecteurs (uploads gérés en admin)
+  typeJuridique: z.string().max(30).optional(),
+  portee: z.string().max(30).optional(),
+  responsableNom: z.string().max(200).optional(),
+  responsableFonction: z.string().max(200).optional(),
+  objectif: z.string().max(3000).optional(),
+  differenciateur: z.string().max(2000).optional(),
+  nombreMembres: z.string().max(12).optional(),
+  publicConcerne: z.string().max(300).optional(),
+  ouvertATous: z.string().max(4).optional(),
+  participationInvite: z.string().max(4).optional(),
+  adhesionObligatoire: z.string().max(4).optional(),
+  uneProfessionParGroupe: z.string().max(4).optional(),
+  cotisation: z.string().max(200).optional(),
+  plaquetteUrl: z.string().url('URL invalide').optional().or(z.literal('')),
+  rempliPar: z.string().max(200).optional(),
 })
+
+// Normalisation serveur : '' → null, sélecteurs whitelistés, nombre parsé.
+const emptyToNull = (v?: string): string | null => (v && v.trim() !== '' ? v.trim() : null)
+const enumOrNull = (v: string | undefined, allowed: readonly string[]): string | null =>
+  v && allowed.includes(v) ? v : null
 
 const EvenementSchema = z.object({
   titre: z.string().min(1, 'Le titre est requis').max(300),
@@ -109,17 +130,39 @@ export async function updateFicheReseau(
     return { error: parsed.error.issues[0]?.message ?? 'Données invalides' }
   }
 
-  const { siteWeb, emailContact, telephone, ...rest } = parsed.data
+  const d = parsed.data
+  const nbRaw = d.nombreMembres && d.nombreMembres.trim() !== '' ? parseInt(d.nombreMembres, 10) : NaN
 
   try {
     await payload.update({
       collection: 'reseaux',
       id: auth.reseau.id as string | number,
       data: {
-        ...rest,
-        siteWeb: siteWeb || null,
-        emailContact: emailContact || null,
-        telephone: telephone || null,
+        nom: d.nom,
+        description: d.description,
+        presentation: d.presentation,
+        ville: d.ville,
+        departement: d.departement,
+        region: d.region,
+        siteWeb: d.siteWeb || null,
+        emailContact: d.emailContact || null,
+        telephone: d.telephone || null,
+        // Fiche complète
+        typeJuridique: enumOrNull(d.typeJuridique, ['association', 'prive', 'franchise', 'institution', 'autre']),
+        portee: enumOrNull(d.portee, ['local', 'regional', 'national', 'international']),
+        responsableNom: emptyToNull(d.responsableNom),
+        responsableFonction: emptyToNull(d.responsableFonction),
+        objectif: emptyToNull(d.objectif),
+        differenciateur: emptyToNull(d.differenciateur),
+        nombreMembres: Number.isFinite(nbRaw) && nbRaw >= 0 ? nbRaw : null,
+        publicConcerne: emptyToNull(d.publicConcerne),
+        ouvertATous: enumOrNull(d.ouvertATous, ['oui', 'non']),
+        participationInvite: enumOrNull(d.participationInvite, ['oui', 'non']),
+        adhesionObligatoire: enumOrNull(d.adhesionObligatoire, ['oui', 'non']),
+        uneProfessionParGroupe: enumOrNull(d.uneProfessionParGroupe, ['oui', 'non']),
+        cotisation: emptyToNull(d.cotisation),
+        plaquetteUrl: d.plaquetteUrl || null,
+        rempliPar: emptyToNull(d.rempliPar),
       } as Record<string, unknown>,
       overrideAccess: true,
     })

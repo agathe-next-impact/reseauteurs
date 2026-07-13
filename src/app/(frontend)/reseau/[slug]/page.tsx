@@ -9,7 +9,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Users, Calendar, Globe, ArrowRight, MapPin, Network } from 'lucide-react'
+import { Users, Calendar, Globe, ArrowRight, MapPin, Network, Mail, Phone, User, FileText, ExternalLink } from 'lucide-react'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildReseauOrganizationJsonLd, buildBreadcrumbListJsonLd, type ReseauLocalLite } from '@/lib/jsonld'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -154,6 +154,55 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
 
   const logoMedia = reseau.logo as Media | null | undefined
   const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url ?? null
+
+  // ── Fiche complète (spec 2026-07-13) : médias, responsable, fonctionnement, réseaux sociaux
+  const mediaUrl = (m: unknown, size: 'thumbnail' | 'card' | 'full' = 'card'): string | null => {
+    if (!m || typeof m !== 'object') return null
+    const mm = m as Media
+    return mm.sizes?.[size]?.url ?? mm.url ?? null
+  }
+  const respPhotoUrl = mediaUrl(reseau.responsablePhoto, 'thumbnail')
+  const illustrations = (reseau.illustrations ?? [])
+    .map((i) => mediaUrl(i?.image, 'card'))
+    .filter((u): u is string => Boolean(u))
+  const socials = (reseau.reseauxSociaux ?? []).filter(
+    (s): s is { plateforme: string; url: string } => Boolean(s?.plateforme && s?.url),
+  )
+  const ouiNon = (v: 'oui' | 'non' | null | undefined): string | null =>
+    v === 'oui' ? 'Oui' : v === 'non' ? 'Non' : null
+  const TYPE_JURIDIQUE_LABEL: Record<string, string> = {
+    association: 'Association', prive: 'Privé / société', franchise: 'Franchise', institution: 'Institution', autre: 'Autre',
+  }
+  const PORTEE_LABEL: Record<string, string> = {
+    local: 'Local', regional: 'Régional', national: 'National', international: 'International',
+  }
+  // Table « Fonctionnement » : uniquement les lignes renseignées.
+  const fonctionnementRows: Array<{ label: string; value: string }> = [
+    reseau.publicConcerne ? { label: 'Public concerné', value: reseau.publicConcerne } : null,
+    reseau.typeJuridique ? { label: 'Type de structure', value: TYPE_JURIDIQUE_LABEL[reseau.typeJuridique] ?? reseau.typeJuridique } : null,
+    reseau.portee ? { label: 'Portée', value: PORTEE_LABEL[reseau.portee] ?? reseau.portee } : null,
+    ouiNon(reseau.ouvertATous) ? { label: 'Ouvert à tous', value: ouiNon(reseau.ouvertATous)! } : null,
+    ouiNon(reseau.participationInvite) ? { label: 'Participation en invité', value: ouiNon(reseau.participationInvite)! } : null,
+    ouiNon(reseau.adhesionObligatoire) ? { label: 'Adhésion obligatoire', value: ouiNon(reseau.adhesionObligatoire)! } : null,
+    ouiNon(reseau.uneProfessionParGroupe) ? { label: 'Une profession par groupe', value: ouiNon(reseau.uneProfessionParGroupe)! } : null,
+    typeof reseau.nombreMembres === 'number' ? { label: 'Membres (déclaré)', value: String(reseau.nombreMembres) } : null,
+    reseau.cotisation ? { label: 'Cotisation', value: reseau.cotisation } : null,
+  ].filter((r): r is { label: string; value: string } => r !== null)
+  // ID vidéo YouTube (watch / youtu.be / embed)
+  const ytId = (() => {
+    const raw = reseau.videoYoutube
+    if (!raw) return null
+    const m = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/)
+    return m?.[1] ?? null
+  })()
+  let plaquetteSafe: string | null = null
+  if (reseau.plaquetteUrl) {
+    try {
+      const u = new URL(reseau.plaquetteUrl)
+      if (u.protocol === 'https:' || u.protocol === 'http:') plaquetteSafe = reseau.plaquetteUrl
+    } catch { /* ignore */ }
+  }
+
   const reseauteursDocs = reseauteurs as Reseauteur[]
   const evenementsDocs = evenements as Evenement[]
   const locauxDocs = locauxRes?.docs as ReseauLocalLite[] | undefined
@@ -244,11 +293,25 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                   <h1 className="rsn-pagehead-title !mt-0 !text-[28px] sm:!text-[38px]">{reseau.nom}</h1>
                   {reseau.partenaire && <BadgePartenaire />}
                 </div>
-                {reseau.ville && (
+                {(reseau.ville || reseau.departement || reseau.region) && (
                   <p className="text-sm text-white/65 flex items-center gap-1.5 mt-1.5">
                     <MapPin size={13} aria-hidden />
-                    {reseau.ville}
+                    {[reseau.ville, reseau.departement, reseau.region].filter(Boolean).join(' · ')}
                   </p>
+                )}
+                {(reseau.portee || reseau.typeJuridique) && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {reseau.portee && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/85 border border-white/15">
+                        {PORTEE_LABEL[reseau.portee] ?? reseau.portee}
+                      </span>
+                    )}
+                    {reseau.typeJuridique && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/85 border border-white/15">
+                        {TYPE_JURIDIQUE_LABEL[reseau.typeJuridique] ?? reseau.typeJuridique}
+                      </span>
+                    )}
+                  </div>
                 )}
                 {/* Compteurs — agrégés pour un national, directs pour un local */}
                 <div className="flex items-center gap-4 mt-3 flex-wrap">
@@ -311,6 +374,78 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                 <section aria-labelledby="pres-reseau-titre">
                   <h2 id="pres-reseau-titre" className="text-sm font-semibold text-[#18181b] mb-2">Présentation</h2>
                   <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{reseau.presentation}</p>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Objectif */}
+            {reseau.objectif && (
+              <Reveal>
+                <section aria-labelledby="objectif-titre">
+                  <h2 id="objectif-titre" className="text-sm font-semibold text-[#18181b] mb-2">Objectif du réseau</h2>
+                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{reseau.objectif}</p>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Ce qui le différencie */}
+            {reseau.differenciateur && (
+              <Reveal>
+                <section aria-labelledby="diff-titre">
+                  <h2 id="diff-titre" className="text-sm font-semibold text-[#18181b] mb-2">Ce qui le différencie</h2>
+                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{reseau.differenciateur}</p>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Fonctionnement (fiche descriptive) */}
+            {fonctionnementRows.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="fonctionnement-titre">
+                  <h2 id="fonctionnement-titre" className="text-sm font-semibold text-[#18181b] mb-3">Fonctionnement</h2>
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                    {fonctionnementRows.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between gap-3 border-b border-[#f4f4f5] py-1.5">
+                        <dt className="text-xs text-[#71717a]">{row.label}</dt>
+                        <dd className="text-xs font-semibold text-[#18181b] text-right">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Galerie photos */}
+            {illustrations.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="galerie-titre">
+                  <h2 id="galerie-titre" className="text-sm font-semibold text-[#18181b] mb-3">En images</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {illustrations.map((url, i) => (
+                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#e4e4e7]">
+                        <Image src={url} alt={`Photo ${i + 1} du réseau ${reseau.nom}`} fill className="object-cover" sizes="(max-width: 640px) 50vw, 240px" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Vidéo de présentation */}
+            {ytId && (
+              <Reveal>
+                <section aria-labelledby="video-titre">
+                  <h2 id="video-titre" className="text-sm font-semibold text-[#18181b] mb-3">Vidéo de présentation</h2>
+                  <div className="relative aspect-video rounded-xl overflow-hidden border border-[#e4e4e7] bg-black">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+                      title={`Vidéo de présentation du réseau ${reseau.nom}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      loading="lazy"
+                    />
+                  </div>
                 </section>
               </Reveal>
             )}
@@ -493,6 +628,60 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </Reveal>
             )}
 
+          {/* Contact & responsable local */}
+            {(reseau.responsableNom || reseau.emailContact || reseau.telephone || socials.length > 0 || plaquetteSafe) && (
+              <Reveal>
+                <section aria-labelledby="contact-titre">
+                  <h2 id="contact-titre" className="text-sm font-semibold text-[#18181b] mb-3">Contact</h2>
+
+                  {reseau.responsableNom && (
+                    <div className="flex items-center gap-3 mb-3 p-3 rounded-xl border border-[#e4e4e7]">
+                      {respPhotoUrl ? (
+                        <Image src={respPhotoUrl} alt={`Photo de ${reseau.responsableNom}`} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-[#e4e4e7] shrink-0" />
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] shrink-0" aria-hidden>
+                          <User size={18} />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#18181b] truncate">{reseau.responsableNom}</p>
+                        {reseau.responsableFonction && <p className="text-xs text-[#71717a] truncate">{reseau.responsableFonction}</p>}
+                        <p className="text-[11px] text-[#a1a1aa]">Responsable local</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    {reseau.emailContact && (
+                      <a href={`mailto:${reseau.emailContact}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                        <Mail size={13} aria-hidden />{reseau.emailContact}
+                      </a>
+                    )}
+                    {reseau.telephone && (
+                      <a href={`tel:${reseau.telephone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                        <Phone size={13} aria-hidden />{reseau.telephone}
+                      </a>
+                    )}
+                    {plaquetteSafe && (
+                      <a href={plaquetteSafe} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                        <FileText size={13} aria-hidden />Plaquette PDF
+                      </a>
+                    )}
+                  </div>
+
+                  {socials.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2" aria-label="Réseaux sociaux">
+                      {socials.map((s, i) => (
+                        <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors capitalize">
+                          <ExternalLink size={13} aria-hidden />{s.plateforme}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </Reveal>
+            )}
+
           {/* Localisation — mini-carte (siège du réseau) */}
             {typeof reseau.latitude === 'number' && typeof reseau.longitude === 'number' && (
               <Reveal>
@@ -501,6 +690,11 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                     <MapPin size={14} aria-hidden />
                     Localisation
                   </h2>
+                  {(reseau.adresse || reseau.codePostal) && (
+                    <p className="text-xs text-[#71717a] mb-2">
+                      {[reseau.adresse, [reseau.codePostal, reseau.ville].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
+                    </p>
+                  )}
                   <MiniMapLoader
                     latitude={reseau.latitude}
                     longitude={reseau.longitude}
@@ -539,6 +733,15 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </span>
             )}
           </div>
+          {/* Ligne de validation (dernière mise à jour + auteur de la fiche) */}
+          {(reseau.updatedAt || reseau.rempliPar) && (
+            <div className="px-6 py-2.5 border-t border-[#e4e4e7] bg-white text-[11px] text-[#a1a1aa] flex flex-wrap gap-x-3 gap-y-0.5">
+              {reseau.updatedAt && (
+                <span>Mis à jour le {new Date(reseau.updatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              )}
+              {reseau.rempliPar && <span>· Fiche renseignée par {reseau.rempliPar}</span>}
+            </div>
+          )}
         </article>
       </div>
     </div>

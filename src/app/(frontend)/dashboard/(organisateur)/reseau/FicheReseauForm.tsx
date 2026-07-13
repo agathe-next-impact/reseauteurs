@@ -18,16 +18,32 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
     setSuccessMsg(null)
 
     const fd = new FormData(e.currentTarget)
+    const str = (k: string) => (fd.get(k) as string | null) ?? undefined
     const data = {
       nom: fd.get('nom') as string,
-      description: fd.get('description') as string | undefined,
-      presentation: fd.get('presentation') as string | undefined,
-      siteWeb: fd.get('siteWeb') as string | undefined,
-      emailContact: fd.get('emailContact') as string | undefined,
-      telephone: fd.get('telephone') as string | undefined,
-      ville: fd.get('ville') as string | undefined,
-      departement: fd.get('departement') as string | undefined,
-      region: fd.get('region') as string | undefined,
+      description: str('description'),
+      presentation: str('presentation'),
+      siteWeb: str('siteWeb'),
+      emailContact: str('emailContact'),
+      telephone: str('telephone'),
+      ville: str('ville'),
+      departement: str('departement'),
+      region: str('region'),
+      typeJuridique: str('typeJuridique'),
+      portee: str('portee'),
+      responsableNom: str('responsableNom'),
+      responsableFonction: str('responsableFonction'),
+      objectif: str('objectif'),
+      differenciateur: str('differenciateur'),
+      nombreMembres: str('nombreMembres'),
+      publicConcerne: str('publicConcerne'),
+      ouvertATous: str('ouvertATous'),
+      participationInvite: str('participationInvite'),
+      adhesionObligatoire: str('adhesionObligatoire'),
+      uneProfessionParGroupe: str('uneProfessionParGroupe'),
+      cotisation: str('cotisation'),
+      plaquetteUrl: str('plaquetteUrl'),
+      rempliPar: str('rempliPar'),
     }
 
     startTransition(async () => {
@@ -154,6 +170,102 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
             defaultValue={reseau.telephone as string ?? ''}
             className={inputClass}
           />
+        </div>
+      </div>
+
+      {/* ── Type & portée */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#f4f4f5]">
+        <div>
+          <label htmlFor="typeJuridique" className={labelClass}>Type de structure</label>
+          <select id="typeJuridique" name="typeJuridique" defaultValue={(reseau.typeJuridique as string) ?? ''} className={inputClass}>
+            <option value="">— Non renseigné —</option>
+            <option value="association">Association</option>
+            <option value="prive">Privé / société</option>
+            <option value="franchise">Franchise</option>
+            <option value="institution">Institution</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="portee" className={labelClass}>Portée géographique</label>
+          <select id="portee" name="portee" defaultValue={(reseau.portee as string) ?? ''} className={inputClass}>
+            <option value="">— Non renseigné —</option>
+            <option value="local">Local</option>
+            <option value="regional">Régional</option>
+            <option value="national">National</option>
+            <option value="international">International</option>
+          </select>
+        </div>
+      </div>
+
+      {/* ── Responsable local */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="responsableNom" className={labelClass}>Responsable local (nom)</label>
+          <input id="responsableNom" name="responsableNom" type="text" maxLength={200} defaultValue={(reseau.responsableNom as string) ?? ''} className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="responsableFonction" className={labelClass}>Fonction du responsable</label>
+          <input id="responsableFonction" name="responsableFonction" type="text" maxLength={200} defaultValue={(reseau.responsableFonction as string) ?? ''} className={inputClass} />
+        </div>
+      </div>
+      <p className="text-xs text-[#a1a1aa] -mt-2">La photo du responsable et la galerie se gèrent depuis l&apos;administration.</p>
+
+      {/* ── Objectif / différenciateur / membres */}
+      <div>
+        <label htmlFor="objectif" className={labelClass}>Objectif du réseau</label>
+        <textarea id="objectif" name="objectif" maxLength={3000} rows={3} defaultValue={(reseau.objectif as string) ?? ''} className={`${inputClass} resize-none`} />
+      </div>
+      <div>
+        <label htmlFor="differenciateur" className={labelClass}>Ce qui le différencie (3 à 5 lignes)</label>
+        <textarea id="differenciateur" name="differenciateur" maxLength={2000} rows={3} defaultValue={(reseau.differenciateur as string) ?? ''} className={`${inputClass} resize-none`} />
+      </div>
+
+      {/* ── Fonctionnement */}
+      <fieldset className="space-y-3 pt-2 border-t border-[#f4f4f5]">
+        <legend className="text-xs font-semibold text-[#52525b]">Fonctionnement</legend>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
+            <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={(reseau.publicConcerne as string) ?? ''} className={inputClass} />
+          </div>
+          <div>
+            <label htmlFor="nombreMembres" className={labelClass}>Nombre de membres (déclaré)</label>
+            <input id="nombreMembres" name="nombreMembres" type="number" min={0} defaultValue={(reseau.nombreMembres as number | undefined) ?? ''} className={inputClass} />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {([
+            ['ouvertATous', 'Ouvert à tous'],
+            ['participationInvite', 'Invités possibles'],
+            ['adhesionObligatoire', 'Adhésion obligatoire'],
+            ['uneProfessionParGroupe', '1 métier/groupe'],
+          ] as const).map(([name, label]) => (
+            <div key={name}>
+              <label htmlFor={name} className={labelClass}>{label}</label>
+              <select id={name} name={name} defaultValue={(reseau[name] as string) ?? ''} className={inputClass}>
+                <option value="">—</option>
+                <option value="oui">Oui</option>
+                <option value="non">Non</option>
+              </select>
+            </div>
+          ))}
+        </div>
+        <div>
+          <label htmlFor="cotisation" className={labelClass}>Cotisation (facultatif)</label>
+          <input id="cotisation" name="cotisation" type="text" maxLength={200} placeholder="ex : à partir de 400 €/an" defaultValue={(reseau.cotisation as string) ?? ''} className={inputClass} />
+        </div>
+      </fieldset>
+
+      {/* ── Médias & validation */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#f4f4f5]">
+        <div>
+          <label htmlFor="plaquetteUrl" className={labelClass}>Plaquette PDF (lien)</label>
+          <input id="plaquetteUrl" name="plaquetteUrl" type="url" maxLength={500} placeholder="https://…/plaquette.pdf" defaultValue={(reseau.plaquetteUrl as string) ?? ''} className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="rempliPar" className={labelClass}>Fiche remplie par</label>
+          <input id="rempliPar" name="rempliPar" type="text" maxLength={200} defaultValue={(reseau.rempliPar as string) ?? ''} className={inputClass} />
         </div>
       </div>
 
