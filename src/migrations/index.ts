@@ -79,6 +79,8 @@ import * as migration_20260713_110000_reseaux_fiche_complete from './20260713_11
 import * as migration_20260713_120000_niveau_4_valeurs from './20260713_120000_niveau_4_valeurs';
 // ── Fiche événement complète : participation, contact, catégorisation, médias… (2026-07-13)
 import * as migration_20260713_130000_evenements_fiche_complete from './20260713_130000_evenements_fiche_complete';
+// ── Filtre par département sur les événements (2026-07-13)
+import * as migration_20260713_140000_evenements_departement from './20260713_140000_evenements_departement';
 
 export const migrations = [
   {
@@ -428,5 +430,10 @@ export const migrations = [
     up: migration_20260713_130000_evenements_fiche_complete.up,
     down: migration_20260713_130000_evenements_fiche_complete.down,
     name: '20260713_130000_evenements_fiche_complete',
+  },
+  {
+    up: migration_20260713_140000_evenements_departement.up,
+    down: migration_20260713_140000_evenements_departement.down,
+    name: '20260713_140000_evenements_departement',
   },
 ];

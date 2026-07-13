@@ -15,14 +15,35 @@ import { revalidatePath } from 'next/cache'
 export interface EvenementFormData {
   titre: string
   type: number | string
+  descriptionCourte?: string
   description?: string
+  intervenants?: string
   dateDebut: string
   dateFin?: string
   lieuNom?: string
   lieuAdresse?: string
   lieuCodePostal?: string
   lieuVille: string
+  lieuDepartement?: string
   lienInscription?: string
+  // Participation
+  gratuit?: boolean
+  tarif?: string
+  nombrePlaces?: string
+  dateLimiteInscription?: string
+  ouvertATous?: string
+  reserveMembres?: string
+  participationInvite?: string
+  niveauPublic?: string
+  publicConcerne?: string
+  // Contact
+  contactNom?: string
+  contactEmail?: string
+  contactTelephone?: string
+  // Infos pratiques
+  parking?: boolean
+  accesPmr?: boolean
+  infosPratiques?: string
 }
 
 type ActionResult = { ok: true; id?: number | string } | { ok: false; error: string }
@@ -47,17 +68,43 @@ function sanitize(data: EvenementFormData) {
     const t = (v ?? '').trim()
     return t || null
   }
+  const enumOr = (v: string | undefined, allowed: readonly string[]) => (v && allowed.includes(v) ? v : null)
+  const nb = data.nombrePlaces && String(data.nombrePlaces).trim() !== '' ? parseInt(String(data.nombrePlaces), 10) : NaN
+  const dateLimite = data.dateLimiteInscription && data.dateLimiteInscription.trim() !== ''
+    ? new Date(data.dateLimiteInscription).toISOString()
+    : null
   return {
     titre: (data.titre ?? '').trim(),
     type: Number(data.type),
+    descriptionCourte: opt(data.descriptionCourte),
     description: opt(data.description),
+    intervenants: opt(data.intervenants),
     dateDebut: data.dateDebut,
     dateFin: opt(data.dateFin),
     lieuNom: opt(data.lieuNom),
     lieuAdresse: opt(data.lieuAdresse),
     lieuCodePostal: opt(data.lieuCodePostal),
     lieuVille: (data.lieuVille ?? '').trim(),
+    lieuDepartement: opt(data.lieuDepartement),
     lienInscription: opt(data.lienInscription),
+    // Participation
+    gratuit: data.gratuit !== false,
+    tarif: opt(data.tarif),
+    nombrePlaces: Number.isFinite(nb) && nb >= 0 ? nb : null,
+    dateLimiteInscription: dateLimite,
+    ouvertATous: enumOr(data.ouvertATous, ['oui', 'non']),
+    reserveMembres: enumOr(data.reserveMembres, ['oui', 'non']),
+    participationInvite: enumOr(data.participationInvite, ['oui', 'non']),
+    niveauPublic: enumOr(data.niveauPublic, ['debutant', 'confirme', 'tous']),
+    publicConcerne: opt(data.publicConcerne),
+    // Contact
+    contactNom: opt(data.contactNom),
+    contactEmail: opt(data.contactEmail),
+    contactTelephone: opt(data.contactTelephone),
+    // Infos pratiques
+    parking: data.parking === true,
+    accesPmr: data.accesPmr === true,
+    infosPratiques: opt(data.infosPratiques),
   }
 }
 
@@ -81,7 +128,7 @@ export async function createMonEvenement(data: EvenementFormData): Promise<Actio
         ...sanitize(data),
         organisateurReseauteur: Number(ctx.profil.id),
         statut: 'publie' as const,
-      },
+      } as unknown as import('payload').RequiredDataFromCollectionSlug<'evenements'>,
       user: ctx.user,
       overrideAccess: false,
     })

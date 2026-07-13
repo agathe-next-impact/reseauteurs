@@ -23,16 +23,36 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
     setErrorMsg(null)
 
     const fd = new FormData(e.currentTarget)
+    const gs = (k: string) => (fd.get(k) as string | null) ?? undefined
     const data = {
       titre: fd.get('titre') as string,
-      description: fd.get('description') as string | undefined,
+      descriptionCourte: gs('descriptionCourte'),
+      description: gs('description'),
+      intervenants: gs('intervenants'),
       dateDebut: fd.get('dateDebut') as string,
-      dateFin: fd.get('dateFin') as string | undefined,
-      heure: fd.get('heure') as string | undefined,
-      lieuNom: fd.get('lieuNom') as string | undefined,
-      lieuVille: fd.get('lieuVille') as string | undefined,
-      lieuAdresse: fd.get('lieuAdresse') as string | undefined,
-      lienInscription: fd.get('lienInscription') as string | undefined,
+      dateFin: gs('dateFin'),
+      heure: gs('heure'),
+      lieuNom: gs('lieuNom'),
+      lieuVille: gs('lieuVille'),
+      lieuAdresse: gs('lieuAdresse'),
+      lieuCodePostal: gs('lieuCodePostal'),
+      lieuDepartement: gs('lieuDepartement'),
+      lienInscription: gs('lienInscription'),
+      gratuit: fd.get('gratuit') === 'on',
+      tarif: gs('tarif'),
+      nombrePlaces: gs('nombrePlaces'),
+      dateLimiteInscription: gs('dateLimiteInscription'),
+      ouvertATous: gs('ouvertATous'),
+      reserveMembres: gs('reserveMembres'),
+      participationInvite: gs('participationInvite'),
+      niveauPublic: gs('niveauPublic'),
+      publicConcerne: gs('publicConcerne'),
+      contactNom: gs('contactNom'),
+      contactEmail: gs('contactEmail'),
+      contactTelephone: gs('contactTelephone'),
+      parking: fd.get('parking') === 'on',
+      accesPmr: fd.get('accesPmr') === 'on',
+      infosPratiques: gs('infosPratiques'),
     }
 
     startTransition(async () => {
@@ -197,7 +217,11 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
             </div>
 
             <div>
-              <label htmlFor="description" className={labelClass}>Description</label>
+              <label htmlFor="descriptionCourte" className={labelClass}>Description courte (2 à 3 lignes)</label>
+              <textarea id="descriptionCourte" name="descriptionCourte" maxLength={500} rows={2} defaultValue={editingEvenement?.descriptionCourte as string ?? ''} className={`${inputClass} resize-none`} />
+            </div>
+            <div>
+              <label htmlFor="description" className={labelClass}>Description détaillée</label>
               <textarea
                 id="description"
                 name="description"
@@ -206,6 +230,10 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
                 defaultValue={editingEvenement?.description as string ?? ''}
                 className={`${inputClass} resize-none`}
               />
+            </div>
+            <div>
+              <label htmlFor="intervenants" className={labelClass}>Intervenant(s)</label>
+              <textarea id="intervenants" name="intervenants" maxLength={1000} rows={2} defaultValue={editingEvenement?.intervenants as string ?? ''} className={`${inputClass} resize-none`} />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -274,6 +302,14 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
                   className={inputClass}
                 />
               </div>
+              <div>
+                <label htmlFor="lieuCodePostal" className={labelClass}>Code postal</label>
+                <input id="lieuCodePostal" name="lieuCodePostal" type="text" maxLength={10} defaultValue={editingEvenement?.lieuCodePostal as string ?? ''} className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="lieuDepartement" className={labelClass}>Département</label>
+                <input id="lieuDepartement" name="lieuDepartement" type="text" maxLength={100} placeholder="Rhône, Paris…" defaultValue={editingEvenement?.lieuDepartement as string ?? ''} className={inputClass} />
+              </div>
             </div>
 
             <div>
@@ -293,6 +329,87 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
                 Le bouton &quot;S&apos;inscrire&quot; redirigera vers cette URL.
               </p>
             </div>
+
+            {/* Participation */}
+            <fieldset className="space-y-3 pt-1 border-t border-[#f4f4f5]">
+              <legend className="text-xs font-semibold text-[#52525b]">Participation</legend>
+              <label className="flex items-center gap-2 text-sm text-[#18181b]">
+                <input type="checkbox" name="gratuit" defaultChecked={editingEvenement ? editingEvenement.gratuit !== false : true} className="rounded border-[#e4e4e7]" />
+                Événement gratuit
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="tarif" className={labelClass}>Tarif (si payant)</label>
+                  <input id="tarif" name="tarif" type="text" maxLength={100} placeholder="ex : 25 €" defaultValue={editingEvenement?.tarif as string ?? ''} className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="nombrePlaces" className={labelClass}>Nombre de places</label>
+                  <input id="nombrePlaces" name="nombrePlaces" type="number" min={0} defaultValue={(editingEvenement?.nombrePlaces as number | undefined) ?? ''} className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="dateLimiteInscription" className={labelClass}>Date limite d&apos;inscription</label>
+                  <input id="dateLimiteInscription" name="dateLimiteInscription" type="datetime-local" defaultValue={editingEvenement?.dateLimiteInscription ? new Date(editingEvenement.dateLimiteInscription as string).toISOString().slice(0, 16) : ''} className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="niveauPublic" className={labelClass}>Niveau</label>
+                  <select id="niveauPublic" name="niveauPublic" defaultValue={editingEvenement?.niveauPublic as string ?? ''} className={inputClass}>
+                    <option value="">—</option>
+                    <option value="debutant">Débutant</option>
+                    <option value="confirme">Confirmé</option>
+                    <option value="tous">Tous</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
+                <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={editingEvenement?.publicConcerne as string ?? ''} className={inputClass} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {([['ouvertATous', 'Ouvert à tous ?'], ['reserveMembres', 'Réservé aux membres ?'], ['participationInvite', 'Invités possibles ?']] as const).map(([name, label]) => (
+                  <div key={name}>
+                    <label htmlFor={name} className={labelClass}>{label}</label>
+                    <select id={name} name={name} defaultValue={(editingEvenement?.[name] as string | undefined) ?? ''} className={inputClass}>
+                      <option value="">—</option>
+                      <option value="oui">Oui</option>
+                      <option value="non">Non</option>
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            {/* Contact & infos pratiques */}
+            <fieldset className="space-y-3 pt-1 border-t border-[#f4f4f5]">
+              <legend className="text-xs font-semibold text-[#52525b]">Contact & infos pratiques</legend>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label htmlFor="contactNom" className={labelClass}>Contact — nom</label>
+                  <input id="contactNom" name="contactNom" type="text" maxLength={200} defaultValue={editingEvenement?.contactNom as string ?? ''} className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="contactEmail" className={labelClass}>Contact — email</label>
+                  <input id="contactEmail" name="contactEmail" type="email" maxLength={254} defaultValue={editingEvenement?.contactEmail as string ?? ''} className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="contactTelephone" className={labelClass}>Contact — téléphone</label>
+                  <input id="contactTelephone" name="contactTelephone" type="tel" maxLength={30} defaultValue={editingEvenement?.contactTelephone as string ?? ''} className={inputClass} />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center gap-2 text-sm text-[#18181b]">
+                  <input type="checkbox" name="parking" defaultChecked={editingEvenement?.parking === true} className="rounded border-[#e4e4e7]" />
+                  Parking disponible
+                </label>
+                <label className="flex items-center gap-2 text-sm text-[#18181b]">
+                  <input type="checkbox" name="accesPmr" defaultChecked={editingEvenement?.accesPmr === true} className="rounded border-[#e4e4e7]" />
+                  Accès PMR
+                </label>
+              </div>
+              <div>
+                <label htmlFor="infosPratiques" className={labelClass}>Informations complémentaires</label>
+                <textarea id="infosPratiques" name="infosPratiques" maxLength={1000} rows={2} defaultValue={editingEvenement?.infosPratiques as string ?? ''} className={`${inputClass} resize-none`} />
+              </div>
+            </fieldset>
 
             {errorMsg && (
               <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">

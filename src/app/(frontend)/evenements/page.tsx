@@ -44,6 +44,9 @@ export async function generateMetadata(): Promise<Metadata> {
 interface SearchParams {
   vue?: string
   ville?: string
+  departement?: string
+  type?: string
+  tarification?: string
   reseau?: string
   dateDebut?: string
   dateFin?: string
@@ -57,6 +60,11 @@ const PAGE_SIZE = 24
 function buildAgendaWhere(sp: SearchParams): Where {
   const conditions: Where[] = [{ statut: { equals: 'publie' } }]
   if (sp.ville) conditions.push({ lieuVille: { contains: sp.ville } })
+  // Filtres spec 2026-07-13 : département, type (par slug de `types-evenement`), gratuit/payant
+  if (sp.departement) conditions.push({ lieuDepartement: { contains: sp.departement } })
+  if (sp.type) conditions.push({ 'type.value': { equals: sp.type } })
+  if (sp.tarification === 'gratuit') conditions.push({ gratuit: { equals: true } })
+  if (sp.tarification === 'payant') conditions.push({ gratuit: { equals: false } })
 
   const start = sp.dateDebut ?? sp.date
   if (start) {
@@ -104,6 +112,24 @@ export default async function EvenementsPage({
     slug: (r.slug as string) ?? '',
     nom: (r.nom as string) ?? '',
   }))
+
+  // Types d'événement (pour le filtre par type — spec 2026-07-13)
+  const { docs: typesDocs } = await withDbRetry(
+    () =>
+      payload.find({
+        collection: 'types-evenement',
+        select: { label: true, value: true } as Record<string, boolean>,
+        depth: 0,
+        limit: 50,
+        sort: 'ordre',
+        overrideAccess: true,
+      }),
+    { label: 'evenements:find types' },
+  )
+  const typesListe = typesDocs.map((t) => ({
+    value: (t.value as string) ?? '',
+    label: (t.label as string) ?? '',
+  })).filter((t) => t.value && t.label)
 
   // ─── VUE CARTE ─────────────────────────────────────────────────────────────
   // ADR-0012 : un seul type de marqueur (Premium supprimé)
@@ -241,7 +267,7 @@ export default async function EvenementsPage({
                 <div className="h-48 rounded-2xl bg-white border border-[#e4e4e7] animate-pulse" />
               }
             >
-              <EvenementsClientFilters reseaux={reseauxListe} />
+              <EvenementsClientFilters reseaux={reseauxListe} types={typesListe} />
             </Suspense>
           </aside>
 

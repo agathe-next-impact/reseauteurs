@@ -102,15 +102,63 @@ const enumOrNull = (v: string | undefined, allowed: readonly string[]): string |
 
 const EvenementSchema = z.object({
   titre: z.string().min(1, 'Le titre est requis').max(300),
+  descriptionCourte: z.string().max(500).optional(),
   description: z.string().max(5000).optional(),
+  intervenants: z.string().max(1000).optional(),
   dateDebut: z.string().min(1, 'La date est requise'),
   dateFin: z.string().optional().or(z.literal('')),
   heure: z.string().optional(),
   lieuNom: z.string().max(200).optional(),
   lieuVille: z.string().max(100).optional(),
   lieuAdresse: z.string().max(300).optional(),
+  lieuCodePostal: z.string().max(10).optional(),
+  lieuDepartement: z.string().max(100).optional(),
   lienInscription: z.string().url('URL invalide').optional().or(z.literal('')),
+  // Participation / catégorisation / contact / infos pratiques (spec 2026-07-13)
+  gratuit: z.boolean().optional(),
+  tarif: z.string().max(100).optional(),
+  nombrePlaces: z.string().max(12).optional(),
+  dateLimiteInscription: z.string().optional(),
+  ouvertATous: z.string().max(4).optional(),
+  reserveMembres: z.string().max(4).optional(),
+  participationInvite: z.string().max(4).optional(),
+  niveauPublic: z.string().max(12).optional(),
+  publicConcerne: z.string().max(300).optional(),
+  contactNom: z.string().max(200).optional(),
+  contactEmail: z.string().max(254).optional(),
+  contactTelephone: z.string().max(30).optional(),
+  parking: z.boolean().optional(),
+  accesPmr: z.boolean().optional(),
+  infosPratiques: z.string().max(1000).optional(),
 })
+
+// Normalise les champs additionnels d'un événement ('' → null, enums whitelistés, nombre/date parsés).
+function evenementExtras(d: z.infer<typeof EvenementSchema>): Record<string, unknown> {
+  const opt = (v?: string) => (v && v.trim() !== '' ? v.trim() : null)
+  const enumOr = (v: string | undefined, a: readonly string[]) => (v && a.includes(v) ? v : null)
+  const nb = d.nombrePlaces && d.nombrePlaces.trim() !== '' ? parseInt(d.nombrePlaces, 10) : NaN
+  return {
+    descriptionCourte: opt(d.descriptionCourte),
+    intervenants: opt(d.intervenants),
+    lieuCodePostal: opt(d.lieuCodePostal),
+    lieuDepartement: opt(d.lieuDepartement),
+    gratuit: d.gratuit !== false,
+    tarif: opt(d.tarif),
+    nombrePlaces: Number.isFinite(nb) && nb >= 0 ? nb : null,
+    dateLimiteInscription: opt(d.dateLimiteInscription) ? new Date(d.dateLimiteInscription as string).toISOString() : null,
+    ouvertATous: enumOr(d.ouvertATous, ['oui', 'non']),
+    reserveMembres: enumOr(d.reserveMembres, ['oui', 'non']),
+    participationInvite: enumOr(d.participationInvite, ['oui', 'non']),
+    niveauPublic: enumOr(d.niveauPublic, ['debutant', 'confirme', 'tous']),
+    publicConcerne: opt(d.publicConcerne),
+    contactNom: opt(d.contactNom),
+    contactEmail: opt(d.contactEmail),
+    contactTelephone: opt(d.contactTelephone),
+    parking: d.parking === true,
+    accesPmr: d.accesPmr === true,
+    infosPratiques: opt(d.infosPratiques),
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────
 // Action : mise à jour de la fiche réseau
@@ -205,6 +253,7 @@ export async function createEvenement(
       collection: 'evenements',
       data: {
         ...rest,
+        ...evenementExtras(parsed.data),
         dateFin: dateFin || null,
         lienInscription: lienInscription || null,
         reseau: auth.reseau.id,
@@ -263,6 +312,7 @@ export async function updateEvenement(
       id: evenementId,
       data: {
         ...rest,
+        ...evenementExtras(parsed.data),
         dateFin: dateFin || null,
         lienInscription: lienInscription || null,
       } as Record<string, unknown>,

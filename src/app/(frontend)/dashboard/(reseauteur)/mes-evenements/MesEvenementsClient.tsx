@@ -28,14 +28,32 @@ export interface MonEvenement {
   past: boolean
   titre: string
   type: number
+  descriptionCourte: string | null
   description: string | null
+  intervenants: string | null
   dateDebut: string
   dateFin: string | null
   lieuNom: string | null
   lieuAdresse: string | null
   lieuCodePostal: string | null
   lieuVille: string
+  lieuDepartement: string | null
   lienInscription: string | null
+  gratuit: boolean
+  tarif: string | null
+  nombrePlaces: number | null
+  dateLimiteInscription: string | null
+  ouvertATous: string | null
+  reserveMembres: string | null
+  participationInvite: string | null
+  niveauPublic: string | null
+  publicConcerne: string | null
+  contactNom: string | null
+  contactEmail: string | null
+  contactTelephone: string | null
+  parking: boolean
+  accesPmr: boolean
+  infosPratiques: string | null
   statut: string
   /** Inscrits en ligne (ADR-0013 §3bis). */
   inscrits: InscritLite[]
@@ -69,17 +87,36 @@ export function MesEvenementsClient({
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
+    const s = (k: string) => String(fd.get(k) ?? '')
     const data: EvenementFormData = {
-      titre: String(fd.get('titre') ?? ''),
+      titre: s('titre'),
       type: Number(fd.get('type')),
-      description: String(fd.get('description') ?? ''),
+      descriptionCourte: s('descriptionCourte'),
+      description: s('description'),
+      intervenants: s('intervenants'),
       dateDebut: fd.get('dateDebut') ? new Date(String(fd.get('dateDebut'))).toISOString() : '',
       dateFin: fd.get('dateFin') ? new Date(String(fd.get('dateFin'))).toISOString() : '',
-      lieuNom: String(fd.get('lieuNom') ?? ''),
-      lieuAdresse: String(fd.get('lieuAdresse') ?? ''),
-      lieuCodePostal: String(fd.get('lieuCodePostal') ?? ''),
-      lieuVille: String(fd.get('lieuVille') ?? ''),
-      lienInscription: String(fd.get('lienInscription') ?? ''),
+      lieuNom: s('lieuNom'),
+      lieuAdresse: s('lieuAdresse'),
+      lieuCodePostal: s('lieuCodePostal'),
+      lieuVille: s('lieuVille'),
+      lieuDepartement: s('lieuDepartement'),
+      lienInscription: s('lienInscription'),
+      gratuit: fd.get('gratuit') === 'on',
+      tarif: s('tarif'),
+      nombrePlaces: s('nombrePlaces'),
+      dateLimiteInscription: fd.get('dateLimiteInscription') ? new Date(String(fd.get('dateLimiteInscription'))).toISOString() : '',
+      ouvertATous: s('ouvertATous'),
+      reserveMembres: s('reserveMembres'),
+      participationInvite: s('participationInvite'),
+      niveauPublic: s('niveauPublic'),
+      publicConcerne: s('publicConcerne'),
+      contactNom: s('contactNom'),
+      contactEmail: s('contactEmail'),
+      contactTelephone: s('contactTelephone'),
+      parking: fd.get('parking') === 'on',
+      accesPmr: fd.get('accesPmr') === 'on',
+      infosPratiques: s('infosPratiques'),
     }
     startTransition(async () => {
       const res =
@@ -153,8 +190,16 @@ export function MesEvenementsClient({
           </div>
 
           <div>
-            <label htmlFor="description" className={labelClass}>Description</label>
+            <label htmlFor="descriptionCourte" className={labelClass}>Description courte (2 à 3 lignes)</label>
+            <textarea id="descriptionCourte" name="descriptionCourte" rows={2} maxLength={500} defaultValue={current?.descriptionCourte ?? ''} className={`${inputClass} resize-none`} />
+          </div>
+          <div>
+            <label htmlFor="description" className={labelClass}>Description détaillée</label>
             <textarea id="description" name="description" rows={4} maxLength={3000} defaultValue={current?.description ?? ''} className={`${inputClass} resize-none`} />
+          </div>
+          <div>
+            <label htmlFor="intervenants" className={labelClass}>Intervenant(s)</label>
+            <textarea id="intervenants" name="intervenants" rows={2} maxLength={1000} defaultValue={current?.intervenants ?? ''} className={`${inputClass} resize-none`} />
           </div>
 
           <fieldset className="space-y-3">
@@ -176,8 +221,102 @@ export function MesEvenementsClient({
                 <label htmlFor="lieuVille" className={labelClass}>Ville *</label>
                 <input id="lieuVille" name="lieuVille" type="text" required maxLength={100} defaultValue={current?.lieuVille ?? ''} className={inputClass} />
               </div>
+              <div>
+                <label htmlFor="lieuDepartement" className={labelClass}>Département</label>
+                <input id="lieuDepartement" name="lieuDepartement" type="text" maxLength={100} placeholder="Rhône, Paris…" defaultValue={current?.lieuDepartement ?? ''} className={inputClass} />
+              </div>
             </div>
             <p className="text-xs text-[#a1a1aa]">L&apos;adresse est géocodée automatiquement pour la carte.</p>
+          </fieldset>
+
+          {/* Participation */}
+          <fieldset className="space-y-3 pt-1">
+            <legend className="text-xs font-semibold text-[#52525b]">Participation</legend>
+            <label className="flex items-center gap-2 text-sm text-[#18181b]">
+              <input type="checkbox" name="gratuit" defaultChecked={current ? current.gratuit : true} className="rounded border-[#e4e4e7]" />
+              Événement gratuit
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="tarif" className={labelClass}>Tarif (si payant)</label>
+                <input id="tarif" name="tarif" type="text" maxLength={100} placeholder="ex : 25 €" defaultValue={current?.tarif ?? ''} className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="nombrePlaces" className={labelClass}>Nombre de places</label>
+                <input id="nombrePlaces" name="nombrePlaces" type="number" min={0} defaultValue={current?.nombrePlaces ?? ''} className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="dateLimiteInscription" className={labelClass}>Date limite d&apos;inscription</label>
+                <input id="dateLimiteInscription" name="dateLimiteInscription" type="datetime-local" defaultValue={toLocalInput(current?.dateLimiteInscription ?? null)} className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="niveauPublic" className={labelClass}>Niveau</label>
+                <select id="niveauPublic" name="niveauPublic" defaultValue={current?.niveauPublic ?? ''} className={inputClass}>
+                  <option value="">—</option>
+                  <option value="debutant">Débutant</option>
+                  <option value="confirme">Confirmé</option>
+                  <option value="tous">Tous</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
+              <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={current?.publicConcerne ?? ''} className={inputClass} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {([
+                ['ouvertATous', 'Ouvert à tous ?'],
+                ['reserveMembres', 'Réservé aux membres ?'],
+                ['participationInvite', 'Invités possibles ?'],
+              ] as const).map(([name, label]) => (
+                <div key={name}>
+                  <label htmlFor={name} className={labelClass}>{label}</label>
+                  <select id={name} name={name} defaultValue={(current?.[name] as string | null) ?? ''} className={inputClass}>
+                    <option value="">—</option>
+                    <option value="oui">Oui</option>
+                    <option value="non">Non</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* Contact */}
+          <fieldset className="space-y-3 pt-1">
+            <legend className="text-xs font-semibold text-[#52525b]">Contact (facultatif)</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label htmlFor="contactNom" className={labelClass}>Nom</label>
+                <input id="contactNom" name="contactNom" type="text" maxLength={200} defaultValue={current?.contactNom ?? ''} className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="contactEmail" className={labelClass}>Email</label>
+                <input id="contactEmail" name="contactEmail" type="email" maxLength={254} defaultValue={current?.contactEmail ?? ''} className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="contactTelephone" className={labelClass}>Téléphone</label>
+                <input id="contactTelephone" name="contactTelephone" type="tel" maxLength={30} defaultValue={current?.contactTelephone ?? ''} className={inputClass} />
+              </div>
+            </div>
+          </fieldset>
+
+          {/* Infos pratiques */}
+          <fieldset className="space-y-3 pt-1">
+            <legend className="text-xs font-semibold text-[#52525b]">Informations pratiques</legend>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 text-sm text-[#18181b]">
+                <input type="checkbox" name="parking" defaultChecked={current?.parking ?? false} className="rounded border-[#e4e4e7]" />
+                Parking disponible
+              </label>
+              <label className="flex items-center gap-2 text-sm text-[#18181b]">
+                <input type="checkbox" name="accesPmr" defaultChecked={current?.accesPmr ?? false} className="rounded border-[#e4e4e7]" />
+                Accès PMR
+              </label>
+            </div>
+            <div>
+              <label htmlFor="infosPratiques" className={labelClass}>Informations complémentaires</label>
+              <textarea id="infosPratiques" name="infosPratiques" rows={2} maxLength={1000} defaultValue={current?.infosPratiques ?? ''} className={`${inputClass} resize-none`} />
+            </div>
           </fieldset>
 
           <div className="flex items-center gap-3">

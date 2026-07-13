@@ -41,9 +41,15 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
    département, région, secteur d'activité, compétences, **réseaux fréquentés** (cases à cocher multi →
    relation many-to-many), **badge** (§5), géolocalisation.
 2. **L'événement** (`evenements`) — un **événement business daté**. Fiche publique (`/evenement/<slug>`) et
-   **marqueur sur la carte des événements**. Champs : titre, description, date, heure, adresse, ville, image,
+   **marqueur sur la carte des événements**. Champs (fiche complète — spec 2026-07-13) : titre, **type**
+   (10 valeurs : petit-déj, déjeuner, afterwork, conférence, atelier, formation, visite d'entreprise, speed
+   business, salon, autre), **description courte + détaillée + intervenants**, date/heure début+fin, **lieu**
+   (nom/adresse/CP/ville/**département**), **participation** (gratuit/tarif, nb de places, date limite,
+   ouvert à tous ?, réservé aux membres ?, invité possible ?, niveau, public concerné, secteur), **contact**
+   (nom/email/tél), **médias** (visuel + galerie), **infos pratiques** (parking, PMR, compléments),
    **réseau organisateur** *(ou réseauteur Plus organisateur — XOR)*, **lien d'inscription externe**,
-   géolocalisation. **Inscription — deux régimes (ADR-0013, tranché 2026-07-13) :**
+   validation (statut + créé par + date de MàJ), géolocalisation. **Recherche/filtres :** ville, **département**,
+   réseau, **type**, **gratuit/payant**, date. **Inscription — deux régimes (ADR-0013, tranché 2026-07-13) :**
    • **événement de réseau** → le bouton « S'inscrire » **redirige vers le site du réseau** (RÉSEAUTEURS
    **n'organise pas** ; le réseau a son propre système) ;
    • **événement organisé par un réseauteur Plus** → **inscription sur la plateforme** : un réseauteur

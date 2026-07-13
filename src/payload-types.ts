@@ -843,6 +843,10 @@ export interface Evenement {
   lieuCodePostal?: string | null;
   lieuVille: string;
   /**
+   * Ex : Rhône, Paris, Gironde. Utilisé pour le filtre par département.
+   */
+  lieuDepartement?: string | null;
+  /**
    * Résumé affiché en tête de fiche et dans les listes.
    */
   descriptionCourte?: string | null;
@@ -1472,6 +1476,7 @@ export interface EvenementsSelect<T extends boolean = true> {
   lieuAdresse?: T;
   lieuCodePostal?: T;
   lieuVille?: T;
+  lieuDepartement?: T;
   descriptionCourte?: T;
   description?: T;
   intervenants?: T;

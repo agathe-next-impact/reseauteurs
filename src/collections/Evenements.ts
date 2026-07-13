@@ -36,6 +36,7 @@ const EVENEMENT_TEXT_FIELDS = [
   'lieuAdresse',
   'lieuCodePostal',
   'lieuVille',
+  'lieuDepartement',
   'descriptionCourte',
   'description',
   'intervenants',
@@ -493,6 +494,13 @@ export const Evenements: CollectionConfig = {
       required: true,
       label: 'Ville',
       index: true,
+    },
+    {
+      name: 'lieuDepartement',
+      type: 'text',
+      label: 'Département',
+      index: true,
+      admin: { description: 'Ex : Rhône, Paris, Gironde. Utilisé pour le filtre par département.' },
     },
     // ============================================================
     // DESCRIPTION ET LIEN D'INSCRIPTION EXTERNE

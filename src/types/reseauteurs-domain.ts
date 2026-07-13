@@ -156,6 +156,7 @@ export interface EvenementRsn {
   lieuAdresse?: string | null
   lieuCodePostal?: string | null
   lieuVille?: string | null
+  lieuDepartement?: string | null
   descriptionCourte?: string | null
   description?: string | null
   intervenants?: string | null

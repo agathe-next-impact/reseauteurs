@@ -6,9 +6,10 @@ import { SlidersHorizontal, X } from 'lucide-react'
 
 interface EvenementsClientFiltersProps {
   reseaux: Array<{ slug: string; nom: string }>
+  types?: Array<{ value: string; label: string }>
 }
 
-export default function EvenementsClientFilters({ reseaux }: EvenementsClientFiltersProps) {
+export default function EvenementsClientFilters({ reseaux, types = [] }: EvenementsClientFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -16,6 +17,9 @@ export default function EvenementsClientFilters({ reseaux }: EvenementsClientFil
 
   const current = {
     ville: searchParams.get('ville') ?? '',
+    departement: searchParams.get('departement') ?? '',
+    type: searchParams.get('type') ?? '',
+    tarification: searchParams.get('tarification') ?? '',
     reseau: searchParams.get('reseau') ?? '',
     // Vocabulaire partagé carte↔liste (cf. /api/geo/evenements).
     dateDebut: searchParams.get('dateDebut') ?? '',
@@ -73,6 +77,58 @@ export default function EvenementsClientFilters({ reseaux }: EvenementsClientFil
           className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent"
           autoComplete="address-level2"
         />
+      </div>
+
+      {/* Département */}
+      <div>
+        <label htmlFor="ev-filter-departement" className="block text-xs font-medium text-[#52525b] mb-1">
+          Département
+        </label>
+        <input
+          id="ev-filter-departement"
+          type="text"
+          value={current.departement}
+          onChange={(e) => update('departement', e.target.value)}
+          placeholder="Rhône, Paris…"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent"
+        />
+      </div>
+
+      {/* Type d'événement */}
+      {types.length > 0 && (
+        <div>
+          <label htmlFor="ev-filter-type" className="block text-xs font-medium text-[#52525b] mb-1">
+            Type d&apos;événement
+          </label>
+          <select
+            id="ev-filter-type"
+            value={current.type}
+            onChange={(e) => update('type', e.target.value)}
+            className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent cursor-pointer"
+          >
+            <option value="">Tous les types</option>
+            {types.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Tarification */}
+      <div>
+        <label htmlFor="ev-filter-tarif" className="block text-xs font-medium text-[#52525b] mb-1">
+          Tarif
+        </label>
+        <select
+          id="ev-filter-tarif"
+          value={current.tarification}
+          onChange={(e) => update('tarification', e.target.value)}
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent cursor-pointer"
+        >
+          <option value="">Tous</option>
+          <option value="gratuit">Gratuit</option>
+          <option value="payant">Payant</option>
+        </select>
       </div>
 
       {/* Réseau */}
