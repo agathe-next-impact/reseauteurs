@@ -23,7 +23,7 @@ import { compterInscrits } from '@/lib/inscriptions'
 import InscriptionEvenement from '@/components/evenement/InscriptionEvenement'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
-import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement, Reseauteur } from '@/types/reseauteurs-domain'
+import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement, Reseauteur, Categorie } from '@/types/reseauteurs-domain'
 
 export const revalidate = 300
 
@@ -152,6 +152,32 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
   const reseauLogoMedia = reseau?.logo as Media | null | undefined
   const reseauLogoUrl = reseauLogoMedia?.sizes?.thumbnail?.url ?? reseauLogoMedia?.url
   const typeDoc = e.type as TypesEvenement | null | undefined
+
+  // ── Fiche complète (spec 2026-07-13) : catégorisation, participation, médias, pratiques
+  const galerieUrls = ((e.galerie ?? []) as Array<{ image?: unknown }>)
+    .map((g) => {
+      const m = g?.image
+      return m && typeof m === 'object' ? ((m as Media).sizes?.card?.url ?? (m as Media).url ?? null) : null
+    })
+    .filter((u): u is string => Boolean(u))
+  const secteurDoc = e.secteur as Categorie | null | undefined
+  const ouiNon = (v: 'oui' | 'non' | null | undefined): string | null => (v === 'oui' ? 'Oui' : v === 'non' ? 'Non' : null)
+  const NIVEAU_PUBLIC_LABEL: Record<string, string> = { debutant: 'Débutant', confirme: 'Confirmé', tous: 'Tous niveaux' }
+  const participationRows: Array<{ label: string; value: string }> = [
+    { label: 'Tarif', value: e.gratuit === false ? (e.tarif || 'Payant') : 'Gratuit' },
+    typeof e.nombrePlaces === 'number' ? { label: 'Places', value: String(e.nombrePlaces) } : null,
+    e.dateLimiteInscription ? { label: 'Limite d\'inscription', value: new Date(e.dateLimiteInscription).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) } : null,
+    ouiNon(e.ouvertATous) ? { label: 'Ouvert à tous', value: ouiNon(e.ouvertATous)! } : null,
+    ouiNon(e.reserveMembres) ? { label: 'Réservé aux membres', value: ouiNon(e.reserveMembres)! } : null,
+    ouiNon(e.participationInvite) ? { label: 'Participation en invité', value: ouiNon(e.participationInvite)! } : null,
+    e.niveauPublic ? { label: 'Niveau', value: NIVEAU_PUBLIC_LABEL[e.niveauPublic] ?? e.niveauPublic } : null,
+    e.publicConcerne ? { label: 'Public concerné', value: e.publicConcerne } : null,
+    secteurDoc?.label ? { label: 'Secteur', value: secteurDoc.label } : null,
+  ].filter((r): r is { label: string; value: string } => r !== null)
+  const pratiques: string[] = [
+    e.parking ? 'Parking disponible' : null,
+    e.accesPmr ? 'Accès PMR' : null,
+  ].filter((x): x is string => Boolean(x))
 
   // Validation de l'URL externe (sécurité)
   let lienInscriptionSafe: string | null = null
@@ -282,11 +308,102 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
 
           {/* Description */}
           <div className="px-6 py-6 space-y-8">
+            {e.descriptionCourte && (
+              <Reveal>
+                <p className="text-base text-[#18181b] font-medium leading-relaxed">{e.descriptionCourte}</p>
+              </Reveal>
+            )}
             {e.description && (
               <Reveal>
                 <section aria-labelledby="desc-titre">
                   <h2 id="desc-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos de cet événement</h2>
                   <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.description}</p>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Intervenants */}
+            {e.intervenants && (
+              <Reveal>
+                <section aria-labelledby="intervenants-titre">
+                  <h2 id="intervenants-titre" className="text-sm font-semibold text-[#18181b] mb-2">Intervenant(s)</h2>
+                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.intervenants}</p>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Participation (fiche descriptive) */}
+            {participationRows.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="participation-titre">
+                  <h2 id="participation-titre" className="text-sm font-semibold text-[#18181b] mb-3">Participation</h2>
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                    {participationRows.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between gap-3 border-b border-[#f4f4f5] py-1.5">
+                        <dt className="text-xs text-[#71717a]">{row.label}</dt>
+                        <dd className="text-xs font-semibold text-[#18181b] text-right">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Infos pratiques */}
+            {(pratiques.length > 0 || e.infosPratiques) && (
+              <Reveal>
+                <section aria-labelledby="pratiques-titre">
+                  <h2 id="pratiques-titre" className="text-sm font-semibold text-[#18181b] mb-2">Informations pratiques</h2>
+                  {pratiques.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {pratiques.map((p) => (
+                        <span key={p} className="text-xs font-medium px-2.5 py-1 rounded-full bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0]">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {e.infosPratiques && (
+                    <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.infosPratiques}</p>
+                  )}
+                </section>
+              </Reveal>
+            )}
+
+            {/* Galerie photos */}
+            {galerieUrls.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="galerie-ev-titre">
+                  <h2 id="galerie-ev-titre" className="text-sm font-semibold text-[#18181b] mb-3">En images</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {galerieUrls.map((url, i) => (
+                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#e4e4e7]">
+                        <Image src={url} alt={`Photo ${i + 1} de l'événement ${e.titre}`} fill className="object-cover" sizes="(max-width: 640px) 50vw, 240px" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Contact organisateur */}
+            {(e.contactNom || e.contactEmail || e.contactTelephone) && (
+              <Reveal>
+                <section aria-labelledby="contact-ev-titre">
+                  <h2 id="contact-ev-titre" className="text-sm font-semibold text-[#18181b] mb-2">Contact</h2>
+                  {e.contactNom && <p className="text-sm text-[#52525b] mb-2">{e.contactNom}</p>}
+                  <div className="flex flex-wrap gap-2">
+                    {e.contactEmail && (
+                      <a href={`mailto:${e.contactEmail}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                        {e.contactEmail}
+                      </a>
+                    )}
+                    {e.contactTelephone && (
+                      <a href={`tel:${e.contactTelephone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                        {e.contactTelephone}
+                      </a>
+                    )}
+                  </div>
                 </section>
               </Reveal>
             )}
@@ -453,6 +570,13 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
               Voir sur la carte
             </Link>
           </div>
+          {/* Ligne de validation (créé par + dernière mise à jour) */}
+          {(e.updatedAt || e.creePar) && (
+            <div className="px-6 py-2.5 border-t border-[#e4e4e7] bg-white text-[11px] text-[#a1a1aa] flex flex-wrap gap-x-3 gap-y-0.5">
+              {e.creePar && <span>Créé par {e.creePar}</span>}
+              {e.updatedAt && <span>{e.creePar ? '· ' : ''}Mis à jour le {new Date(e.updatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
+            </div>
+          )}
         </article>
       </div>
     </div>

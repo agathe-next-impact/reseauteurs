@@ -77,6 +77,8 @@ import * as migration_20260713_100000_inscriptions from './20260713_100000_inscr
 import * as migration_20260713_110000_reseaux_fiche_complete from './20260713_110000_reseaux_fiche_complete';
 // ── niveau à 4 valeurs (fusion portee) — tête→chapitres conservé (2026-07-13)
 import * as migration_20260713_120000_niveau_4_valeurs from './20260713_120000_niveau_4_valeurs';
+// ── Fiche événement complète : participation, contact, catégorisation, médias… (2026-07-13)
+import * as migration_20260713_130000_evenements_fiche_complete from './20260713_130000_evenements_fiche_complete';
 
 export const migrations = [
   {
@@ -421,5 +423,10 @@ export const migrations = [
     up: migration_20260713_120000_niveau_4_valeurs.up,
     down: migration_20260713_120000_niveau_4_valeurs.down,
     name: '20260713_120000_niveau_4_valeurs',
+  },
+  {
+    up: migration_20260713_130000_evenements_fiche_complete.up,
+    down: migration_20260713_130000_evenements_fiche_complete.down,
+    name: '20260713_130000_evenements_fiche_complete',
   },
 ];

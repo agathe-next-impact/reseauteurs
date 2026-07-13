@@ -842,16 +842,62 @@ export interface Evenement {
   lieuAdresse?: string | null;
   lieuCodePostal?: string | null;
   lieuVille: string;
+  /**
+   * Résumé affiché en tête de fiche et dans les listes.
+   */
+  descriptionCourte?: string | null;
   description?: string | null;
+  /**
+   * Nom(s) et qualité des intervenants (si applicable).
+   */
+  intervenants?: string | null;
   /**
    * URL vers le site ou formulaire d'inscription du réseau organisateur. Le bouton « S'inscrire » redirige vers ce lien.
    */
   lienInscription?: string | null;
+  contactNom?: string | null;
+  contactEmail?: string | null;
+  contactTelephone?: string | null;
   image?: (number | null) | Media;
+  galerie?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Ex : entrepreneurs, dirigeants, indépendants, commerciaux, étudiants, tous…
+   */
+  publicConcerne?: string | null;
+  /**
+   * Secteur principal concerné (facultatif).
+   */
+  secteur?: (number | null) | Category;
+  niveauPublic?: ('debutant' | 'confirme' | 'tous') | null;
+  /**
+   * Décochez si l'événement est payant, puis renseignez le tarif.
+   */
+  gratuit?: boolean | null;
+  /**
+   * Ex : « 25 € », « gratuit pour les membres, 15 € invités ». Affiché si l'événement est payant.
+   */
+  tarif?: string | null;
+  nombrePlaces?: number | null;
+  dateLimiteInscription?: string | null;
+  ouvertATous?: ('oui' | 'non') | null;
+  reserveMembres?: ('oui' | 'non') | null;
+  participationInvite?: ('oui' | 'non') | null;
+  parking?: boolean | null;
+  accesPmr?: boolean | null;
+  infosPratiques?: string | null;
   /**
    * Statut de visibilité de l'événement.
    */
   statut: 'publie' | 'suspendu';
+  /**
+   * Nom de la personne ayant créé l'événement (traçabilité).
+   */
+  creePar?: string | null;
   /**
    * Latitude (auto-calculée par géocodage).
    */
@@ -1426,10 +1472,35 @@ export interface EvenementsSelect<T extends boolean = true> {
   lieuAdresse?: T;
   lieuCodePostal?: T;
   lieuVille?: T;
+  descriptionCourte?: T;
   description?: T;
+  intervenants?: T;
   lienInscription?: T;
+  contactNom?: T;
+  contactEmail?: T;
+  contactTelephone?: T;
   image?: T;
+  galerie?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  publicConcerne?: T;
+  secteur?: T;
+  niveauPublic?: T;
+  gratuit?: T;
+  tarif?: T;
+  nombrePlaces?: T;
+  dateLimiteInscription?: T;
+  ouvertATous?: T;
+  reserveMembres?: T;
+  participationInvite?: T;
+  parking?: T;
+  accesPmr?: T;
+  infosPratiques?: T;
   statut?: T;
+  creePar?: T;
   lieuLatitude?: T;
   lieuLongitude?: T;
   seo?:

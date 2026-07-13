@@ -156,9 +156,33 @@ export interface EvenementRsn {
   lieuAdresse?: string | null
   lieuCodePostal?: string | null
   lieuVille?: string | null
+  descriptionCourte?: string | null
   description?: string | null
+  intervenants?: string | null
   lienInscription?: string | null
   image?: (number | null) | PayloadMedia
+  galerie?: Array<{ image?: (number | null) | PayloadMedia; id?: string | null }> | null
+  // Contact organisateur (spécifique à l'événement)
+  contactNom?: string | null
+  contactEmail?: string | null
+  contactTelephone?: string | null
+  // Catégorisation
+  publicConcerne?: string | null
+  secteur?: (number | null) | Categorie
+  niveauPublic?: 'debutant' | 'confirme' | 'tous' | null
+  // Participation
+  gratuit?: boolean | null
+  tarif?: string | null
+  nombrePlaces?: number | null
+  dateLimiteInscription?: string | null
+  ouvertATous?: 'oui' | 'non' | null
+  reserveMembres?: 'oui' | 'non' | null
+  participationInvite?: 'oui' | 'non' | null
+  // Infos pratiques & validation
+  parking?: boolean | null
+  accesPmr?: boolean | null
+  infosPratiques?: string | null
+  creePar?: string | null
   premium?: boolean | null
   stripeCheckoutSessionId?: string | null
   statut: 'publie' | 'suspendu'

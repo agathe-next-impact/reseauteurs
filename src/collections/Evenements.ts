@@ -36,7 +36,15 @@ const EVENEMENT_TEXT_FIELDS = [
   'lieuAdresse',
   'lieuCodePostal',
   'lieuVille',
+  'descriptionCourte',
   'description',
+  'intervenants',
+  'tarif',
+  'contactNom',
+  'contactTelephone',
+  'publicConcerne',
+  'infosPratiques',
+  'creePar',
   'lienInscription',
 ] as const
 
@@ -491,9 +499,21 @@ export const Evenements: CollectionConfig = {
     // (RÉSEAUTEURS n'organise pas — l'inscription est sur le site du réseau)
     // ============================================================
     {
+      name: 'descriptionCourte',
+      type: 'textarea',
+      label: 'Description courte (2 à 3 lignes)',
+      admin: { description: 'Résumé affiché en tête de fiche et dans les listes.' },
+    },
+    {
       name: 'description',
       type: 'textarea',
-      label: 'Description',
+      label: 'Description détaillée',
+    },
+    {
+      name: 'intervenants',
+      type: 'textarea',
+      label: 'Intervenant(s)',
+      admin: { description: 'Nom(s) et qualité des intervenants (si applicable).' },
     },
     {
       name: 'lienInscription',
@@ -513,6 +533,22 @@ export const Evenements: CollectionConfig = {
         }
       },
     },
+    // ── Contact organisateur (facultatif — pour cet événement)
+    {
+      name: 'contactNom',
+      type: 'text',
+      label: 'Nom du contact',
+    },
+    {
+      name: 'contactEmail',
+      type: 'email',
+      label: 'Email du contact',
+    },
+    {
+      name: 'contactTelephone',
+      type: 'text',
+      label: 'Téléphone du contact',
+    },
     // ============================================================
     // MÉDIAS
     // ============================================================
@@ -520,7 +556,118 @@ export const Evenements: CollectionConfig = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
-      label: 'Image / bannière',
+      label: 'Visuel / affiche',
+    },
+    {
+      name: 'galerie',
+      type: 'array',
+      maxRows: 10,
+      label: 'Photos (galerie)',
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    // ============================================================
+    // CATÉGORISATION (pour recherche et affichage)
+    // ============================================================
+    {
+      name: 'publicConcerne',
+      type: 'text',
+      label: 'Public concerné',
+      admin: { description: 'Ex : entrepreneurs, dirigeants, indépendants, commerciaux, étudiants, tous…' },
+    },
+    {
+      name: 'secteur',
+      type: 'relationship',
+      relationTo: 'categories',
+      index: true,
+      label: 'Secteur d\'activité concerné',
+      admin: { description: 'Secteur principal concerné (facultatif).' },
+    },
+    {
+      name: 'niveauPublic',
+      type: 'select',
+      label: 'Niveau',
+      options: [
+        { label: 'Débutant', value: 'debutant' },
+        { label: 'Confirmé', value: 'confirme' },
+        { label: 'Tous', value: 'tous' },
+      ],
+    },
+    // ============================================================
+    // PARTICIPATION (spécifique à cet événement)
+    // ============================================================
+    {
+      name: 'gratuit',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Événement gratuit',
+      index: true,
+      admin: { description: 'Décochez si l\'événement est payant, puis renseignez le tarif.' },
+    },
+    {
+      name: 'tarif',
+      type: 'text',
+      label: 'Tarif',
+      admin: {
+        description: 'Ex : « 25 € », « gratuit pour les membres, 15 € invités ». Affiché si l\'événement est payant.',
+        condition: (data) => data?.gratuit === false,
+      },
+    },
+    {
+      name: 'nombrePlaces',
+      type: 'number',
+      min: 0,
+      label: 'Nombre de places (facultatif)',
+    },
+    {
+      name: 'dateLimiteInscription',
+      type: 'date',
+      label: 'Date limite d\'inscription',
+      admin: { date: { pickerAppearance: 'dayAndTime' } },
+    },
+    {
+      name: 'ouvertATous',
+      type: 'select',
+      label: 'Ouvert à tous ?',
+      options: [{ label: 'Oui', value: 'oui' }, { label: 'Non', value: 'non' }],
+    },
+    {
+      name: 'reserveMembres',
+      type: 'select',
+      label: 'Réservé aux membres ?',
+      options: [{ label: 'Oui', value: 'oui' }, { label: 'Non', value: 'non' }],
+    },
+    {
+      name: 'participationInvite',
+      type: 'select',
+      label: 'Participation en tant qu\'invité possible ?',
+      options: [{ label: 'Oui', value: 'oui' }, { label: 'Non', value: 'non' }],
+    },
+    // ============================================================
+    // INFORMATIONS PRATIQUES
+    // ============================================================
+    {
+      name: 'parking',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Parking disponible',
+    },
+    {
+      name: 'accesPmr',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Accès PMR',
+    },
+    {
+      name: 'infosPratiques',
+      type: 'textarea',
+      label: 'Informations complémentaires',
     },
     // ============================================================
     // STATUT
@@ -543,6 +690,15 @@ export const Evenements: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Statut de visibilité de l\'événement.',
+      },
+    },
+    {
+      name: 'creePar',
+      type: 'text',
+      label: 'Créé par',
+      admin: {
+        position: 'sidebar',
+        description: 'Nom de la personne ayant créé l\'événement (traçabilité).',
       },
     },
     // ============================================================
