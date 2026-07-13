@@ -109,13 +109,13 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Réseau introuvable' }, { status: 404 })
         }
 
-        // Invariant ADR-0012 §3 : l'abonnement est posé UNIQUEMENT sur un réseau NATIONAL.
+        // Invariant ADR-0012 §3 : l'abonnement est posé sur une TÊTE de réseau (non-local).
         const niveauReseau = (reseau as unknown as Record<string, unknown>).niveau as string | null | undefined
-        if (niveauReseau && niveauReseau !== 'national') {
+        if (niveauReseau === 'local') {
           return NextResponse.json(
             {
-              error: "L'abonnement réseau ne peut être souscrit que sur un réseau national. " +
-                     'Les chapitres locaux bénéficient de l\'abonnement de leur réseau national parent.',
+              error: "L'abonnement réseau ne peut être souscrit que sur une tête de réseau (régional/national/international). " +
+                     'Les chapitres locaux bénéficient de l\'abonnement de leur tête de réseau parent.',
             },
             { status: 400 },
           )

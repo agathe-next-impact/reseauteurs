@@ -262,9 +262,9 @@ export function buildReseauOrganizationJsonLd(
     }
   }
 
-  // ── subOrganization (ADR-0012) : réseau NATIONAL → ses locaux publiés ────────
+  // ── subOrganization (ADR-0012) : tête de réseau (non-local) → ses locaux publiés ─
   // Passés en paramètre depuis la page (évite un second fetch dans le builder).
-  if (reseau.niveau === 'national' && locaux && locaux.length > 0) {
+  if (reseau.niveau !== 'local' && locaux && locaux.length > 0) {
     jsonLd.subOrganization = locaux.map((l) => ({
       '@type': 'Organization',
       name: l.nom,

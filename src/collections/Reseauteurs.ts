@@ -250,13 +250,13 @@ export const Reseauteurs: CollectionConfig = {
         const ids: Array<string | number> = data.reseauxFrequentes.map(
           (r: unknown) => (typeof r === 'object' && r !== null ? (r as { id?: unknown }).id ?? r : r),
         )
-        // Cherche parmi ces réseaux ceux qui seraient de niveau 'national'
+        // Cherche parmi ces réseaux ceux qui seraient une TÊTE (non-local)
         const { docs: nationaux } = await req.payload.find({
           collection: 'reseaux',
           where: {
             and: [
               { id: { in: ids } },
-              { niveau: { equals: 'national' } },
+              { niveau: { not_equals: 'local' } },
             ],
           },
           limit: 10,
@@ -265,9 +265,9 @@ export const Reseauteurs: CollectionConfig = {
         if (nationaux.length > 0) {
           const noms = nationaux.map((r: { nom?: string }) => r.nom ?? r.id).join(', ')
           throw new Error(
-            `Affiliation refusée : les réseaux suivants sont des réseaux nationaux : ${noms}. ` +
+            `Affiliation refusée : les réseaux suivants sont des têtes de réseau : ${noms}. ` +
             'Vous pouvez uniquement vous affilier à des réseaux locaux (chapitres/sections). ' +
-            'Le réseau national est déduit automatiquement de vos affiliations locales.',
+            'La tête de réseau est déduite automatiquement de vos affiliations locales.',
           )
         }
         return data

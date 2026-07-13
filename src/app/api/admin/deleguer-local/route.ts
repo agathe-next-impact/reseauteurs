@@ -134,7 +134,7 @@ export async function POST(request: Request) {
       where: {
         and: [
           { user: { equals: organisateur.id } },
-          { niveau: { equals: 'national' } },
+          { niveau: { not_equals: 'local' } },
         ],
       },
       overrideAccess: true,

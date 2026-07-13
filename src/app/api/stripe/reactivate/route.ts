@@ -51,7 +51,7 @@ export async function POST() {
     where: {
       and: [
         { user: { equals: user.id } },
-        { niveau: { equals: 'national' } },
+        { niveau: { not_equals: 'local' } },
       ],
     },
     limit: 1,

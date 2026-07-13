@@ -96,7 +96,7 @@ export default async function ReseauxPage({
             where: {
               and: [
                 { statut: { equals: 'publiee' } },
-                { niveau: { equals: 'national' } },
+                { niveau: { not_equals: 'local' } },
               ],
             } as Where,
             depth: 0,
@@ -151,7 +151,7 @@ export default async function ReseauxPage({
   const whereNationaux: Where = {
     and: [
       { statut: { equals: 'publiee' } },
-      { niveau: { equals: 'national' } },
+      { niveau: { not_equals: 'local' } },
       ...(sp.q ? [{ nom: { contains: sp.q } } as Where] : []),
     ],
   }

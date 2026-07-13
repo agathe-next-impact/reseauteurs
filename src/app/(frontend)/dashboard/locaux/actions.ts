@@ -73,10 +73,10 @@ export async function createLocalReseau(formData: FormData): Promise<CreateLocal
 
   const nationalDocRaw = nationalDoc as unknown as Record<string, unknown>
   const nationalNiveau = nationalDocRaw.niveau as string | null | undefined
-  if (nationalNiveau !== 'national') {
+  if (nationalNiveau === 'local') {
     return {
       success: false,
-      error: 'Ce réseau n\'est pas un réseau national. Impossible de créer un chapitre local ici.',
+      error: 'Ce réseau est un chapitre local. Impossible d\'y rattacher un autre chapitre (hiérarchie à 2 étages).',
     }
   }
 

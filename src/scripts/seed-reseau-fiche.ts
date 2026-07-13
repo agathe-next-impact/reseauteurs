@@ -70,7 +70,6 @@ async function main() {
       departement: (cible as { departement?: string }).departement ?? 'Rhône',
       region: (cible as { region?: string }).region ?? 'Auvergne-Rhône-Alpes',
       typeJuridique: 'association',
-      portee: 'national',
       responsableNom: 'Camille Durand',
       responsableFonction: 'Directrice régionale',
       ...(photoId ? { responsablePhoto: photoId } : {}),
@@ -102,7 +101,7 @@ async function main() {
   const fresh = await payload.findByID({ collection: 'reseaux', id: cible.id, depth: 1, overrideAccess: true })
   const f = fresh as Record<string, unknown>
   log(`fiche enrichie : ${f.nom} (/reseau/${f.slug})`)
-  log(`  type=${f.typeJuridique} · portee=${f.portee} · membres=${f.nombreMembres}`)
+  log(`  type=${f.typeJuridique} · niveau=${f.niveau} · membres=${f.nombreMembres}`)
   log(`  responsable=${f.responsableNom} (${f.responsableFonction}) · photo=${(f.responsablePhoto as { id?: number } | null)?.id ?? '—'}`)
   log(`  fonctionnement: ouvertATous=${f.ouvertATous} invite=${f.participationInvite} adhesion=${f.adhesionObligatoire} 1metier=${f.uneProfessionParGroupe}`)
   log(`  médias: galerie=${Array.isArray(f.illustrations) ? (f.illustrations as unknown[]).length : 0} · vidéo=${f.videoYoutube ? 'oui' : 'non'} · plaquette=${f.plaquetteUrl ? 'oui' : 'non'} · socials=${Array.isArray(f.reseauxSociaux) ? (f.reseauxSociaux as unknown[]).length : 0}`)

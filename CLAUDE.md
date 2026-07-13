@@ -54,17 +54,20 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
 3. **Le réseau** (`reseaux`) — un **réseau d'affaires** (BNI, DCF…). Fiche publique (`/reseau/<slug>`).
    Champs (fiche complète — spec 2026-07-13) : nom, logo, **description courte + présentation détaillée +
    objectif + différenciateur**, site + **réseaux sociaux**, **localisation** (ville/dépt/région/adresse),
-   **type de structure** (association/privé/franchise/institution/autre) + **portée** (local/régional/national/
-   international — *descriptive, distincte du `niveau` hiérarchique*), **responsable local** (nom/fonction/
+   **type de structure** (association/privé/franchise/institution/autre) + **échelle** = champ **`niveau`** à
+   **4 valeurs** (local/régional/national/international), **responsable local** (nom/fonction/
    photo) + email/téléphone, **fonctionnement** (public concerné, ouvert à tous ?, invités ?, adhésion
    obligatoire ?, une profession par groupe ?, cotisation), **nombre de membres déclaré**, **médias** (galerie,
    vidéo, plaquette PDF), **nombre de réseauteurs** (dérivé), **nombre d'événements** (dérivé), drapeau
    **partenaire** (abonnement actif, §4), validation (statut + date de MàJ + rempli par). Un réseau est **à la
    fois** une fiche-entité **et** la valeur de taxonomie que les réseauteurs cochent.
    > La fiche **présente le réseau** ; les **événements** sont une entité distincte (saisie unique des infos
-   > permanentes, événements gérés séparément). La hiérarchie umbrella reste à **2 niveaux** (`niveau` =
-   > national/local, ADR-0012) — le champ **`portee`** (4 valeurs) est un descriptif séparé, il ne pilote pas
-   > la hiérarchie.
+   > permanentes, événements gérés séparément). **`niveau` = un seul champ à 4 valeurs** (réconciliation
+   > 2026-07-13 : « portée » et « niveau » = la même caractéristique). La **hiérarchie umbrella reste à
+   > 2 étages** : une **tête de réseau** = *régional / national / international* (parent null, porte
+   > l'abonnement, peut avoir des chapitres) ; un **chapitre** = *local* (rattaché à une tête). Les gates
+   > (facturation, publication d'événements, unicité « 1 tête par compte ») raisonnent **« tête (non-local)
+   > vs local »** — cf. `estTete()` dans `lib/reseau-hierarchie.ts`.
 
 **Relations :** réseauteur **↔** réseaux = many-to-many (réseaux fréquentés) · événement **→** réseau = N-1
 (réseau organisateur) · réseau **→** réseauteurs/événements = dérivés (compteurs).

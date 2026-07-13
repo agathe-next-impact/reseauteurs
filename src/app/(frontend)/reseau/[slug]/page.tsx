@@ -123,8 +123,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
       }),
       { label: `reseau:find evenements ${slug}` },
     ),
-    // Locaux d'un national — JSON-LD subOrganization (seo-engineer) + compteurs agrégés SSR (Q7)
-    reseau.niveau === 'national'
+    // Locaux d'une tête (non-local) — JSON-LD subOrganization + compteurs agrégés SSR (Q7)
+    reseau.niveau !== 'local'
       ? withDbRetry(
           () =>
             payload.find({
@@ -173,14 +173,14 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   const TYPE_JURIDIQUE_LABEL: Record<string, string> = {
     association: 'Association', prive: 'Privé / société', franchise: 'Franchise', institution: 'Institution', autre: 'Autre',
   }
-  const PORTEE_LABEL: Record<string, string> = {
+  const NIVEAU_LABEL: Record<string, string> = {
     local: 'Local', regional: 'Régional', national: 'National', international: 'International',
   }
   // Table « Fonctionnement » : uniquement les lignes renseignées.
   const fonctionnementRows: Array<{ label: string; value: string }> = [
     reseau.publicConcerne ? { label: 'Public concerné', value: reseau.publicConcerne } : null,
     reseau.typeJuridique ? { label: 'Type de structure', value: TYPE_JURIDIQUE_LABEL[reseau.typeJuridique] ?? reseau.typeJuridique } : null,
-    reseau.portee ? { label: 'Portée', value: PORTEE_LABEL[reseau.portee] ?? reseau.portee } : null,
+    reseau.niveau ? { label: 'Échelle', value: NIVEAU_LABEL[reseau.niveau] ?? reseau.niveau } : null,
     ouiNon(reseau.ouvertATous) ? { label: 'Ouvert à tous', value: ouiNon(reseau.ouvertATous)! } : null,
     ouiNon(reseau.participationInvite) ? { label: 'Participation en invité', value: ouiNon(reseau.participationInvite)! } : null,
     ouiNon(reseau.adhesionObligatoire) ? { label: 'Adhésion obligatoire', value: ouiNon(reseau.adhesionObligatoire)! } : null,
@@ -208,7 +208,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   const locauxDocs = locauxRes?.docs as ReseauLocalLite[] | undefined
 
   // Compteurs agrégés SSR pour un national (Q7 ADR-0012)
-  const isNational = reseau.niveau === 'national'
+  const isNational = reseau.niveau !== 'local'
   const aggNbReseauteurs = isNational
     ? (locauxDocs ?? []).reduce((sum, l) => sum + ((l as unknown as Reseau).nbReseauteurs ?? 0), 0)
     : (reseau.nbReseauteurs ?? 0)
@@ -299,20 +299,18 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                     {[reseau.ville, reseau.departement, reseau.region].filter(Boolean).join(' · ')}
                   </p>
                 )}
-                {(reseau.portee || reseau.typeJuridique) && (
-                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                    {reseau.portee && (
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/85 border border-white/15">
-                        {PORTEE_LABEL[reseau.portee] ?? reseau.portee}
-                      </span>
-                    )}
-                    {reseau.typeJuridique && (
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/85 border border-white/15">
-                        {TYPE_JURIDIQUE_LABEL[reseau.typeJuridique] ?? reseau.typeJuridique}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  {reseau.niveau && (
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/85 border border-white/15">
+                      {NIVEAU_LABEL[reseau.niveau] ?? reseau.niveau}
+                    </span>
+                  )}
+                  {reseau.typeJuridique && (
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/85 border border-white/15">
+                      {TYPE_JURIDIQUE_LABEL[reseau.typeJuridique] ?? reseau.typeJuridique}
+                    </span>
+                  )}
+                </div>
                 {/* Compteurs — agrégés pour un national, directs pour un local */}
                 <div className="flex items-center gap-4 mt-3 flex-wrap">
                   <span className="flex items-center gap-1.5 text-sm text-white/80">
@@ -451,7 +449,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             )}
 
             {/* Chapitres locaux — classement par nombre de réseauteurs (données réelles) */}
-            {reseau.niveau === 'national' && chapitresBars.length > 1 && (
+            {isNational && chapitresBars.length > 1 && (
               <Reveal>
                 <div className="rsn-panel rounded-xl">
                   <div className="rsn-panel-head">
@@ -583,7 +581,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             )}
 
               {/* Chapitres locaux (uniquement pour un national — ADR-0012) */}
-            {reseau.niveau === 'national' && locauxDocs && locauxDocs.length > 0 && (
+            {isNational && locauxDocs && locauxDocs.length > 0 && (
               <Reveal>
                 <section aria-labelledby="locaux-titre">
                   <div className="flex items-center justify-between mb-3">

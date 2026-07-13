@@ -60,9 +60,8 @@ export interface Reseau {
   emailContact?: string | null
   telephone?: string | null
   reseauxSociaux?: Array<{ plateforme?: string | null; url?: string | null; id?: string | null }> | null
-  // Type & portée (descriptifs — portee ≠ niveau hiérarchique)
+  // Type de structure (l'échelle géographique = champ `niveau`, 4 valeurs)
   typeJuridique?: 'association' | 'prive' | 'franchise' | 'institution' | 'autre' | null
-  portee?: 'local' | 'regional' | 'national' | 'international' | null
   categorie?: (number | null) | TypesEvenement
   // Responsable local
   responsableNom?: string | null
@@ -84,8 +83,8 @@ export interface Reseau {
   stripeSubscriptionId?: string | null
   partenaireExpireAt?: string | null
   source?: 'revendique' | 'importe'
-  /** ADR-0012 — hiérarchie nationale/locale (2 niveaux max) */
-  niveau?: 'national' | 'local' | null
+  /** Échelle du réseau (4 valeurs). Tête = non-local ; hiérarchie umbrella à 2 étages (2026-07-13). */
+  niveau?: 'local' | 'regional' | 'national' | 'international' | null
   /** ADR-0012 — réseau national parent (requis si local, null si national).
    *  Populé à depth ≥ 1 sous forme de Reseau ; sinon ID numérique. */
   parent?: (number | null) | Reseau

@@ -80,7 +80,6 @@ const ReseauSchema = z.object({
   region: z.string().max(100).optional(),
   // Fiche complète (spec 2026-07-13) — champs texte/sélecteurs (uploads gérés en admin)
   typeJuridique: z.string().max(30).optional(),
-  portee: z.string().max(30).optional(),
   responsableNom: z.string().max(200).optional(),
   responsableFonction: z.string().max(200).optional(),
   objectif: z.string().max(3000).optional(),
@@ -149,7 +148,6 @@ export async function updateFicheReseau(
         telephone: d.telephone || null,
         // Fiche complète
         typeJuridique: enumOrNull(d.typeJuridique, ['association', 'prive', 'franchise', 'institution', 'autre']),
-        portee: enumOrNull(d.portee, ['local', 'regional', 'national', 'international']),
         responsableNom: emptyToNull(d.responsableNom),
         responsableFonction: emptyToNull(d.responsableFonction),
         objectif: emptyToNull(d.objectif),

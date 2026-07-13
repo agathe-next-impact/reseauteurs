@@ -39,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       where: {
         and: [
           { user: { equals: freshUser.id } },
-          { niveau: { equals: 'national' } },
+          { niveau: { not_equals: 'local' } },
         ],
       },
       limit: 1,

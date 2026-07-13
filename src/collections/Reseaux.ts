@@ -171,21 +171,22 @@ export const Reseaux: CollectionConfig = {
       async ({ data, req }) => {
         const niveau = (data.niveau ?? 'national') as string
 
-        if (niveau === 'national') {
-          // Forcer parent à null — un national n'a jamais de parent
+        // TÊTE de réseau (régional/national/international) → jamais de parent.
+        if (niveau !== 'local') {
           if (data.parent !== undefined && data.parent !== null && data.parent !== '') {
             throw new Error(
-              'Un réseau national ne peut pas avoir de réseau parent. ' +
+              'Une tête de réseau (régional/national/international) ne peut pas avoir de réseau parent. ' +
               'Retirez le champ parent ou passez le niveau à "local".',
             )
           }
           data.parent = null
         }
 
+        // CHAPITRE local → parent requis, et le parent doit être une tête.
         if (niveau === 'local') {
           if (!data.parent) {
             throw new Error(
-              'Un réseau local doit être rattaché à un réseau national parent. ' +
+              'Un réseau local doit être rattaché à une tête de réseau parent. ' +
               'Renseignez le champ "Réseau parent".',
             )
           }
@@ -199,9 +200,9 @@ export const Reseaux: CollectionConfig = {
           if (!parent) {
             throw new Error('Le réseau parent spécifié est introuvable.')
           }
-          if ((parent.niveau ?? 'national') !== 'national') {
+          if ((parent.niveau ?? 'national') === 'local') {
             throw new Error(
-              'Le réseau parent doit être un réseau national (hiérarchie limitée à 2 niveaux). ' +
+              'Le réseau parent doit être une tête de réseau (régional/national/international) — hiérarchie à 2 étages. ' +
               'Un réseau local ne peut pas être parent d\'un autre local.',
             )
           }
@@ -216,12 +217,13 @@ export const Reseaux: CollectionConfig = {
 
         const niveau = (data.niveau ?? 'national') as string
 
-        if (niveau === 'national') {
+        // Toute TÊTE (régional/national/international) est soumise à l'unicité « 1 tête par compte ».
+        if (niveau !== 'local') {
           const allowed = await canCreateNational(req)
           if (!allowed) {
             throw new Error(
-              'Vous possédez déjà un réseau national. ' +
-              'Un seul réseau national par compte est autorisé (index partiel unique WHERE niveau=\'national\').',
+              'Vous possédez déjà une tête de réseau. ' +
+              'Une seule tête de réseau (régional/national/international) par compte est autorisée.',
             )
           }
         } else if (niveau === 'local') {
@@ -313,7 +315,8 @@ export const Reseaux: CollectionConfig = {
           overrideAccess: true,
         })
         const niveauReseau = reseau?.niveau ?? 'national'
-        if (niveauReseau === 'national') {
+        // Toute tête (non-local) avec des chapitres locaux ne peut pas être supprimée.
+        if (niveauReseau !== 'local') {
           const { totalDocs: nbLocaux } = await req.payload.count({
             collection: 'reseaux',
             where: {
@@ -376,9 +379,14 @@ export const Reseaux: CollectionConfig = {
     {
       name: 'niveau',
       type: 'select',
+      // Échelle du réseau — champ UNIQUE à 4 valeurs (réconciliation 2026-07-13).
+      // Tête de réseau = Régional / National / International (porte l'abonnement, peut
+      // avoir des chapitres locaux) ; Local = chapitre rattaché à une tête.
       options: [
-        { label: 'National (marque, tête de réseau)', value: 'national' },
         { label: 'Local (chapitre, section)', value: 'local' },
+        { label: 'Régional (tête de réseau)', value: 'regional' },
+        { label: 'National (tête de réseau)', value: 'national' },
+        { label: 'International (tête de réseau)', value: 'international' },
       ],
       defaultValue: 'national',
       required: true,
@@ -389,7 +397,9 @@ export const Reseaux: CollectionConfig = {
       },
       admin: {
         position: 'sidebar',
-        description: 'National = la marque (BNI, DCF…) ; Local = un chapitre/section rattaché au national.',
+        description:
+          'Échelle du réseau. Régional/National/International = tête de réseau (abonnement + chapitres) ; ' +
+          'Local = chapitre rattaché à une tête.',
       },
     },
     {
@@ -421,9 +431,9 @@ export const Reseaux: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description:
-          '[Significatif sur le national uniquement] Palier d\'abonnement déterminant le nombre max de locaux. ' +
+          '[Significatif sur une tête de réseau uniquement] Palier d\'abonnement déterminant le nombre max de locaux. ' +
           'Posé par le webhook Stripe après souscription. ⚠️ Valeurs placeholder — seuils/prix réels à configurer avant E2.A.',
-        condition: (data) => data?.niveau === 'national',
+        condition: (data) => data?.niveau !== 'local',
       },
     },
     // ============================================================
@@ -476,7 +486,7 @@ export const Reseaux: CollectionConfig = {
       admin: { description: 'Ex : Auvergne-Rhône-Alpes, Île-de-France.' },
     },
     // ============================================================
-    // TYPE & PORTÉE (descriptifs — la portée est DISTINCTE du `niveau` hiérarchique)
+    // TYPE DE STRUCTURE (l'échelle géographique = champ `niveau`, 4 valeurs)
     // ============================================================
     {
       name: 'typeJuridique',
@@ -490,21 +500,6 @@ export const Reseaux: CollectionConfig = {
         { label: 'Autre', value: 'autre' },
       ],
       admin: { description: 'Nature juridique du réseau.' },
-    },
-    {
-      name: 'portee',
-      type: 'select',
-      label: 'Portée géographique',
-      options: [
-        { label: 'Local', value: 'local' },
-        { label: 'Régional', value: 'regional' },
-        { label: 'National', value: 'national' },
-        { label: 'International', value: 'international' },
-      ],
-      admin: {
-        description:
-          'Échelle géographique (descriptif). Distinct du champ « niveau » qui pilote la hiérarchie umbrella (national/local).',
-      },
     },
     // ============================================================
     // CATÉGORIE

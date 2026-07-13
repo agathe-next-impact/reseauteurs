@@ -30,7 +30,6 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       departement: str('departement'),
       region: str('region'),
       typeJuridique: str('typeJuridique'),
-      portee: str('portee'),
       responsableNom: str('responsableNom'),
       responsableFonction: str('responsableFonction'),
       objectif: str('objectif'),
@@ -173,7 +172,7 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
         </div>
       </div>
 
-      {/* ── Type & portée */}
+      {/* ── Type de structure (l'échelle = champ « niveau », géré en administration) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#f4f4f5]">
         <div>
           <label htmlFor="typeJuridique" className={labelClass}>Type de structure</label>
@@ -184,16 +183,6 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
             <option value="franchise">Franchise</option>
             <option value="institution">Institution</option>
             <option value="autre">Autre</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="portee" className={labelClass}>Portée géographique</label>
-          <select id="portee" name="portee" defaultValue={(reseau.portee as string) ?? ''} className={inputClass}>
-            <option value="">— Non renseigné —</option>
-            <option value="local">Local</option>
-            <option value="regional">Régional</option>
-            <option value="national">National</option>
-            <option value="international">International</option>
           </select>
         </div>
       </div>

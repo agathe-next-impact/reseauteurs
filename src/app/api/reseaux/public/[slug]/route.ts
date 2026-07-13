@@ -96,7 +96,7 @@ export async function GET(
     id: doc['id'],
     slug: (doc['slug'] as string | null | undefined) ?? null,
     nom: (doc['nom'] as string) ?? '',
-    niveau: (doc['niveau'] as 'national' | 'local' | undefined) ?? 'national',
+    niveau: (doc['niveau'] as 'local' | 'regional' | 'national' | 'international' | undefined) ?? 'national',
     ville: (doc['ville'] as string) ?? '',
     adresse: (doc['adresse'] as string | null | undefined) ?? null,
     codePostal: (doc['codePostal'] as string | null | undefined) ?? null,

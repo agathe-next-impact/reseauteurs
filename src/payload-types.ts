@@ -612,15 +612,15 @@ export interface Reseau {
    */
   source: 'revendique' | 'importe';
   /**
-   * National = la marque (BNI, DCF…) ; Local = un chapitre/section rattaché au national.
+   * Échelle du réseau. Régional/National/International = tête de réseau (abonnement + chapitres) ; Local = chapitre rattaché à une tête.
    */
-  niveau: 'national' | 'local';
+  niveau: 'local' | 'regional' | 'national' | 'international';
   /**
    * Réseau national parent (obligatoire pour un local). Laissez vide pour un national.
    */
   parent?: (number | null) | Reseau;
   /**
-   * [Significatif sur le national uniquement] Palier d'abonnement déterminant le nombre max de locaux. Posé par le webhook Stripe après souscription. ⚠️ Valeurs placeholder — seuils/prix réels à configurer avant E2.A.
+   * [Significatif sur une tête de réseau uniquement] Palier d'abonnement déterminant le nombre max de locaux. Posé par le webhook Stripe après souscription. ⚠️ Valeurs placeholder — seuils/prix réels à configurer avant E2.A.
    */
   palier?: ('starter' | 'growth' | 'enterprise') | null;
   /**
@@ -643,10 +643,6 @@ export interface Reseau {
    * Nature juridique du réseau.
    */
   typeJuridique?: ('association' | 'prive' | 'franchise' | 'institution' | 'autre') | null;
-  /**
-   * Échelle géographique (descriptif). Distinct du champ « niveau » qui pilote la hiérarchie umbrella (national/local).
-   */
-  portee?: ('local' | 'regional' | 'national' | 'international') | null;
   /**
    * Catégorie principale du réseau (Réseaux d'affaires, Afterworks, Congrès…).
    */
@@ -1358,7 +1354,6 @@ export interface ReseauxSelect<T extends boolean = true> {
   departement?: T;
   region?: T;
   typeJuridique?: T;
-  portee?: T;
   categorie?: T;
   description?: T;
   logo?: T;

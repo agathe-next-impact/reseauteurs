@@ -21,9 +21,30 @@
 // TYPES MINIMAUX (indépendants de payload-types)
 // ─────────────────────────────────────────────
 
+/** Valeurs de `niveau` (échelle du réseau = tête ou chapitre). */
+export type NiveauReseau = 'local' | 'regional' | 'national' | 'international'
+
+/** Niveaux « tête de réseau » (porteurs de l'abonnement, parents des chapitres locaux). */
+export const NIVEAUX_TETE: NiveauReseau[] = ['regional', 'national', 'international']
+
+/**
+ * Une TÊTE de réseau = tout niveau sauf 'local' (regional/national/international, ou
+ * null pour les données historiques). Une tête porte l'abonnement, peut avoir des
+ * chapitres locaux et gate la publication d'événements. Un 'local' est un CHAPITRE.
+ *
+ * (Réconciliation 2026-07-13 : le champ `niveau` unique a 4 valeurs ; la hiérarchie
+ * umbrella reste à 2 étages — tête → chapitres — donc on raisonne « tête vs local ».)
+ */
+export function estTete(niveau?: string | null): boolean {
+  return niveau !== 'local'
+}
+
+/** Fragment de requête Payload sélectionnant les têtes (non-local). */
+export const WHERE_TETE = { niveau: { not_equals: 'local' } } as const
+
 export interface ReseauForHierarchy {
   id: string | number
-  niveau?: 'national' | 'local' | null
+  niveau?: NiveauReseau | null
   /** Populé (depth >= 1) si c'est un local, sinon ID ou null */
   parent?: ReseauForHierarchy | string | number | null
   partenaire?: boolean | null
@@ -70,16 +91,15 @@ interface PayloadMinimal {
  */
 export function nationalDe(reseau: ReseauForHierarchy): ReseauForHierarchy | null {
   if (!reseau) return null
-  if (reseau.niveau === 'national' || reseau.niveau == null) return reseau
-  if (reseau.niveau === 'local') {
-    const parent = reseau.parent
-    if (parent == null || typeof parent === 'string' || typeof parent === 'number') {
-      // Parent non populé : on ne peut pas résoudre le national
-      return null
-    }
-    return parent as ReseauForHierarchy
+  // Une tête (regional/national/international, ou null historique) est sa propre tête.
+  if (estTete(reseau.niveau)) return reseau
+  // Un chapitre 'local' → sa tête est le parent (requis populé depth >= 1).
+  const parent = reseau.parent
+  if (parent == null || typeof parent === 'string' || typeof parent === 'number') {
+    // Parent non populé : on ne peut pas résoudre la tête
+    return null
   }
-  return reseau
+  return parent as ReseauForHierarchy
 }
 
 /**
@@ -212,13 +232,13 @@ export async function peutCreerLocalAsync(
   userId: string | number,
   payload: PayloadMinimal,
 ): Promise<{ autorise: boolean; raison?: string }> {
-  // 1. Cherche le réseau national de cet user
+  // 1. Cherche la TÊTE de réseau de cet user (regional/national/international)
   const { docs: nationaux } = await payload.find({
     collection: 'reseaux',
     where: {
       and: [
         { user: { equals: userId } },
-        { niveau: { equals: 'national' } },
+        { niveau: { not_equals: 'local' } },
       ],
     },
     limit: 1,
@@ -230,7 +250,7 @@ export async function peutCreerLocalAsync(
   if (!national) {
     return {
       autorise: false,
-      raison: 'Vous ne possédez pas de réseau national. Créez d\'abord un réseau national avant d\'y rattacher des locaux.',
+      raison: 'Vous ne possédez pas de réseau tête (national, régional ou international). Créez-le d\'abord avant d\'y rattacher des chapitres locaux.',
     }
   }
 
