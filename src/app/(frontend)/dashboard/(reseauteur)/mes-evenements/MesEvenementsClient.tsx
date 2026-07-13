@@ -4,12 +4,21 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { CalendarDays, MapPin, Pencil, Trash2, Plus, Loader2, ExternalLink } from 'lucide-react'
+import { CalendarDays, MapPin, Pencil, Trash2, Plus, Loader2, ExternalLink, Users, ChevronDown } from 'lucide-react'
 import { createMonEvenement, updateMonEvenement, deleteMonEvenement, type EvenementFormData } from './actions'
 
 export interface TypeEvLite {
   id: number
   label: string
+}
+
+export interface InscritLite {
+  reseauteurId: number
+  slug: string | null
+  prenom: string
+  nom: string
+  ville: string | null
+  dateInscription: string
 }
 
 export interface MonEvenement {
@@ -28,6 +37,8 @@ export interface MonEvenement {
   lieuVille: string
   lienInscription: string | null
   statut: string
+  /** Inscrits en ligne (ADR-0013 §3bis). */
+  inscrits: InscritLite[]
 }
 
 const inputClass =
@@ -52,6 +63,7 @@ export function MesEvenementsClient({
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState<MonEvenement | 'new' | null>(null)
+  const [expandedInscrits, setExpandedInscrits] = useState<number | null>(null)
   const [pending, startTransition] = useTransition()
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -211,29 +223,73 @@ export function MesEvenementsClient({
             const d = new Date(ev.dateDebut)
             const past = ev.past
             return (
-              <li key={ev.id} className="rsn-card rounded-2xl p-4 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#16284f] truncate">
-                    {ev.titre}
-                    {past && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">passé</span>}
-                    {ev.statut !== 'publie' && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-amber-600">{ev.statut}</span>}
-                  </p>
-                  <p className="text-xs text-[#71717a] flex items-center gap-2 mt-0.5">
-                    <span className="inline-flex items-center gap-1"><CalendarDays size={11} aria-hidden />{d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                    <span className="inline-flex items-center gap-1"><MapPin size={11} aria-hidden />{ev.lieuVille}</span>
-                  </p>
+              <li key={ev.id} className="rsn-card rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#16284f] truncate">
+                      {ev.titre}
+                      {past && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">passé</span>}
+                      {ev.statut !== 'publie' && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-amber-600">{ev.statut}</span>}
+                    </p>
+                    <p className="text-xs text-[#71717a] flex items-center gap-2 mt-0.5">
+                      <span className="inline-flex items-center gap-1"><CalendarDays size={11} aria-hidden />{d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin size={11} aria-hidden />{ev.lieuVille}</span>
+                    </p>
+                  </div>
+                  {ev.slug && (
+                    <Link href={`/evenement/${ev.slug}`} target="_blank" className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Voir la fiche de ${ev.titre}`}>
+                      <ExternalLink size={15} />
+                    </Link>
+                  )}
+                  <button type="button" onClick={() => setEditing(ev)} className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Modifier ${ev.titre}`}>
+                    <Pencil size={15} />
+                  </button>
+                  <button type="button" onClick={() => onDelete(ev)} disabled={pending} className="text-[#a1a1aa] hover:text-red-600 transition-colors disabled:opacity-50" aria-label={`Supprimer ${ev.titre}`}>
+                    <Trash2 size={15} />
+                  </button>
                 </div>
-                {ev.slug && (
-                  <Link href={`/evenement/${ev.slug}`} target="_blank" className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Voir la fiche de ${ev.titre}`}>
-                    <ExternalLink size={15} />
-                  </Link>
-                )}
-                <button type="button" onClick={() => setEditing(ev)} className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Modifier ${ev.titre}`}>
-                  <Pencil size={15} />
-                </button>
-                <button type="button" onClick={() => onDelete(ev)} disabled={pending} className="text-[#a1a1aa] hover:text-red-600 transition-colors disabled:opacity-50" aria-label={`Supprimer ${ev.titre}`}>
-                  <Trash2 size={15} />
-                </button>
+
+                {/* Inscrits en ligne (ADR-0013 §3bis) */}
+                <div className="mt-3 pt-3 border-t border-[#f4f4f5]">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedInscrits(expandedInscrits === ev.id ? null : ev.id)}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-[#52525b] hover:text-[#2563EB] transition-colors"
+                    aria-expanded={expandedInscrits === ev.id}
+                    disabled={ev.inscrits.length === 0}
+                  >
+                    <Users size={12} aria-hidden />
+                    {ev.inscrits.length} inscrit{ev.inscrits.length > 1 ? 's' : ''}
+                    {ev.inscrits.length > 0 && (
+                      <ChevronDown
+                        size={12}
+                        aria-hidden
+                        className={`transition-transform ${expandedInscrits === ev.id ? 'rotate-180' : ''}`}
+                      />
+                    )}
+                  </button>
+                  {expandedInscrits === ev.id && ev.inscrits.length > 0 && (
+                    <ul className="mt-2 space-y-1" role="list">
+                      {ev.inscrits.map((i) => (
+                        <li key={i.reseauteurId} className="flex items-center justify-between gap-2 text-xs py-1">
+                          <span className="min-w-0 truncate">
+                            {i.slug ? (
+                              <Link href={`/reseauteur/${i.slug}`} target="_blank" className="font-medium text-[#16284f] hover:text-[#2563EB] no-underline">
+                                {i.prenom} {i.nom}
+                              </Link>
+                            ) : (
+                              <span className="font-medium text-[#16284f]">{i.prenom} {i.nom}</span>
+                            )}
+                            {i.ville && <span className="text-[#a1a1aa]"> · {i.ville}</span>}
+                          </span>
+                          <span className="text-[#a1a1aa] shrink-0">
+                            {i.dateInscription ? new Date(i.dateInscription).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </li>
             )
           })}

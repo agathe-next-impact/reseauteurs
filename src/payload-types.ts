@@ -72,6 +72,7 @@ export interface Config {
     reseauteurs: Reseauteur;
     reseaux: Reseau;
     evenements: Evenement;
+    inscriptions: Inscription;
     partenaires: Partenaire;
     'licences-packs': LicencesPack;
     'licences-activations': LicencesActivation;
@@ -94,6 +95,7 @@ export interface Config {
     reseauteurs: ReseauteursSelect<false> | ReseauteursSelect<true>;
     reseaux: ReseauxSelect<false> | ReseauxSelect<true>;
     evenements: EvenementsSelect<false> | EvenementsSelect<true>;
+    inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
     partenaires: PartenairesSelect<false> | PartenairesSelect<true>;
     'licences-packs': LicencesPacksSelect<false> | LicencesPacksSelect<true>;
     'licences-activations': LicencesActivationsSelect<false> | LicencesActivationsSelect<true>;
@@ -843,6 +845,25 @@ export interface Evenement {
   createdAt: string;
 }
 /**
+ * Inscriptions des réseauteurs aux événements organisés par des réseauteurs Plus (ADR-0013).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inscriptions".
+ */
+export interface Inscription {
+  id: number;
+  /**
+   * Événement (organisé par un réseauteur Plus).
+   */
+  evenement: number | Evenement;
+  /**
+   * Réseauteur inscrit (une inscription par événement).
+   */
+  reseauteur: number | Reseauteur;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Activations de licences Réseauteur Plus (qui a activé quel code, quand).
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1020,6 +1041,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'evenements';
         value: number | Evenement;
+      } | null)
+    | ({
+        relationTo: 'inscriptions';
+        value: number | Inscription;
       } | null)
     | ({
         relationTo: 'partenaires';
@@ -1355,6 +1380,16 @@ export interface EvenementsSelect<T extends boolean = true> {
         ogImage?: T;
         noindex?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inscriptions_select".
+ */
+export interface InscriptionsSelect<T extends boolean = true> {
+  evenement?: T;
+  reseauteur?: T;
   updatedAt?: T;
   createdAt?: T;
 }

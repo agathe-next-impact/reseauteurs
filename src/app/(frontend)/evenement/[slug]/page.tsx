@@ -18,6 +18,9 @@ import { MaillageEvenement } from '@/components/seo/MaillageEvenement'
 import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { MAP_COLORS } from '@/lib/maplibre/config'
 import { SITE_NAME } from '@/lib/site'
+import { todayParisDateString } from '@/lib/dates'
+import { compterInscrits } from '@/lib/inscriptions'
+import InscriptionEvenement from '@/components/evenement/InscriptionEvenement'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement, Reseauteur } from '@/types/reseauteurs-domain'
@@ -125,6 +128,17 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
 
   const participants = await getParticipants(e.id)
 
+  // ADR-0013 §3bis : inscription en ligne pour les événements organisés par un réseauteur Plus.
+  // Compteur public (ISR) ; l'état per-user est hydraté côté client (le CTA n'entre pas dans le cache).
+  const isPlusEvent =
+    typeof e.organisateurReseauteur === 'object'
+      ? e.organisateurReseauteur !== null
+      : e.organisateurReseauteur != null
+  const inscritsTotal = isPlusEvent ? await compterInscrits(await getPayload({ config }), e.id) : 0
+  const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
+  const evenementFinMs = e.dateFin ? new Date(e.dateFin).getTime() : new Date(e.dateDebut).getTime()
+  const isPast = evenementFinMs < todayStartMs
+
   const imageMedia = e.image as Media | null | undefined
   const imageUrl = imageMedia?.sizes?.full?.url ?? imageMedia?.url ?? null
   const reseau = e.reseau as Reseau | null | undefined
@@ -215,21 +229,33 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
               </div>
             </div>
 
-            {/* CTA S'inscrire (lien externe) */}
-            {lienInscriptionSafe && (
+            {/* CTA inscription : événement Plus → inscription en ligne ; réseau → lien externe (ADR-0013 §3bis) */}
+            {isPlusEvent ? (
               <div className="mt-7">
-                <a
-                  href={lienInscriptionSafe}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ir-atlas-primary rsn-linkrow rsn-shine"
-                  aria-label={`S'inscrire à l'événement ${e.titre} (lien externe)`}
-                >
-                  <ExternalLink size={15} aria-hidden />
-                  S&apos;inscrire
-                  <span className="text-xs opacity-75 font-normal">— sur le site du réseau</span>
-                </a>
+                <InscriptionEvenement
+                  evenementId={typeof e.id === 'number' ? e.id : Number(e.id)}
+                  slug={e.slug ?? ''}
+                  initialTotal={inscritsTotal}
+                  isPast={isPast}
+                  onDark
+                />
               </div>
+            ) : (
+              lienInscriptionSafe && (
+                <div className="mt-7">
+                  <a
+                    href={lienInscriptionSafe}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ir-atlas-primary rsn-linkrow rsn-shine"
+                    aria-label={`S'inscrire à l'événement ${e.titre} (lien externe)`}
+                  >
+                    <ExternalLink size={15} aria-hidden />
+                    S&apos;inscrire
+                    <span className="text-xs opacity-75 font-normal">— sur le site du réseau</span>
+                  </a>
+                </div>
+              )
             )}
           </Reveal>
         </div>

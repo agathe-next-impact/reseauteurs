@@ -11,6 +11,7 @@ import { ArrowLeft, CalendarPlus } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
 import { todayParisDateString } from '@/lib/dates'
+import { listerInscrits } from '@/lib/inscriptions'
 import { MesEvenementsClient, type MonEvenement, type TypeEvLite } from './MesEvenementsClient'
 
 export const metadata = {
@@ -56,22 +57,33 @@ export default async function MesEvenementsPage() {
   // Borne « aujourd'hui » calculée via lib (règle de pureté — pas de Date.now() en rendu)
   const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
 
-  const evenements: MonEvenement[] = evDocs.map((e) => ({
-    past: new Date((e.dateDebut as string) ?? '').getTime() < todayStartMs,
-    id: e.id as number,
-    slug: (e.slug as string | null) ?? null,
-    titre: (e.titre as string) ?? '',
-    type: typeof e.type === 'object' && e.type !== null ? (e.type as { id: number }).id : (e.type as number),
-    description: (e.description as string | null) ?? null,
-    dateDebut: (e.dateDebut as string) ?? '',
-    dateFin: (e.dateFin as string | null) ?? null,
-    lieuNom: (e.lieuNom as string | null) ?? null,
-    lieuAdresse: (e.lieuAdresse as string | null) ?? null,
-    lieuCodePostal: (e.lieuCodePostal as string | null) ?? null,
-    lieuVille: (e.lieuVille as string) ?? '',
-    lienInscription: (e.lienInscription as string | null) ?? null,
-    statut: (e.statut as string) ?? 'publie',
-  }))
+  const evenements: MonEvenement[] = await Promise.all(
+    evDocs.map(async (e) => ({
+      past: new Date((e.dateDebut as string) ?? '').getTime() < todayStartMs,
+      id: e.id as number,
+      slug: (e.slug as string | null) ?? null,
+      titre: (e.titre as string) ?? '',
+      type: typeof e.type === 'object' && e.type !== null ? (e.type as { id: number }).id : (e.type as number),
+      description: (e.description as string | null) ?? null,
+      dateDebut: (e.dateDebut as string) ?? '',
+      dateFin: (e.dateFin as string | null) ?? null,
+      lieuNom: (e.lieuNom as string | null) ?? null,
+      lieuAdresse: (e.lieuAdresse as string | null) ?? null,
+      lieuCodePostal: (e.lieuCodePostal as string | null) ?? null,
+      lieuVille: (e.lieuVille as string) ?? '',
+      lienInscription: (e.lienInscription as string | null) ?? null,
+      statut: (e.statut as string) ?? 'publie',
+      // Inscrits en ligne (ADR-0013 §3bis) — la gestion se fait ici.
+      inscrits: (await listerInscrits(payload, e.id as number)).map((i) => ({
+        reseauteurId: i.reseauteurId,
+        slug: i.slug,
+        prenom: i.prenom,
+        nom: i.nom,
+        ville: i.ville,
+        dateInscription: i.dateInscription,
+      })),
+    })),
+  )
 
   const { docs: typesDocs } = await payload.find({
     collection: 'types-evenement',

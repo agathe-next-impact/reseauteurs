@@ -15,6 +15,9 @@
      réservée aux réseauteurs). La présente ADR l'**acte** et l'**étend** (packs de licences).
   3. Le **gate de création/publication d'événements** (ADR-0012 §4) est **étendu** : organisateur d'un réseau
      national abonné **OU réseauteur Plus actif**.
+  4. **Lève « RÉSEAUTEURS ne gère pas l'inscription » (ADR-0011) pour les seuls événements organisés par un
+     réseauteur Plus** : ces événements ont une **inscription sur la plateforme** gérée par l'organisateur
+     (collection `inscriptions`, §3bis). Les événements de réseaux gardent le **lien externe** (inchangé).
 - **Réaffirme (inchangé) :** les **réseaux** (hiérarchie national↔local, abonnement porté par le national,
   délégation — ADR-0012) ; trois entités reliées + fiches SSR/ISR ; SEO `Person`/`Event`/`Organization` ;
   géoloc ville/centroïde ; RGPD proportionné + opt-out ; **simplicité d'abord (< 30 s)** ; stack inchangée ;
@@ -110,6 +113,30 @@ passage du user en Plus (`plusSource = licence`).
 - l'expiration du pack (ou de l'abonnement annonceur qui le porte) **désactive** les Plus issus de ce pack
   (cron d'expiration existant, étendu) ;
 - le code appartient à **un** partenaire ; l'admin peut révoquer un pack/code.
+
+### 3bis. Gestion des inscriptions aux événements Plus — ACTÉ (2026-07-13)
+
+L'invariant « RÉSEAUTEURS ne gère pas l'inscription » (ADR-0011) est **levé pour les seuls événements
+organisés par un réseauteur Plus** (`organisateurReseauteur` renseigné). Justification : un réseau dispose de
+son propre système d'inscription (le bouton renvoie vers son site — **inchangé**) ; un réseauteur Plus, lui,
+n'en a pas → la plateforme le fournit.
+
+- Nouvelle collection **`inscriptions`** — `evenement` (N-1), `reseauteur` (N-1), `createdAt` ;
+  **index unique `(evenement, reseauteur)`** = une inscription par réseauteur et par événement.
+  Pas de champ statut ni de jauge en V1 (la présence de la ligne = inscrit ; se désinscrire = suppression) —
+  **capacité/quota et check-in = évolutions futures**, le modèle reste extensible.
+- **Parcours :** un réseauteur **connecté** (gratuit ou Plus) ouvre un événement Plus publié à venir →
+  « Je m'inscris » → création de l'inscription (vérifs serveur atomiques : événement Plus, publié, futur,
+  rôle réseauteur, pas déjà inscrit) ; « Se désinscrire » supprime la ligne. Compteur d'inscrits affiché.
+- **Gestion organisateur :** l'organisateur Plus voit la **liste des inscrits** de chacun de ses événements
+  (nom, ville, date d'inscription, lien fiche) depuis `/dashboard/mes-evenements`.
+- **Autorisation stricte (serveur, jamais le client) :** inscription/désinscription via route dédiée
+  (`overrideAccess` + gardes) ; la liste des inscrits n'est lisible que par l'**organisateur du dit
+  événement** (et l'admin) ; l'inscription est un **acte de réseauteur connecté** (pas d'inscription anonyme
+  en V1 — cohérent avec le modèle par compte).
+- **Distinct de la participation existante** (`reseauteurs.evenementsParticipes`, ADR-0011 — signalement de
+  présence aux événements des **réseaux fréquentés**) : les deux ensembles sont **disjoints par le XOR
+  d'organisateur** (événement de réseau ↔ participation ; événement Plus ↔ inscription).
 
 ### 4. Rôle `partenaire` — acté
 

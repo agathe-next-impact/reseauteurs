@@ -62,6 +62,7 @@ async function main() {
   const { getPayload } = await import('payload')
   const config = (await import('../payload.config')).default
   const { activerLicence } = await import('../lib/licences')
+  const { inscrire } = await import('../lib/inscriptions')
   const { sql } = await import('@payloadcms/db-postgres')
   const payload = await getPayload({ config })
   const drizzle = payload.db.drizzle as unknown as {
@@ -357,6 +358,34 @@ async function main() {
       })
       log(`événement « Organisé par Marc Olivier » créé : ${ev.titre}`)
     }
+
+    // ── 6bis. Inscriptions en ligne aux événements Plus de Marc (ADR-0013 §3bis).
+    //    Quelques réseauteurs (hors Marc) s'inscrivent réellement via le flux `inscrire`.
+    const { docs: evsPlus } = await payload.find({
+      collection: 'evenements',
+      where: { and: [{ organisateurReseauteur: { equals: profilPlusId } }, { statut: { equals: 'publie' } }] },
+      limit: 10,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const { docs: candidatsInscription } = await payload.find({
+      collection: 'reseauteurs',
+      where: { and: [{ statut: { equals: 'valide' } }, { user: { exists: true } }, { id: { not_equals: profilPlusId } }] },
+      limit: 6,
+      depth: 0,
+      overrideAccess: true,
+      sort: 'nom',
+    })
+    let nbInscriptions = 0
+    for (const ev of evsPlus) {
+      for (const rz of candidatsInscription) {
+        const uid = typeof rz.user === 'object' && rz.user !== null ? (rz.user as { id: number }).id : (rz.user as number)
+        if (uid == null) continue
+        const res = await inscrire(payload, uid, ev.id as number)
+        if (res.ok && !res.deja) nbInscriptions++
+      }
+    }
+    log(`inscriptions en ligne seedées : ${nbInscriptions} (aux ${evsPlus.length} événements Plus de Marc)`)
 
     // ── 7. Participations (réseauteurs → événements de leurs réseaux fréquentés)
     if (localIds.length > 0) {

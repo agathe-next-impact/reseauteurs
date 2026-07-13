@@ -71,6 +71,8 @@ import * as migration_20260710_100000_partenaires_self_service from './20260710_
 import * as migration_20260712_100000_reseauteur_plus_licences from './20260712_100000_reseauteur_plus_licences';
 // ── Slug réseauteur = prénom-nom : slug nullable pour les squelettes (2026-07-12)
 import * as migration_20260712_110000_reseauteurs_slug_nullable from './20260712_110000_reseauteurs_slug_nullable';
+// ── ADR-0013 §3bis : inscriptions aux événements Plus (2026-07-13)
+import * as migration_20260713_100000_inscriptions from './20260713_100000_inscriptions';
 
 export const migrations = [
   {
@@ -400,5 +402,10 @@ export const migrations = [
     up: migration_20260712_110000_reseauteurs_slug_nullable.up,
     down: migration_20260712_110000_reseauteurs_slug_nullable.down,
     name: '20260712_110000_reseauteurs_slug_nullable',
+  },
+  {
+    up: migration_20260713_100000_inscriptions.up,
+    down: migration_20260713_100000_inscriptions.down,
+    name: '20260713_100000_inscriptions',
   },
 ];

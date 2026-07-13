@@ -42,12 +42,15 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
    relation many-to-many), **badge** (§5), géolocalisation.
 2. **L'événement** (`evenements`) — un **événement business daté**. Fiche publique (`/evenement/<slug>`) et
    **marqueur sur la carte des événements**. Champs : titre, description, date, heure, adresse, ville, image,
-   **réseau organisateur** (relation), **lien d'inscription externe**, géolocalisation, **drapeau Premium**
-   (mise en avant payante, §4). Le bouton « S'inscrire » **redirige vers le site du réseau** — RÉSEAUTEURS
-   **n'organise pas** et ne gère pas l'inscription en V1.
-   **Création (évolution §4) :** ouverte aux **organisateurs** (réseau partenaire) **et aux réseauteurs
-   Plus** (abonnés). Le modèle exact de la relation organisateur (réseau et/ou réseauteur) sera précisé à
-   l'implémentation.
+   **réseau organisateur** *(ou réseauteur Plus organisateur — XOR)*, **lien d'inscription externe**,
+   géolocalisation. **Inscription — deux régimes (ADR-0013, tranché 2026-07-13) :**
+   • **événement de réseau** → le bouton « S'inscrire » **redirige vers le site du réseau** (RÉSEAUTEURS
+   **n'organise pas** ; le réseau a son propre système) ;
+   • **événement organisé par un réseauteur Plus** → **inscription sur la plateforme** : un réseauteur
+   connecté clique « Je m'inscris », et l'**organisateur Plus gère la liste des inscrits** depuis son espace.
+   *(Le réseauteur Plus n'a pas de site d'inscription externe — la plateforme le lui fournit.)*
+   **Création (§4) :** ouverte aux **organisateurs** (réseau partenaire) **et aux réseauteurs Plus** (abonnés) ;
+   relation organisateur = **réseau XOR réseauteur** (`organisateurReseauteur`, invariant serveur).
 3. **Le réseau** (`reseaux`) — un **réseau d'affaires** (BNI, DCF…). Fiche publique (`/reseau/<slug>`).
    Champs : nom, logo, description, présentation, lien internet, **nombre de réseauteurs** (dérivé),
    **nombre d'événements** (dérivé), drapeau **partenaire** (abonnement actif, §4). Un réseau est **à la
@@ -81,11 +84,14 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
 > existante (checkout, Customer Portal, webhooks idempotents signés, factures PDF, crons d'expiration) est
 > **réutilisée**. Le statut payant est **toujours** posé côté serveur (webhook), jamais par le client (§11).
 
-### 4.1 Réseauteur — 2 niveaux d'accès
+### 4.1 Réseauteur — 2 niveaux d'accès (Plus **= 59 €/an** — gate P0 D2)
 | Niveau | Type | Accès |
 |---|---|---|
-| **Gratuit** *(actuel)* | — | Profil, fiche publique, carte, réseaux fréquentés, participation aux événements, offres partenaires. |
-| **Plus** | Abonnement (Subscription) | Tout le gratuit **+ droit de créer des événements**. |
+| **Gratuit** *(actuel)* | — | Profil, fiche publique, carte, réseaux fréquentés, participation aux événements, offres partenaires, **inscription en ligne aux événements Plus**. |
+| **Plus** | Abonnement **59 €/an** (Subscription) | Tout le gratuit **+ créer des événements** (illimités, publication auto sur la carte) **+ gérer les inscriptions** de ses événements (liste des inscrits) **+ modifier/supprimer** ses événements. |
+
+> **Prix : 59 €/an** (tranché au gate P0 D2, réaffirmé 2026-07-13 — *le « 39 € » de certains briefs est caduc*).
+> **Pas de « profil vérifié » en V1** (reste une évolution future — §12).
 
 Le niveau est porté par le **compte réseauteur** (statut d'abonnement posé par le webhook Stripe). Un
 réseauteur passe **Plus** de **deux façons** : (a) **abonnement individuel**, ou (b) **licence** activée en
