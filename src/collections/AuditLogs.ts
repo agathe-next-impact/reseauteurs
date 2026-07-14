@@ -11,7 +11,9 @@ export const AuditLogs: CollectionConfig = {
   },
   access: {
     read: isAdmin,
-    create: () => true,
+    // Écrit uniquement côté serveur (routes RGPD, hooks) en overrideAccess — jamais via
+    // l'API générique. Ferme la falsification du journal d'audit (C5).
+    create: isAdmin,
     update: () => false,
     delete: isAdmin,
   },

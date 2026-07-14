@@ -12,7 +12,11 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   access: {
-    create: () => true,
+    // Création réservée à l'admin : l'inscription publique passe par la route custom
+    // /api/auth/register (overrideAccess) — jamais par l'API REST générique. Ferme
+    // l'escalade de privilège anonyme via POST /api/users (C1). Le 1er admin reste
+    // créable (cas 0 utilisateur, géré nativement par Payload).
+    create: isAdmin,
     read: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
@@ -524,6 +528,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -539,7 +544,7 @@ export const Users: CollectionConfig = {
       name: 'plusActif',
       type: 'checkbox',
       defaultValue: false,
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: '[ADR-0013] Réseauteur Plus actif (droit de créer des événements). Posé par webhook/serveur.',
@@ -548,7 +553,7 @@ export const Users: CollectionConfig = {
     {
       name: 'plusExpireAt',
       type: 'date',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: '[ADR-0013] Expiration du Plus (fin d\'abonnement ou du pack de licences).',
@@ -557,7 +562,7 @@ export const Users: CollectionConfig = {
     {
       name: 'plusSource',
       type: 'text',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: '[ADR-0013] Origine du Plus : "abonnement" (Stripe individuel) ou "licence" (code partenaire).',
@@ -567,7 +572,7 @@ export const Users: CollectionConfig = {
       name: 'plusLicencePack',
       type: 'relationship',
       relationTo: 'licences-packs',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: '[ADR-0013] Pack de licences dont provient le Plus (si plusSource = licence).',
@@ -589,6 +594,7 @@ export const Users: CollectionConfig = {
       maxLength: 20,
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -612,6 +618,7 @@ export const Users: CollectionConfig = {
       index: true,
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -623,6 +630,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -634,6 +642,7 @@ export const Users: CollectionConfig = {
       type: 'date',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -645,6 +654,7 @@ export const Users: CollectionConfig = {
       type: 'group',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -662,6 +672,7 @@ export const Users: CollectionConfig = {
       type: 'group',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -676,6 +687,7 @@ export const Users: CollectionConfig = {
       name: 'cguAcceptedAt',
       type: 'date',
       access: {
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -687,6 +699,7 @@ export const Users: CollectionConfig = {
       name: 'confidentialiteAcceptedAt',
       type: 'date',
       access: {
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -707,6 +720,7 @@ export const Users: CollectionConfig = {
       name: 'optInMarketingAt',
       type: 'date',
       access: {
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -718,6 +732,7 @@ export const Users: CollectionConfig = {
       name: 'optOutMarketingAt',
       type: 'date',
       access: {
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -730,6 +745,7 @@ export const Users: CollectionConfig = {
       type: 'json',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -741,6 +757,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -752,6 +769,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -764,6 +782,7 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -780,6 +799,7 @@ export const Users: CollectionConfig = {
       ],
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -791,6 +811,7 @@ export const Users: CollectionConfig = {
       type: 'date',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -803,6 +824,7 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -815,6 +837,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -826,6 +849,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -837,6 +861,7 @@ export const Users: CollectionConfig = {
       type: 'date',
       access: {
         read: isAdmin,
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {

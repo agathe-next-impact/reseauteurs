@@ -20,7 +20,9 @@ export const StripeEvents: CollectionConfig = {
   },
   access: {
     read: isAdmin,
-    create: () => true,
+    // Écrit uniquement par le webhook Stripe en overrideAccess — jamais via l'API générique.
+    // Empêche la pré-insertion d'un eventId pour neutraliser l'idempotence (C6).
+    create: isAdmin,
     update: () => false,
     delete: isAdmin,
   },

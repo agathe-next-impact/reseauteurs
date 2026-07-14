@@ -125,7 +125,10 @@ export const Reseauteurs: CollectionConfig = {
       return { statut: { equals: 'valide' } }
     },
     // Création : tout utilisateur connecté (garde 1 user = 1 reseauteur dans beforeValidate)
-    create: ({ req: { user } }) => !!user,
+    // Création réservée à l'admin : le profil est auto-créé en squelette par le hook
+    // afterChange de Users (overrideAccess), jamais par l'utilisateur via l'API générique.
+    // Ferme l'usurpation de fiche (C2 : Reseauteurs.user assignable à un tiers au create).
+    create: isAdmin,
     // Mise à jour : propriétaire ou admin
     update: ({ req: { user } }) => {
       if (!user) return false
@@ -388,7 +391,8 @@ export const Reseauteurs: CollectionConfig = {
       unique: true,
       index: true,
       access: {
-        // Seul l'admin peut réassigner la propriété
+        // Seul l'admin peut assigner/réassigner la propriété
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -652,7 +656,7 @@ export const Reseauteurs: CollectionConfig = {
     {
       name: 'latitude',
       type: 'number',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: 'Latitude du centroïde ville (auto-calculée par géocodage).',
@@ -661,7 +665,7 @@ export const Reseauteurs: CollectionConfig = {
     {
       name: 'longitude',
       type: 'number',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: 'Longitude du centroïde ville (auto-calculée par géocodage).',
@@ -682,7 +686,8 @@ export const Reseauteurs: CollectionConfig = {
       required: true,
       index: true,
       access: {
-        // Seul l'admin peut valider ou suspendre
+        // Seul l'admin peut valider ou suspendre / forcer le badge
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {

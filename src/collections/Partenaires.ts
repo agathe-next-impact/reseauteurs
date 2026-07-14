@@ -165,6 +165,12 @@ export const Partenaires: CollectionConfig = {
       name: 'offre',
       type: 'group',
       label: 'Offre réservée aux réseauteurs',
+      // Lecture RÉSERVÉE aux réseauteurs/admin — même via l'API REST/GraphQL générique
+      // (C4 : sans ce gate, GET /api/partenaires?where[slug]=… fuite l'offre à un visiteur
+      // anonyme). La fiche SSR et la route /offre passent en overrideAccess → non affectées.
+      access: {
+        read: ({ req: { user } }) => user?.role === 'reseauteur' || user?.role === 'admin',
+      },
       admin: {
         description:
           'Offre promotionnelle visible UNIQUEMENT par les réseauteurs connectés. Laissez le titre vide pour ne pas proposer d\'offre.',

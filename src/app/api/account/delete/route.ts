@@ -20,6 +20,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { accountDeletedEmail } from '@/lib/emails'
 import { sendEmail } from '@/lib/email-sender'
 import { hashUserId } from '@/lib/audit'
+import { desactiverPlusDuPack } from '@/lib/licences'
 
 export async function POST() {
   const hdrs = await headers()
@@ -106,6 +107,46 @@ export async function POST() {
           overrideAccess: true,
           context: { webhookTrusted: true },
         })
+      }
+    } else if (role === 'partenaire') {
+      // M2 : l'abonnement annonceur est porté par la fiche `partenaires` (jamais par `users`).
+      // On annule l'abonnement Stripe, on expire la fiche (retirée home/annuaire/fiche publique)
+      // et on expire les packs de licences (stoppe les nouvelles activations + cascade sur les
+      // Plus issus d'une licence, qui redeviennent Gratuits).
+      const { docs: partenaireDocs } = await payload.find({
+        collection: 'partenaires',
+        where: { user: { equals: user.id } },
+        limit: 5,
+        overrideAccess: true,
+      })
+      for (const part of partenaireDocs) {
+        const subId = (part as unknown as Record<string, unknown>).stripeSubscriptionId as string | undefined
+        if (subId) {
+          try { await stripe.subscriptions.cancel(subId) } catch { /* déjà annulé */ }
+        }
+        await payload.update({
+          collection: 'partenaires',
+          id: part.id,
+          data: { user: null, statut: 'expire' } as Record<string, unknown>,
+          overrideAccess: true,
+          context: { webhookTrusted: true },
+        })
+        const { docs: packs } = await payload.find({
+          collection: 'licences-packs',
+          where: { partenaire: { equals: part.id } },
+          limit: 100,
+          depth: 0,
+          overrideAccess: true,
+        })
+        for (const pack of packs) {
+          await payload.update({
+            collection: 'licences-packs',
+            id: pack.id,
+            data: { statut: 'expire' } as Record<string, unknown>,
+            overrideAccess: true,
+          })
+          await desactiverPlusDuPack(payload, pack.id)
+        }
       }
     }
 

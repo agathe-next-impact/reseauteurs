@@ -88,9 +88,11 @@ export const Reseaux: CollectionConfig = {
       }
       return { statut: { equals: 'publiee' } }
     },
-    // Création : organisateur ou admin uniquement (un réseauteur n'agit que sur son profil — ADR-0011 §3).
-    // canCreateReseau (beforeChange) impose en plus 1 réseau par organisateur.
-    create: ({ req: { user } }) => user?.role === 'organisateur' || user?.role === 'admin',
+    // Création réservée à l'admin : la tête d'un organisateur est auto-créée par le hook
+    // afterChange de Users, les chapitres locaux via /dashboard/locaux et la délégation
+    // admin — tous en overrideAccess. Aucun create utilisateur-contexte légitime → on ferme
+    // l'API générique (C3 : partenaire/niveau posés au create via POST /api/reseaux).
+    create: isAdmin,
     // Mise à jour : propriétaire direct OU umbrella (national → ses locaux) OU admin.
     // La règle umbrella (national gère ses locaux délégués) est enforced via le hook
     // beforeChange ; l'access layer couvre propriétaire direct et nationaux auto-gérés.
@@ -671,7 +673,7 @@ export const Reseaux: CollectionConfig = {
     {
       name: 'latitude',
       type: 'number',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: 'Latitude (auto-calculée par géocodage).',
@@ -680,7 +682,7 @@ export const Reseaux: CollectionConfig = {
     {
       name: 'longitude',
       type: 'number',
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: 'Longitude (auto-calculée par géocodage).',
@@ -783,7 +785,8 @@ export const Reseaux: CollectionConfig = {
       label: 'Abonnement partenaire actif',
       index: true,
       access: {
-        // Seul l'admin peut modifier ce drapeau (posé par le webhook Stripe)
+        // Posé par le webhook Stripe uniquement (jamais par le client, même au create)
+        create: isAdmin,
         update: isAdmin,
       },
       admin: {
@@ -862,7 +865,7 @@ export const Reseaux: CollectionConfig = {
       defaultValue: 'publiee',
       required: true,
       index: true,
-      access: { update: isAdmin },
+      access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
         description: 'Statut de visibilité publique du réseau.',
