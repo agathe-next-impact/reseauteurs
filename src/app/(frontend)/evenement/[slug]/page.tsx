@@ -4,6 +4,7 @@
  * ADR-0012 : événement Premium supprimé — un seul type de marqueur et aucun badge Premium.
  * JSON-LD Event : injecté par seo-engineer (organizer = réseau).
  */
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -41,7 +42,7 @@ export async function generateStaticParams() {
     .map((d) => ({ slug: d.slug }))
 }
 
-async function getEvenement(slug: string): Promise<Evenement | null> {
+const getEvenement = cache(async (slug: string): Promise<Evenement | null> => {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'evenements',
@@ -56,7 +57,7 @@ async function getEvenement(slug: string): Promise<Evenement | null> {
     overrideAccess: true,
   })
   return (docs[0] as Evenement | undefined) ?? null
-}
+})
 
 /**
  * Réseauteurs (validés) ayant signalé leur présence à cet événement.

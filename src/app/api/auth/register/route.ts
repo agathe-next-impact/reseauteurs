@@ -4,6 +4,7 @@ import config from '@payload-config'
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site'
 import { userRegisteredAdminEmail, verifyEmailTemplate } from '@/lib/emails'
 import { sendEmail } from '@/lib/email-sender'
+import { rateLimit } from '@/lib/rate-limit'
 
 /**
  * POST /api/auth/register
@@ -13,6 +14,20 @@ import { sendEmail } from '@/lib/email-sender'
  * The user can request a new verification email later.
  */
 export async function POST(request: Request) {
+  // Anti-abus : endpoint non authentifié qui crée des comptes ET envoie des emails.
+  // Rate-limit par IP (défense en profondeur — cf. lib/rate-limit sur les limites serverless).
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  const { success: allowed } = rateLimit(`register:${ip}`, { limit: 5, windowMs: 3_600_000 })
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Trop de tentatives d\'inscription. Réessayez plus tard.' },
+      { status: 429 },
+    )
+  }
+
   const body = await request.json().catch(() => null)
   if (!body) {
     return NextResponse.json({ error: 'Body JSON invalide' }, { status: 400 })

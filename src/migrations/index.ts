@@ -81,6 +81,8 @@ import * as migration_20260713_120000_niveau_4_valeurs from './20260713_120000_n
 import * as migration_20260713_130000_evenements_fiche_complete from './20260713_130000_evenements_fiche_complete';
 // ── Filtre par département sur les événements (2026-07-13)
 import * as migration_20260713_140000_evenements_departement from './20260713_140000_evenements_departement';
+// ── Index de performance (audit 2026-07-14)
+import * as migration_20260714_100000_perf_indexes from './20260714_100000_perf_indexes';
 
 export const migrations = [
   {
@@ -435,5 +437,10 @@ export const migrations = [
     up: migration_20260713_140000_evenements_departement.up,
     down: migration_20260713_140000_evenements_departement.down,
     name: '20260713_140000_evenements_departement',
+  },
+  {
+    up: migration_20260714_100000_perf_indexes.up,
+    down: migration_20260714_100000_perf_indexes.down,
+    name: '20260714_100000_perf_indexes',
   },
 ];

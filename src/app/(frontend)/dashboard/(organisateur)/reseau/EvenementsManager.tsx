@@ -31,7 +31,6 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
       intervenants: gs('intervenants'),
       dateDebut: fd.get('dateDebut') as string,
       dateFin: gs('dateFin'),
-      heure: gs('heure'),
       lieuNom: gs('lieuNom'),
       lieuVille: gs('lieuVille'),
       lieuAdresse: gs('lieuAdresse'),

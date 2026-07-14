@@ -3,6 +3,7 @@
  * Visible uniquement si l'abonnement est actif (statut='actif').
  * L'offre promotionnelle est réservée aux réseauteurs connectés (RGPD/ciblage B2B).
  */
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
@@ -33,7 +34,7 @@ export async function generateStaticParams() {
     .map((d) => ({ slug: d.slug }))
 }
 
-async function getPartenaire(slug: string): Promise<Partenaire | null> {
+const getPartenaire = cache(async (slug: string): Promise<Partenaire | null> => {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'partenaires',
@@ -43,7 +44,7 @@ async function getPartenaire(slug: string): Promise<Partenaire | null> {
     overrideAccess: true,
   })
   return (docs[0] as Partenaire | undefined) ?? null
-}
+})
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params

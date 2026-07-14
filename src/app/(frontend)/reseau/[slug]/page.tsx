@@ -4,6 +4,7 @@
  * Badge partenaire si reseau.partenaire.
  * JSON-LD Organization : injecté par seo-engineer.
  */
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -39,7 +40,7 @@ export async function generateStaticParams() {
     .map((d) => ({ slug: d.slug }))
 }
 
-async function getReseau(slug: string): Promise<Reseau | null> {
+const getReseau = cache(async (slug: string): Promise<Reseau | null> => {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'reseaux',
@@ -54,7 +55,7 @@ async function getReseau(slug: string): Promise<Reseau | null> {
     overrideAccess: true,
   })
   return (docs[0] as Reseau | undefined) ?? null
-}
+})
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params

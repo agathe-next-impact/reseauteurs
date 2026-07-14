@@ -107,7 +107,6 @@ const EvenementSchema = z.object({
   intervenants: z.string().max(1000).optional(),
   dateDebut: z.string().min(1, 'La date est requise'),
   dateFin: z.string().optional().or(z.literal('')),
-  heure: z.string().optional(),
   lieuNom: z.string().max(200).optional(),
   lieuVille: z.string().max(100).optional(),
   lieuAdresse: z.string().max(300).optional(),

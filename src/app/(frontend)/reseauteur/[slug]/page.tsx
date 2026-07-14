@@ -4,6 +4,7 @@
  * noindex : propagé si seo.noindex === true (profil non validé ou opt-out réseauteur).
  * JSON-LD Person : injecté par seo-engineer (champs publics uniquement, RGPD).
  */
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -39,7 +40,7 @@ export async function generateStaticParams() {
     .map((d) => ({ slug: d.slug }))
 }
 
-async function getReseauteur(slug: string): Promise<Reseauteur | null> {
+const getReseauteur = cache(async (slug: string): Promise<Reseauteur | null> => {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'reseauteurs',
@@ -54,7 +55,7 @@ async function getReseauteur(slug: string): Promise<Reseauteur | null> {
     overrideAccess: true,
   })
   return (docs[0] as Reseauteur | undefined) ?? null
-}
+})
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
