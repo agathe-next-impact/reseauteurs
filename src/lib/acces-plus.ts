@@ -1,9 +1,10 @@
 /**
  * lib/acces-plus.ts — Helpers centralisés du palier « Réseauteur Plus » (ADR-0013, P1.4).
  *
- * Source unique de vérité pour :
- *   - Statut Plus d'un utilisateur (estPlus)
- *   - Gate de création d'événement (peutCreerEvenementAsync)
+ * Source unique de vérité pour le **statut Plus** d'un utilisateur (`estPlus`).
+ * Le gate de création d'événement lui-même vit dans le hook beforeValidate de
+ * `Evenements.ts` (il entrelace l'invariant XOR, l'ownership et l'abonnement) et
+ * réutilise `estPlus` pour la branche réseauteur.
  *
  * Le statut Plus (`users.plusActif` / `plusExpireAt` / `plusSource`) est posé par le
  * webhook Stripe (abonnement) ou par la route d'activation de licence (P2.A) —
@@ -25,23 +26,6 @@ export interface UserForPlus {
   plusExpireAt?: string | null
 }
 
-/** Interface minimale de Payload Local API pour les helpers async */
-interface PayloadMinimal {
-  findByID: (args: {
-    collection: string
-    id: string | number
-    depth?: number
-    overrideAccess?: boolean
-  }) => Promise<Record<string, unknown>>
-  find: (args: {
-    collection: string
-    where?: Record<string, unknown>
-    limit?: number
-    overrideAccess?: boolean
-    depth?: number
-  }) => Promise<{ docs: Array<Record<string, unknown>>; totalDocs: number }>
-}
-
 // ─────────────────────────────────────────────
 // HELPERS SYNCHRONES
 // ─────────────────────────────────────────────
@@ -57,44 +41,4 @@ export function estPlus(user: UserForPlus | null | undefined): boolean {
   if (!user.plusExpireAt) return true
   const exp = new Date(user.plusExpireAt)
   return !Number.isNaN(exp.getTime()) && exp.getTime() > Date.now()
-}
-
-// ─────────────────────────────────────────────
-// HELPERS ASYNC (requièrent req.payload)
-// ─────────────────────────────────────────────
-
-/**
- * Gate de création d'événement (ADR-0013 §2) — évalué côté serveur :
- *   - admin        → toujours autorisé ;
- *   - organisateur → autorisé (le hook Evenements vérifie ensuite l'ownership du
- *                    réseau + l'abonnement du national effectif — reseau-hierarchie.ts) ;
- *   - reseauteur   → autorisé ssi Réseauteur Plus actif (lecture fraîche du user).
- *
- * Retourne { autorise } ou { autorise: false, raison } (message FR affichable).
- */
-export async function peutCreerEvenementAsync(
-  userId: string | number,
-  payload: PayloadMinimal,
-): Promise<{ autorise: boolean; raison?: string }> {
-  const user = (await payload.findByID({
-    collection: 'users',
-    id: userId,
-    depth: 0,
-    overrideAccess: true,
-  })) as unknown as UserForPlus & { role?: string | null }
-
-  if (!user) return { autorise: false, raison: 'Utilisateur introuvable.' }
-  if (user.role === 'admin' || user.role === 'organisateur') return { autorise: true }
-
-  if (user.role === 'reseauteur') {
-    if (estPlus(user)) return { autorise: true }
-    return {
-      autorise: false,
-      raison:
-        'La création d\'événements est réservée aux réseauteurs Plus. ' +
-        'Passez Plus depuis votre tableau de bord (abonnement ou code partenaire).',
-    }
-  }
-
-  return { autorise: false, raison: 'Ce type de compte ne peut pas créer d\'événements.' }
 }
