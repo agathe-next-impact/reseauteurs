@@ -5,12 +5,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { Button } from '../ui'
+import { useAuth } from './AuthProvider'
 
-interface AuthNavProps {
-  user: { email: string; nomSociete: string } | null
-}
-
-export default function AuthNav({ user }: AuthNavProps) {
+export default function AuthNav() {
+  const { user } = useAuth()
   const pathname = usePathname()
   const [isPending, setIsPending] = useState(false)
 

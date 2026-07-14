@@ -83,6 +83,7 @@ export default function MapReseaux({
 
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const didInitialFetch = useRef(false)
   const cacheRef = useRef<Map<string, GeoJSONFeatureCollection>>(new Map())
   const geojsonDataRef = useRef(geojsonData)
   geojsonDataRef.current = geojsonData
@@ -283,6 +284,14 @@ export default function MapReseaux({
     setSelectedSlug(null)
     window.history.replaceState(null, '', '/reseaux')
   }, [])
+
+  // Au 1er idle : recharge le viewport RÉEL via l'API bbox (le dataset SSR n'est qu'une amorce).
+  useEffect(() => {
+    if (mapReady && !didInitialFetch.current) {
+      didInitialFetch.current = true
+      fetchWithBbox(filters)
+    }
+  }, [mapReady, fetchWithBbox, filters])
 
   // Nettoyage des timers et requêtes en vol
   useEffect(() => {

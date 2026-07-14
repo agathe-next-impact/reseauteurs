@@ -4,11 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Users, Calendar, Network, Handshake, LogIn, UserPlus, LayoutDashboard, LogOut, Loader2 } from 'lucide-react'
-
-interface MobileNavReseauteursProps {
-  user: { email: string; nomSociete: string } | null
-  role?: 'reseauteur' | 'organisateur' | 'admin'
-}
+import { useAuth } from './AuthProvider'
 
 const NAV_LINKS = [
   { href: '/reseauteurs', label: 'Réseauteurs', icon: Users },
@@ -17,7 +13,8 @@ const NAV_LINKS = [
   { href: '/partenaires', label: 'Partenaires', icon: Handshake },
 ]
 
-export default function MobileNavReseauteurs({ user, role = 'reseauteur' }: MobileNavReseauteursProps) {
+export default function MobileNavReseauteurs() {
+  const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const pathname = usePathname()

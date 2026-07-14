@@ -57,7 +57,7 @@ interface SearchParams {
 
 const PAGE_SIZE = 24
 
-function buildAgendaWhere(sp: SearchParams): Where {
+function buildAgendaWhere(sp: SearchParams, reseauId?: number | null): Where {
   const conditions: Where[] = [{ statut: { equals: 'publie' } }]
   if (sp.ville) conditions.push({ lieuVille: { contains: sp.ville } })
   // Filtres spec 2026-07-13 : département, type (par slug de `types-evenement`), gratuit/payant
@@ -65,6 +65,9 @@ function buildAgendaWhere(sp: SearchParams): Where {
   if (sp.type) conditions.push({ 'type.value': { equals: sp.type } })
   if (sp.tarification === 'gratuit') conditions.push({ gratuit: { equals: true } })
   if (sp.tarification === 'payant') conditions.push({ gratuit: { equals: false } })
+  // Filtre réseau poussé en SQL (id résolu depuis le slug) — la pagination reste exacte.
+  // reseauId === -1 : slug fourni mais inconnu → aucun résultat (au lieu de filtrer en JS après coup).
+  if (reseauId != null) conditions.push({ reseau: { equals: reseauId } })
 
   const start = sp.dateDebut ?? sp.date
   if (start) {
@@ -210,7 +213,11 @@ export default async function EvenementsPage({
   }
 
   // ─── VUE AGENDA (défaut) ────────────────────────────────────────────────────
-  const where = buildAgendaWhere(sp)
+  // Slug réseau → id (résolu depuis les réseaux déjà chargés) ; -1 si slug inconnu.
+  const reseauId = sp.reseau
+    ? (reseauxFiltres.find((r) => r.slug === sp.reseau)?.id ?? -1)
+    : null
+  const where = buildAgendaWhere(sp, reseauId)
 
   const { docs: evenements, totalDocs, totalPages } = await withDbRetry(
     () =>
@@ -226,12 +233,7 @@ export default async function EvenementsPage({
     { label: 'evenements-agenda:find' },
   )
 
-  const docs = sp.reseau
-    ? (evenements as Evenement[]).filter((e) => {
-        const r = e.reseau as Reseau | null | undefined
-        return typeof r === 'object' && r?.slug === sp.reseau
-      })
-    : (evenements as Evenement[])
+  const docs = evenements as Evenement[]
 
   return (
     <div className="rsn-page min-h-screen">

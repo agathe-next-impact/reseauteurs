@@ -1,11 +1,9 @@
 import React, { Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { headers } from 'next/headers'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { Hanken_Grotesk } from 'next/font/google'
 import { Toaster } from 'sonner'
+import AuthProvider from '@/components/nav/AuthProvider'
 import AuthNav from '@/components/nav/AuthNav'
 import MobileNavReseauteurs from '@/components/nav/MobileNavReseauteurs'
 import RouteProgressBar from '@/components/nav/RouteProgressBar'
@@ -29,23 +27,12 @@ const hanken = Hanken_Grotesk({
 
 export const metadata = buildRootMetadata()
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
+export default function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
-  const hdrs = await headers()
-  const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: hdrs })
-
-  const serializedUser = user ? { email: user.email ?? '', nomSociete: user.nomSociete ?? '' } : null
-
-  const role: 'reseauteur' | 'organisateur' | 'admin' = user
-    ? ((user.role as string) === 'organisateur'
-      ? 'organisateur'
-      : (user.role as string) === 'admin'
-        ? 'admin'
-        : 'reseauteur')
-    : 'reseauteur'
-
+  // ISR/statique : PAS de headers()/payload.auth() ici (cela basculait TOUTE route
+  // `(frontend)` en dynamique et annulait l'ISR — audit perf P1). L'état auth de la nav
+  // est hydraté côté client par AuthProvider (GET /api/auth/me).
   return (
     <html lang="fr" className={hanken.variable} suppressHydrationWarning>
       <head>
@@ -63,6 +50,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         />
         <JsonLd data={[buildOrganizationJsonLd(), buildWebSiteJsonLd()]} />
 
+        <AuthProvider>
         {/* En-tête principal */}
         <header className="ir-plasma-header min-h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
           <Link
@@ -114,10 +102,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             </Link>
             <ThemeToggle />
             <div className="hidden sm:flex">
-              {/* TODO accounts-and-billing : AuthNav doit afficher le rôle RÉSEAUTEURS (reseauteur/organisateur/admin) */}
-              <AuthNav user={serializedUser} />
+              <AuthNav />
             </div>
-            <MobileNavReseauteurs user={serializedUser} role={role} />
+            <MobileNavReseauteurs />
           </nav>
         </header>
 
@@ -130,7 +117,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
         <main>{children}</main>
 
-        <FooterReseauteurs isAuthenticated={!!user} />
+        <FooterReseauteurs />
         <CookieInfoBanner />
         <Toaster
           position="bottom-right"
@@ -139,6 +126,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           closeButton
         />
         <GoogleAnalytics />
+        </AuthProvider>
       </body>
     </html>
   )

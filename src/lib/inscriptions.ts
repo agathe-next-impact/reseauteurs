@@ -166,6 +166,37 @@ export async function estInscrit(
   return totalDocs > 0
 }
 
+/** Convertit un doc `inscriptions` (depth 1) en résumé, ou null si le réseauteur n'est pas peuplé. */
+function toInscritSummary(i: unknown): InscritSummary | null {
+  const r = (i as { reseauteur?: unknown }).reseauteur
+  if (!r || typeof r !== 'object') return null
+  const rr = r as {
+    id: number
+    slug?: string | null
+    prenom?: string | null
+    nom?: string | null
+    ville?: string | null
+    photo?: unknown
+  }
+  const photo = rr.photo
+  const photoUrl =
+    photo && typeof photo === 'object'
+      ? ((photo as { sizes?: { thumbnail?: { url?: string | null } }; url?: string | null }).sizes?.thumbnail?.url ??
+          (photo as { url?: string | null }).url ??
+          null)
+      : null
+  return {
+    id: (i as { id: number }).id,
+    reseauteurId: rr.id,
+    slug: rr.slug ?? null,
+    prenom: rr.prenom ?? '',
+    nom: rr.nom ?? '',
+    ville: rr.ville ?? null,
+    photoUrl,
+    dateInscription: (i as { createdAt?: string }).createdAt ?? '',
+  }
+}
+
 /** Liste des inscrits d'un événement (pour l'espace organisateur). */
 export async function listerInscrits(
   payload: Payload,
@@ -180,36 +211,39 @@ export async function listerInscrits(
     sort: 'createdAt',
     overrideAccess: true,
   })
-  return docs
-    .map((i) => {
-      const r = (i as { reseauteur?: unknown }).reseauteur
-      if (!r || typeof r !== 'object') return null
-      const rr = r as {
-        id: number
-        slug?: string | null
-        prenom?: string | null
-        nom?: string | null
-        ville?: string | null
-        photo?: unknown
-      }
-      const photo = rr.photo
-      const photoUrl =
-        photo && typeof photo === 'object'
-          ? ((photo as { sizes?: { thumbnail?: { url?: string | null } }; url?: string | null }).sizes?.thumbnail
-              ?.url ??
-              (photo as { url?: string | null }).url ??
-              null)
-          : null
-      return {
-        id: i.id as number,
-        reseauteurId: rr.id,
-        slug: rr.slug ?? null,
-        prenom: rr.prenom ?? '',
-        nom: rr.nom ?? '',
-        ville: rr.ville ?? null,
-        photoUrl,
-        dateInscription: (i as { createdAt?: string }).createdAt ?? '',
-      } as InscritSummary
-    })
-    .filter((x): x is InscritSummary => x !== null)
+  return docs.map(toInscritSummary).filter((x): x is InscritSummary => x !== null)
+}
+
+/**
+ * Liste des inscrits pour PLUSIEURS événements en UNE seule requête (évite le N+1 quand
+ * l'espace organisateur affiche ses N événements). Retourne une Map evenementId → inscrits.
+ */
+export async function listerInscritsParEvenements(
+  payload: Payload,
+  evenementIds: Array<number | string>,
+  limit = 2000,
+): Promise<Map<number, InscritSummary[]>> {
+  const result = new Map<number, InscritSummary[]>()
+  const ids = [...new Set(evenementIds.map(Number))].filter((n) => Number.isFinite(n))
+  if (ids.length === 0) return result
+
+  const { docs } = await payload.find({
+    collection: 'inscriptions',
+    where: { evenement: { in: ids } },
+    depth: 1,
+    limit,
+    sort: 'createdAt',
+    overrideAccess: true,
+  })
+
+  for (const doc of docs) {
+    const evId = relId((doc as { evenement?: unknown }).evenement)
+    if (evId == null) continue
+    const summary = toInscritSummary(doc)
+    if (!summary) continue
+    const arr = result.get(evId)
+    if (arr) arr.push(summary)
+    else result.set(evId, [summary])
+  }
+  return result
 }

@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { CONTACT_EMAIL, SITE_NAME } from '@/lib/site'
+import FooterAccountLink from './FooterAccountLink'
 
-export default function FooterReseauteurs({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
+export default function FooterReseauteurs() {
   const year = new Date().getFullYear()
 
   return (
@@ -47,13 +48,7 @@ export default function FooterReseauteurs({ isAuthenticated = false }: { isAuthe
                 Se connecter
               </Link>
             </li>
-            {isAuthenticated && (
-              <li>
-                <Link href="/dashboard" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
-                  Mon espace
-                </Link>
-              </li>
-            )}
+            <FooterAccountLink />
           </ul>
         </div>
 
