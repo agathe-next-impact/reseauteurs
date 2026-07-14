@@ -78,6 +78,7 @@ export default function MapEvenementsReseauteurs({
 
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const didInitialFetch = useRef(false)
   const cacheRef = useRef<Map<string, GeoJSONFeatureCollection>>(new Map())
   const geojsonDataRef = useRef(geojsonData)
   geojsonDataRef.current = geojsonData
@@ -283,6 +284,16 @@ export default function MapEvenementsReseauteurs({
     setSelectedSlug(null)
     window.history.replaceState(null, '', '/carte/evenements')
   }, [])
+
+  // Au premier « idle » de la carte, on recharge le viewport RÉEL depuis l'API bbox.
+  // Le dataset SSR (initialData) n'est donc qu'une amorce de premier rendu / SEO : la
+  // source de vérité devient l'API, ce qui permet d'embarquer peu de marqueurs dans le HTML.
+  useEffect(() => {
+    if (mapReady && !didInitialFetch.current) {
+      didInitialFetch.current = true
+      fetchWithBbox(filters)
+    }
+  }, [mapReady, fetchWithBbox, filters])
 
   useEffect(() => {
     return () => {

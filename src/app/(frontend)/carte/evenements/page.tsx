@@ -67,7 +67,7 @@ export default async function CarteEvenementsPage({ searchParams }: PageProps) {
             ],
           },
           depth: 1,  // populate reseau
-          limit: 5000,
+          limit: 800, // amorce SSR (la carte recharge le viewport réel via l'API bbox au 1er idle)
           overrideAccess: true,
           select: {
             slug: true,

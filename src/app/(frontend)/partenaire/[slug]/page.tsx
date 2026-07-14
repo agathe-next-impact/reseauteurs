@@ -5,15 +5,15 @@
  */
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
-import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, ExternalLink, Tag, Lock, Users, ArrowRight } from 'lucide-react'
+import { Building2, ExternalLink, Users, ArrowRight } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
 import { SITE_NAME } from '@/lib/site'
 import { getReseauteursAffilies } from '@/lib/affiliation'
+import OffreReservee from '@/components/partenaire/OffreReservee'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { Partenaire, Media } from '@/types/reseauteurs-domain'
@@ -64,18 +64,17 @@ export default async function FichePartenairePage({ params }: { params: Promise<
   const p = await getPartenaire(slug)
   if (!p) notFound()
 
-  // Le viewer peut-il voir l'offre ? (réseauteur connecté — ou admin pour modération)
-  const hdrs = await headers()
+  // ISR/statique : PAS de headers()/auth() ici. L'offre réservée aux réseauteurs est
+  // hydratée côté client (composant OffreReservee + API) → son contenu n'entre pas
+  // dans le HTML statique et la visibilité per-user ne casse pas le cache.
   const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: hdrs })
-  const canSeeOffre = user?.role === 'reseauteur' || user?.role === 'admin'
 
   // Réseauteurs affiliés = ceux qui ont activé une licence Plus de ce partenaire (ADR-0013).
   const affilies = await getReseauteursAffilies(payload, p.id)
 
   const logoMedia = p.logo as Media | null | undefined
   const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url ?? null
-  const offre = (p.offre as { titre?: string | null; description?: string | null; lien?: string | null } | null | undefined) ?? null
+  const offre = (p.offre as { titre?: string | null } | null | undefined) ?? null
   const hasOffre = !!(offre?.titre && offre.titre.trim())
 
   let lienSafe: string | null = null
@@ -83,13 +82,6 @@ export default async function FichePartenairePage({ params }: { params: Promise<
     try {
       const u = new URL(p.lien)
       if (u.protocol === 'https:' || u.protocol === 'http:') lienSafe = p.lien
-    } catch { /* ignore */ }
-  }
-  let offreLienSafe: string | null = null
-  if (offre?.lien) {
-    try {
-      const u = new URL(offre.lien)
-      if (u.protocol === 'https:' || u.protocol === 'http:') offreLienSafe = offre.lien
     } catch { /* ignore */ }
   }
 
@@ -140,38 +132,10 @@ export default async function FichePartenairePage({ params }: { params: Promise<
               </Reveal>
             )}
 
-            {/* Offre réservée aux réseauteurs */}
+            {/* Offre réservée aux réseauteurs — hydratée côté client (garde l'ISR de la page) */}
             {hasOffre && (
               <Reveal>
-                <section aria-labelledby="offre-titre">
-                  <h2 id="offre-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
-                    <Tag size={14} className="text-[#f5851f]" aria-hidden />
-                    Offre réservée aux réseauteurs
-                  </h2>
-                  {canSeeOffre ? (
-                    <div className="rounded-xl border border-[#fed7aa] bg-[#fff7ed] p-4">
-                      <p className="text-sm font-bold text-[#c2410c]">{offre!.titre}</p>
-                      {offre!.description && (
-                        <p className="text-sm text-[#9a3412] mt-1.5 whitespace-pre-line">{offre!.description}</p>
-                      )}
-                      {offreLienSafe && (
-                        <a href={offreLienSafe} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 bg-[#f5851f] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#e07710] transition-colors text-sm no-underline">
-                          En profiter <ExternalLink size={13} aria-hidden />
-                        </a>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-[#e4e4e7] bg-[#faf9f5] p-4 flex items-start gap-3">
-                      <Lock size={16} className="text-[#a1a1aa] shrink-0 mt-0.5" aria-hidden />
-                      <div>
-                        <p className="text-sm text-[#52525b]">Cette offre est réservée aux réseauteurs.</p>
-                        <Link href="/inscription" className="text-sm text-[#2563EB] font-medium no-underline">
-                          Créez votre compte réseauteur gratuit →
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </section>
+                <OffreReservee slug={p.slug ?? slug} />
               </Reveal>
             )}
 

@@ -159,7 +159,7 @@ export default async function EvenementsPage({
             ],
           },
           depth: 1,
-          limit: 5000,
+          limit: 800, // amorce SSR (la carte recharge le viewport réel via l'API bbox au 1er idle)
           overrideAccess: true,
           select: {
             slug: true,

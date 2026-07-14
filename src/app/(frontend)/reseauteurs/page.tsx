@@ -118,7 +118,7 @@ export default async function ReseauteursPage({
                 ],
               },
               depth: 0,
-              limit: 3000,
+              limit: 1500, // SSR borné — la carte recharge par bbox sur déplacement
               overrideAccess: true,
               select: {
                 slug: true,

@@ -13,6 +13,7 @@
  */
 import { Suspense } from 'react'
 import { getPayload } from 'payload'
+import { sql } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -76,7 +77,7 @@ export default async function ReseauxPage({
               ],
             } as Where,
             depth: 0,
-            limit: 5000,
+            limit: 1500, // SSR borné — la carte recharge par bbox sur déplacement
             overrideAccess: true,
             select: {
               slug: true,
@@ -156,61 +157,52 @@ export default async function ReseauxPage({
     ],
   }
 
-  const [{ docs: nationauxRaw, totalDocs, totalPages }, { docs: locauxRaw }] = await Promise.all([
-    withDbRetry(
-      () =>
-        payload.find({
-          collection: 'reseaux',
-          where: whereNationaux,
-          depth: 1,
-          limit: PAGE_SIZE,
-          page,
-          sort: '-partenaire,nom',
-          overrideAccess: true,
-        }),
-      { label: 'reseaux-annuaire:nationals' },
-    ),
-    // Charge tous les locaux pour agréger les compteurs (Q7 : calcul SSR, pas de hook stocké)
-    withDbRetry(
-      () =>
-        payload.find({
-          collection: 'reseaux',
-          where: {
-            and: [
-              { statut: { equals: 'publiee' } },
-              { niveau: { equals: 'local' } },
-            ],
-          } as Where,
-          depth: 0,
-          limit: 10000,
-          overrideAccess: true,
-          select: {
-            parent: true,
-            nbReseauteurs: true,
-            nbEvenements: true,
-          } as Record<string, boolean>,
-        }),
-      { label: 'reseaux-annuaire:locaux-count' },
-    ),
-  ])
-
-  // Agrégation SSR : compteurs par national (Q7)
-  type AggEntry = { nbReseauteurs: number; nbEvenements: number; nbLocaux: number }
-  const aggregates: Record<string, AggEntry> = {}
-  for (const local of locauxRaw) {
-    const pid =
-      typeof local.parent === 'object'
-        ? ((local.parent as unknown as Record<string, unknown>)?.id ?? null)
-        : (local.parent ?? null)
-    if (!pid) continue
-    const key = String(pid)
-    if (!aggregates[key]) aggregates[key] = { nbReseauteurs: 0, nbEvenements: 0, nbLocaux: 0 }
-    aggregates[key].nbReseauteurs += (local.nbReseauteurs as number | null | undefined) ?? 0
-    aggregates[key].nbEvenements += (local.nbEvenements as number | null | undefined) ?? 0
-    aggregates[key].nbLocaux += 1
-  }
+  const { docs: nationauxRaw, totalDocs, totalPages } = await withDbRetry(
+    () =>
+      payload.find({
+        collection: 'reseaux',
+        where: whereNationaux,
+        depth: 1,
+        limit: PAGE_SIZE,
+        page,
+        sort: '-partenaire,nom',
+        overrideAccess: true,
+      }),
+    { label: 'reseaux-annuaire:nationals' },
+  )
 
   const nationaux = nationauxRaw as Reseau[]
+
+  // Agrégation SSR des compteurs des chapitres locaux (Q7) — SQL GROUP BY borné aux
+  // têtes de la PAGE COURANTE (remplace un fetch-all `limit: 10000` + somme JS).
+  type AggEntry = { nbReseauteurs: number; nbEvenements: number; nbLocaux: number }
+  const aggregates: Record<string, AggEntry> = {}
+  const nationalIds = nationaux.map((n) => Number(n.id)).filter((n) => Number.isFinite(n))
+  if (nationalIds.length > 0) {
+    const drizzle = payload.db.drizzle as unknown as {
+      execute: (q: unknown) => Promise<{ rows: Array<Record<string, unknown>> }>
+    }
+    const res = await withDbRetry(
+      () =>
+        drizzle.execute(sql`
+          SELECT parent_id,
+                 COUNT(*)::int                        AS nb_locaux,
+                 COALESCE(SUM(nb_reseauteurs), 0)::int AS nb_reseauteurs,
+                 COALESCE(SUM(nb_evenements), 0)::int  AS nb_evenements
+            FROM reseaux
+           WHERE statut = 'publiee' AND niveau = 'local' AND parent_id IN ${nationalIds}
+           GROUP BY parent_id
+        `.inlineParams()),
+      { label: 'reseaux-annuaire:agg' },
+    )
+    for (const row of res.rows) {
+      aggregates[String(row.parent_id)] = {
+        nbReseauteurs: Number(row.nb_reseauteurs) || 0,
+        nbEvenements: Number(row.nb_evenements) || 0,
+        nbLocaux: Number(row.nb_locaux) || 0,
+      }
+    }
+  }
 
   return (
     <div className="rsn-page min-h-screen">
