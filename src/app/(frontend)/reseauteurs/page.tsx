@@ -55,7 +55,7 @@ interface SearchParams {
 
 const PAGE_SIZE = 24
 
-function buildWhere(sp: SearchParams): Where {
+function buildWhere(sp: SearchParams, reseauFilterIds?: number[] | null): Where {
   const conditions: Where[] = [{ statut: { equals: 'valide' } }]
 
   if (sp.q) {
@@ -73,6 +73,12 @@ function buildWhere(sp: SearchParams): Where {
   if (sp.region) conditions.push({ region: { contains: sp.region } })
   if (sp.badge) conditions.push({ badge: { equals: sp.badge } })
   if (sp.secteur) conditions.push({ secteur: { equals: sp.secteur } })
+  // Filtre réseau : réseauteurs fréquentant l'un des chapitres ciblés (résolu côté page,
+  // le slug pouvant désigner un chapitre local OU une tête → ses chapitres). Liste vide
+  // (slug inconnu / tête sans chapitre) → sentinelle -1 pour garantir zéro résultat.
+  if (reseauFilterIds) {
+    conditions.push({ reseauxFrequentes: { in: reseauFilterIds.length ? reseauFilterIds : [-1] } } as Where)
+  }
 
   return { and: conditions }
 }
@@ -207,7 +213,55 @@ export default async function ReseauteursPage({
   }
 
   // ─── VUE ANNUAIRE (défaut) ──────────────────────────────────────────────────
-  const where = buildWhere(sp)
+  // Liste des réseaux pour le sélecteur de filtre (têtes + chapitres publiés).
+  const { docs: reseauxFiltreDocs } = await withDbRetry(
+    () =>
+      payload.find({
+        collection: 'reseaux',
+        where: { statut: { equals: 'publiee' } } as Where,
+        select: { slug: true, nom: true } as Record<string, boolean>,
+        depth: 0,
+        limit: 500,
+        sort: 'nom',
+        overrideAccess: true,
+      }),
+    { label: 'reseauteurs-annuaire:reseaux' },
+  )
+  const reseauxListe = reseauxFiltreDocs
+    .map((r) => ({ slug: (r.slug as string) ?? '', nom: (r.nom as string) ?? '' }))
+    .filter((r) => r.slug)
+
+  // Résolution du filtre réseau : un réseauteur fréquente des CHAPITRES locaux.
+  // slug local → ce chapitre ; slug tête → ses chapitres ; slug inconnu → aucun résultat.
+  let reseauFilterIds: number[] | null = null
+  if (sp.reseau) {
+    const { docs: rsel } = await payload.find({
+      collection: 'reseaux',
+      where: { slug: { equals: sp.reseau } } as Where,
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      select: { niveau: true } as Record<string, boolean>,
+    })
+    const r = rsel[0]
+    if (!r) {
+      reseauFilterIds = []
+    } else if ((r.niveau as string) === 'local') {
+      reseauFilterIds = [Number(r.id)]
+    } else {
+      const { docs: locaux } = await payload.find({
+        collection: 'reseaux',
+        where: { and: [{ parent: { equals: r.id } }, { niveau: { equals: 'local' } }] } as Where,
+        depth: 0,
+        limit: 500,
+        overrideAccess: true,
+        select: { id: true } as Record<string, boolean>,
+      })
+      reseauFilterIds = [Number(r.id), ...locaux.map((l) => Number(l.id))]
+    }
+  }
+
+  const where = buildWhere(sp, reseauFilterIds)
 
   const { docs: reseauteursRaw, totalDocs, totalPages } = await withDbRetry(
     () =>
@@ -259,7 +313,7 @@ export default async function ReseauteursPage({
                 <div className="h-64 rounded-2xl bg-white border border-[#e4e4e7] animate-pulse" />
               }
             >
-              <ReseauteursFilters categories={categoriesListe} />
+              <ReseauteursFilters categories={categoriesListe} reseaux={reseauxListe} />
             </Suspense>
           </aside>
 

@@ -13,6 +13,7 @@ import { Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface ReseauteursFiltersProps {
   categories: Array<{ id: string | number; label: string }>
+  reseaux?: Array<{ slug: string; nom: string }>
 }
 
 const BADGES = [
@@ -23,7 +24,7 @@ const BADGES = [
   { value: 'platinum', label: 'Platinum' },
 ]
 
-export function ReseauteursFilters({ categories }: ReseauteursFiltersProps) {
+export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -36,6 +37,7 @@ export function ReseauteursFilters({ categories }: ReseauteursFiltersProps) {
     region: searchParams.get('region') ?? '',
     badge: searchParams.get('badge') ?? '',
     secteur: searchParams.get('secteur') ?? '',
+    reseau: searchParams.get('reseau') ?? '',
   }
 
   const hasFilters = Object.values(current).some(Boolean)
@@ -144,6 +146,26 @@ export function ReseauteursFilters({ categories }: ReseauteursFiltersProps) {
           ))}
         </select>
       </div>
+
+      {/* Réseau */}
+      {reseaux.length > 0 && (
+        <div>
+          <label htmlFor="filter-reseau" className="block text-xs font-medium text-[#52525b] mb-1">
+            Réseau
+          </label>
+          <select
+            id="filter-reseau"
+            value={current.reseau}
+            onChange={(e) => update('reseau', e.target.value)}
+            className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent cursor-pointer"
+          >
+            <option value="">Tous les réseaux</option>
+            {reseaux.map((r) => (
+              <option key={r.slug} value={r.slug}>{r.nom}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Secteur */}
       {categories.length > 0 && (
