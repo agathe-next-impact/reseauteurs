@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { href: '/reseauteurs', label: 'Réseauteurs', icon: Users },
   { href: '/evenements', label: 'Événements', icon: Calendar },
   { href: '/reseaux', label: 'Réseaux', icon: Network },
-  { href: '/partenaires', label: 'Partenaires', icon: Handshake },
+  { href: '/partenaires', label: 'Entreprises', icon: Handshake },
 ]
 
 export default function MobileNavReseauteurs() {
@@ -85,7 +85,7 @@ export default function MobileNavReseauteurs() {
         <div className="sm:hidden fixed inset-0 z-[9990]">
           <div className="absolute inset-0 bg-black/40" onClick={close} aria-hidden />
           <nav
-            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white shadow-2xl flex flex-col"
+            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#e4e4e7] flex flex-col"
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navigation"

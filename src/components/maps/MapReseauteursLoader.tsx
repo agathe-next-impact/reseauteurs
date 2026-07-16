@@ -23,6 +23,8 @@ const MapReseauteurs = dynamic(() => import('./MapReseauteurs'), {
 interface MapReseauteursLoaderProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
+  /** true si l'amorce SSR contient tous les points — évite le refetch bbox initial. */
+  initialComplete?: boolean
   categories: CategoryLite[]
   reseaux: ReseauLite[]
   /** Bascule annuaire/carte (rendue dans la barre de navigation supérieure). */

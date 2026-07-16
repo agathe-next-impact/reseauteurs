@@ -43,7 +43,7 @@ export async function TestimonialsGrid() {
             <div
               key={`${t.id}-${idx}`}
               aria-hidden={idx >= testimonials.length ? true : undefined}
-              className="w-80 shrink-0 bg-white border border-gray-200 shadow-sm rounded-xl p-6 flex flex-col gap-4"
+              className="w-80 shrink-0 bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-4"
             >
               <StarRating rating={t.rating} />
               <blockquote className="text-text-dark text-sm leading-relaxed flex-1">

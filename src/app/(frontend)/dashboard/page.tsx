@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
-import { User, Network, Calendar, ArrowRight, Shield } from 'lucide-react'
+import { User, Network, Calendar, ArrowRight, CalendarCheck, Sparkles, Tag } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import type { Reseauteur, Reseau } from '@/types/reseauteurs-domain'
 
@@ -88,6 +88,7 @@ export default async function DashboardPage() {
                 </div>
               </Reveal>
             ) : (
+              <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Reveal>
                   <Link
@@ -115,21 +116,64 @@ export default async function DashboardPage() {
                   </Link>
                 </Reveal>
                 <Reveal delay={70}>
-                  <div className="rsn-card rounded-2xl p-5 h-full">
+                  <Link
+                    href="/dashboard/offres"
+                    className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
+                  >
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
-                      <Shield size={13} aria-hidden />
-                      Mon compte
+                      <Tag size={13} aria-hidden />
+                      Offres entreprises
                     </h2>
-                    <p className="text-sm text-[#52525b] mb-1">{user.email}</p>
-                    <p className="text-xs text-[#a1a1aa]">Réseauteur — gratuit</p>
+                    <p className="text-sm text-[#52525b]">Avantages exclusifs réservés aux réseauteurs.</p>
                     <div className="mt-4">
-                      <a href="/api/account/export" download className="text-xs text-[#71717a] hover:text-[#2563EB] transition-colors block">
-                        Exporter mes données (RGPD)
-                      </a>
+                      <span className="text-sm text-[#f5851f] font-medium flex items-center gap-1">
+                        Découvrir les offres <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 </Reveal>
               </div>
+
+              <Reveal delay={140}>
+                <h2 className="rsn-eyebrow mt-8 mb-3">Événements</h2>
+              </Reveal>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Reveal delay={140}>
+                  <Link
+                    href="/dashboard/participations"
+                    className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
+                  >
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                      <CalendarCheck size={13} aria-hidden />
+                      Mes participations
+                    </h3>
+                    <p className="text-sm text-[#52525b]">Signalez votre présence aux événements de vos réseaux.</p>
+                    <div className="mt-4">
+                      <span className="text-sm text-[#2563EB] font-medium flex items-center gap-1">
+                        Voir mes participations <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                      </span>
+                    </div>
+                  </Link>
+                </Reveal>
+                <Reveal delay={210}>
+                  <Link
+                    href="/dashboard/plus"
+                    className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
+                  >
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                      <Sparkles size={13} aria-hidden />
+                      Réseauteur Plus
+                    </h3>
+                    <p className="text-sm text-[#52525b]">Créez vos propres événements (abonnement ou code partenaire).</p>
+                    <div className="mt-4">
+                      <span className="text-sm text-[#f5851f] font-medium flex items-center gap-1">
+                        Mes événements Plus <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                      </span>
+                    </div>
+                  </Link>
+                </Reveal>
+              </div>
+              </>
             )}
           </div>
         )}

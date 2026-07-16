@@ -39,17 +39,45 @@ import MapResultsList, { type MapListItem } from '@/components/map/MapResultsLis
 const MAP_MOVE_DEBOUNCE = 500
 
 // ── Expressions MapLibre pour les clusters d'événements ─────────────────────
-const clusterCircleColor = [
-  'step',
+// Composition agrégée par cluster (clusterProperties) : nombre d'événements
+// organisés par un réseauteur Plus. Couleur du cluster (ADR-0013) :
+//   100 % réseauteur → orange · 100 % réseau → navy ·
+//   mixte → navy + anneau orange (les deux couleurs sur le même point).
+const clusterProperties = {
+  reseauteurCount: ['+', ['case', ['==', ['get', 'organisateur'], 'reseauteur'], 1, 0]],
+}
+const clusterTotalementReseauteur = [
+  '==',
+  ['get', 'reseauteurCount'],
   ['get', 'point_count'],
-  MAP_COLORS.evenement,  // 1–9 points : navy
-  10, '#1a3d8f',         // 10–29
-  30, '#16284f',         // 30+
 ]
+const clusterMixte = [
+  'all',
+  ['>', ['get', 'reseauteurCount'], 0],
+  ['<', ['get', 'reseauteurCount'], ['get', 'point_count']],
+]
+const clusterCircleColor = [
+  'case',
+  clusterTotalementReseauteur,
+  MAP_COLORS.evenementReseauteur,
+  [
+    'step',
+    ['get', 'point_count'],
+    MAP_COLORS.evenement,  // 1–9 points : navy
+    10, '#1a3d8f',         // 10–29
+    30, '#16284f',         // 30+
+  ],
+]
+/** Rayon du cercle de cluster par taille — partagé avec le halo mixte (+5 px). */
+const clusterCircleRadius = ['step', ['get', 'point_count'], 18, 10, 24, 30, 30]
+const clusterHaloRadius = ['step', ['get', 'point_count'], 23, 10, 29, 30, 35]
 
 interface MapEvenementsReseauteursProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
+  /** true si l'amorce SSR contient TOUS les points (pas tronquée par la limite SSR) :
+   *  le refetch bbox initial est alors inutile — il n'a lieu qu'au premier déplacement/filtre. */
+  initialComplete?: boolean
   reseaux: ReseauLiteFilter[]
   /** Bascule agenda/carte (rendue dans la barre de navigation supérieure). */
   toolbar?: React.ReactNode
@@ -58,6 +86,7 @@ interface MapEvenementsReseauteursProps {
 export default function MapEvenementsReseauteurs({
   initialData,
   initialSlug,
+  initialComplete = false,
   reseaux,
   toolbar,
 }: MapEvenementsReseauteursProps) {
@@ -124,14 +153,22 @@ export default function MapEvenementsReseauteurs({
           id: props.slug as string,
           title: (props.titre as string | null | undefined) ?? 'Événement',
           meta: (props.lieuVille as string | null | undefined) ?? null,
+          // Pastille au même accent que le marqueur (ADR-0013) :
+          // orange = organisé par un réseauteur Plus, navy = réseau
+          accent:
+            props.organisateur === 'reseauteur'
+              ? MAP_COLORS.evenementReseauteur
+              : MAP_COLORS.evenement,
         }
       })
   }, [geojsonData])
 
   // ── Handlers ────────────────────────────────────────────────────────
-  const handleLoad = useCallback((e: MapEvent) => {
-    const map = e.target
-    map.once('idle', () => setMapReady(true))
+  const handleLoad = useCallback((_e: MapEvent) => {
+    // Prêt dès `load` (style chargé) : les marqueurs s'affichent pendant que les
+    // tuiles arrivent. Attendre `idle` (= toutes les tuiles) retardait tout le
+    // premier rendu de plusieurs secondes sur connexion lente.
+    setMapReady(true)
   }, [])
 
   const handleClick = useCallback((e: MapMouseEvent) => {
@@ -285,15 +322,15 @@ export default function MapEvenementsReseauteurs({
     window.history.replaceState(null, '', '/carte/evenements')
   }, [])
 
-  // Au premier « idle » de la carte, on recharge le viewport RÉEL depuis l'API bbox.
-  // Le dataset SSR (initialData) n'est donc qu'une amorce de premier rendu / SEO : la
-  // source de vérité devient l'API, ce qui permet d'embarquer peu de marqueurs dans le HTML.
+  // Refetch bbox initial UNIQUEMENT si l'amorce SSR est tronquée (initialComplete=false).
+  // Sinon les données du viewport France sont déjà là : re-télécharger la même chose
+  // doublait le coût de chaque chargement de page (audit perf cartes H2).
   useEffect(() => {
     if (mapReady && !didInitialFetch.current) {
       didInitialFetch.current = true
-      fetchWithBbox(filters)
+      if (!initialComplete) fetchWithBbox(filters)
     }
-  }, [mapReady, fetchWithBbox, filters])
+  }, [mapReady, initialComplete, fetchWithBbox, filters])
 
   useEffect(() => {
     return () => {
@@ -350,7 +387,7 @@ export default function MapEvenementsReseauteurs({
             className="absolute inset-0 z-[600] bg-white/30 flex items-start justify-center pt-4 pointer-events-none"
             aria-hidden="true"
           >
-            <div className="bg-white rounded-full px-3 py-1 shadow text-xs text-[#16284f] font-medium flex items-center gap-1.5">
+            <div className="bg-white rounded-full px-3 py-1 border border-[#e4e4e7] text-xs text-[#16284f] font-medium flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#16284f] animate-pulse" />
               Mise à jour...
             </div>
@@ -376,7 +413,19 @@ export default function MapEvenementsReseauteurs({
               cluster
               clusterMaxZoom={13}
               clusterRadius={40}
+              clusterProperties={clusterProperties}
             >
+              {/* Halo orange des clusters MIXTES (réseau + réseauteur) — dessiné sous
+                  le cercle navy : le point porte alors les deux couleurs (ADR-0013) */}
+              <Layer
+                id="evenements-clusters-halo"
+                type="circle"
+                filter={['all', ['has', 'point_count'], clusterMixte] as unknown as boolean}
+                paint={{
+                  'circle-color': MAP_COLORS.evenementReseauteur,
+                  'circle-radius': clusterHaloRadius as unknown as number,
+                }}
+              />
               {/* Cercles des clusters */}
               <Layer
                 id="evenements-clusters"
@@ -384,13 +433,7 @@ export default function MapEvenementsReseauteurs({
                 filter={['has', 'point_count']}
                 paint={{
                   'circle-color': clusterCircleColor as unknown as string,
-                  'circle-radius': [
-                    'step',
-                    ['get', 'point_count'],
-                    18,
-                    10, 24,
-                    30, 30,
-                  ] as unknown as number,
+                  'circle-radius': clusterCircleRadius as unknown as number,
                   'circle-stroke-width': 2,
                   'circle-stroke-color': MAP_COLORS.white,
                 }}
@@ -408,13 +451,19 @@ export default function MapEvenementsReseauteurs({
                 paint={{ 'text-color': '#ffffff' }}
               />
 
-              {/* Marqueurs individuels — navy (un seul type, ADR-0012) */}
+              {/* Marqueurs individuels — accent par organisateur (ADR-0013) :
+                  navy = événement d'un réseau · orange = organisé par un réseauteur Plus */}
               <Layer
                 id="evenements-points"
                 type="circle"
                 filter={['!', ['has', 'point_count']]}
                 paint={{
-                  'circle-color': MAP_COLORS.evenement,
+                  'circle-color': [
+                    'match',
+                    ['get', 'organisateur'],
+                    'reseauteur', MAP_COLORS.evenementReseauteur,
+                    MAP_COLORS.evenement,
+                  ],
                   'circle-radius': 9,
                   'circle-stroke-width': 2,
                   'circle-stroke-color': MAP_COLORS.white,
@@ -476,10 +525,13 @@ export default function MapEvenementsReseauteurs({
           </div>
         )}
 
-        {/* Légende du marqueur événement */}
+        {/* Légende des marqueurs — un accent par type d'organisateur (ADR-0013) */}
         <MapLegend
           title="Carte"
-          items={[{ label: 'Événement business', color: MAP_COLORS.evenement }]}
+          items={[
+            { label: 'Événement d\'un réseau', color: MAP_COLORS.evenement },
+            { label: 'Organisé par un réseauteur', color: MAP_COLORS.evenementReseauteur },
+          ]}
         />
         </div>
 

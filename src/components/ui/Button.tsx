@@ -16,8 +16,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary/80 shadow-foreground shadow-lg',
-  secondary: 'bg-white text-primary hover:bg-white-90 shadow-foreground shadow-lg',
+  primary: 'bg-primary text-white hover:bg-primary/80',
+  secondary: 'bg-white text-primary hover:bg-white-90',
   danger: 'bg-red-600 text-white hover:bg-red-700',
   ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900',
 }
@@ -53,7 +53,7 @@ export function Button({
       className={`group relative overflow-hidden inline-flex items-center justify-center font-medium rounded-full transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...rest}
     >
-      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/30 to-transparent group-hover:animate-shine shadow-gray-500" />
+      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/30 to-transparent group-hover:animate-shine" />
       {loading ? (
         <Loader2 size={iconSizes[size]} className="animate-spin" />
       ) : (

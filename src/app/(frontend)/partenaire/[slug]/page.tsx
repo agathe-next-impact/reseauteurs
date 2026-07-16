@@ -50,10 +50,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const p = await getPartenaire(slug)
   if (!p) {
-    return buildMetadata({ title: 'Partenaire introuvable', description: 'Cette fiche n\'est plus disponible.', path: `/partenaire/${slug}`, noindex: true })
+    return buildMetadata({ title: 'Entreprise introuvable', description: 'Cette fiche n\'est plus disponible.', path: `/partenaire/${slug}`, noindex: true })
   }
   return buildMetadata({
-    title: `${p.nom} — Partenaire | ${SITE_NAME}`,
+    title: `${p.nom} — Entreprise | ${SITE_NAME}`,
     description: p.description?.slice(0, 155) || `${p.nom}, partenaire de ${SITE_NAME}, la plateforme nationale du networking.`,
     path: `/partenaire/${slug}`,
   })
@@ -89,21 +89,23 @@ export default async function FichePartenairePage({ params }: { params: Promise<
     <div className="rsn-page">
       <section className="rsn-pagehead" data-tone="orange">
         <div className="rsn-pagehead-inner">
-          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-white/60 flex items-center gap-1.5">
-            <Link href="/" className="hover:text-white no-underline transition-colors">Accueil</Link>
+          {/* Tone orange = fond clair (pas de bande navy) : couleurs de texte via les
+              variables du thème — sombres en mode clair, claires en .ir-plasma. */}
+          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-[var(--ir-text-4)] flex items-center gap-1.5">
+            <Link href="/" className="hover:text-[var(--ir-text)] no-underline transition-colors">Accueil</Link>
             <span aria-hidden>/</span>
-            <Link href="/partenaires" className="hover:text-white no-underline transition-colors">Partenaires</Link>
+            <Link href="/partenaires" className="hover:text-[var(--ir-text)] no-underline transition-colors">Entreprises</Link>
             <span aria-hidden>/</span>
-            <span className="text-white/80" aria-current="page">{p.nom}</span>
+            <span className="text-[var(--ir-text-3)]" aria-current="page">{p.nom}</span>
           </nav>
           <Reveal>
-            <p className="rsn-eyebrow" style={{ color: '#fed7aa' }}>Partenaire</p>
+            <p className="rsn-eyebrow" style={{ color: '#fed7aa' }}>Entreprise</p>
             <div className="flex items-center gap-4 mt-3.5">
               {logoUrl ? (
                 <Image src={logoUrl} alt={`Logo ${p.nom}`} width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-white p-2 border border-white/15" priority />
               ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 flex items-center justify-center border border-white/15">
-                  <Building2 size={28} className="text-white/70" aria-hidden />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[rgba(var(--ir-line-rgb),0.06)] flex items-center justify-center border border-[rgba(var(--ir-line-rgb),0.15)]">
+                  <Building2 size={28} className="text-[var(--ir-text-3)]" aria-hidden />
                 </div>
               )}
               <h1 className="rsn-pagehead-title !mt-0 !text-[28px] sm:!text-[38px]">{p.nom}</h1>
@@ -189,7 +191,7 @@ export default async function FichePartenairePage({ params }: { params: Promise<
 
           <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5]">
             <Link href="/partenaires" className="rsn-linkrow text-sm text-[#f5851f] font-medium hover:text-[#c2410c] no-underline transition-colors flex items-center gap-1">
-              ← Tous les partenaires
+              ← Toutes les entreprises
             </Link>
           </div>
         </article>

@@ -13,6 +13,7 @@
  */
 import { Suspense } from 'react'
 import { getPayload } from 'payload'
+import { unstable_cache } from 'next/cache'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -57,6 +58,115 @@ interface SearchParams {
 
 const PAGE_SIZE = 24
 
+/** Borne de l'amorce SSR de la carte — la carte recharge par bbox au-delà. */
+const CARTE_SSR_LIMIT = 800
+
+/**
+ * Amorce SSR de la vue carte (vue France, aucun filtre) — identique pour tous les
+ * visiteurs. La page est rendue dynamiquement (searchParams) : sans ce cache, chaque
+ * affichage payait 3 requêtes Neon séquentielles avant le premier octet (audit perf
+ * cartes H1). `initialComplete` indique au client si le refetch bbox est nécessaire.
+ */
+const getCarteEvenementsInitial = unstable_cache(
+  async () => {
+    const payload = await getPayload({ config })
+    const todayStart = new Date(`${todayParisDateString()}T00:00:00.000Z`)
+
+    const [evenementsRes, { docs: reseauxDocs }] = await Promise.all([
+      withDbRetry(
+        () =>
+          payload.find({
+            collection: 'evenements',
+            where: {
+              and: [
+                { statut: { equals: 'publie' } },
+                { lieuLatitude: { exists: true } },
+                { lieuLongitude: { exists: true } },
+                {
+                  or: [
+                    { dateFin: { greater_than_equal: todayStart.toISOString() } },
+                    {
+                      and: [
+                        { dateFin: { exists: false } },
+                        { dateDebut: { greater_than_equal: todayStart.toISOString() } },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            depth: 1,
+            // Ne rapatrie que nom+slug du réseau organisateur (le doc complet
+            // — présentation, fonctionnement… — alourdissait chaque événement).
+            // Réseauteur organisateur réduit au slug : seul le discriminant compte.
+            populate: { reseaux: { nom: true, slug: true }, reseauteurs: { slug: true } },
+            limit: CARTE_SSR_LIMIT,
+            overrideAccess: true,
+            select: {
+              slug: true,
+              titre: true,
+              dateDebut: true,
+              dateFin: true,
+              lieuVille: true,
+              lieuLatitude: true,
+              lieuLongitude: true,
+              lienInscription: true,
+              reseau: true,
+              organisateurReseauteur: true,
+            } as Record<string, boolean>,
+          }),
+        { label: 'evenements-carte:find' },
+      ),
+      withDbRetry(
+        () =>
+          payload.find({
+            collection: 'reseaux',
+            where: { statut: { equals: 'publiee' } },
+            select: { nom: true, slug: true } as Record<string, boolean>,
+            depth: 0,
+            limit: 200,
+            sort: 'nom',
+            overrideAccess: true,
+          }),
+        { label: 'evenements-carte:reseaux' },
+      ),
+    ])
+
+    type ReseauLiteDoc = { id: number | string; slug?: string | null; nom?: string | null }
+
+    const features = evenementsRes.docs
+      .filter((doc) => doc.lieuLatitude != null && doc.lieuLongitude != null)
+      .map((doc) => {
+        const reseauDoc = doc.reseau as ReseauLiteDoc | null | undefined
+        return toFeature(doc.lieuLongitude as number, doc.lieuLatitude as number, {
+          slug: doc.slug ?? null,
+          titre: (doc.titre as string | undefined) ?? null,
+          dateDebut: (doc.dateDebut as string | undefined) ?? null,
+          lieuVille: (doc.lieuVille as string | undefined) ?? null,
+          lienInscription: (doc.lienInscription as string | null | undefined) ?? null,
+          reseauNom: reseauDoc?.nom ?? null,
+          reseauSlug: reseauDoc?.slug ?? null,
+          // Discriminant XOR (ADR-0013) : couleur du marqueur réseau vs réseauteur Plus
+          organisateur: doc.organisateurReseauteur != null ? 'reseauteur' : 'reseau',
+        })
+      })
+
+    const reseauxFiltres: ReseauLiteFilter[] = reseauxDocs.map((r) => ({
+      id: r.id as number,
+      slug: (r.slug as string) ?? '',
+      nom: (r.nom as string) ?? '',
+    }))
+
+    return {
+      initialData: toFeatureCollection(features),
+      reseauxFiltres,
+      initialComplete: evenementsRes.totalDocs <= CARTE_SSR_LIMIT,
+    }
+  },
+  ['carte-evenements-initial'],
+  { revalidate: 120 },
+)
+
 function buildAgendaWhere(sp: SearchParams, reseauId?: number | null): Where {
   const conditions: Where[] = [{ statut: { equals: 'publie' } }]
   if (sp.ville) conditions.push({ lieuVille: { contains: sp.ville } })
@@ -92,116 +202,19 @@ export default async function EvenementsPage({
   // Vue par défaut = carte (URL sans param). L'agenda reste accessible via ?vue=agenda.
   const vue = sp.vue === 'agenda' ? 'agenda' : 'carte'
   const page = Math.max(1, parseInt(sp.page ?? '1', 10))
-  const payload = await getPayload({ config })
-
-  // Réseaux (pour les filtres — communes aux deux vues)
-  const { docs: reseauxDocs } = await withDbRetry(
-    () =>
-      payload.find({
-        collection: 'reseaux',
-        where: { statut: { equals: 'publiee' } },
-        select: { nom: true, slug: true } as Record<string, boolean>,
-        depth: 0,
-        limit: 200,
-        sort: 'nom',
-        overrideAccess: true,
-      }),
-    { label: 'evenements:find reseaux' },
-  )
-
-  const reseauxListe = (reseauxDocs as Reseau[]).map((r) => ({ slug: r.slug ?? '', nom: r.nom }))
-  const reseauxFiltres: ReseauLiteFilter[] = reseauxDocs.map((r) => ({
-    id: r.id as number,
-    slug: (r.slug as string) ?? '',
-    nom: (r.nom as string) ?? '',
-  }))
-
-  // Types d'événement (pour le filtre par type — spec 2026-07-13)
-  const { docs: typesDocs } = await withDbRetry(
-    () =>
-      payload.find({
-        collection: 'types-evenement',
-        select: { label: true, value: true } as Record<string, boolean>,
-        depth: 0,
-        limit: 50,
-        sort: 'ordre',
-        overrideAccess: true,
-      }),
-    { label: 'evenements:find types' },
-  )
-  const typesListe = typesDocs.map((t) => ({
-    value: (t.value as string) ?? '',
-    label: (t.label as string) ?? '',
-  })).filter((t) => t.value && t.label)
 
   // ─── VUE CARTE ─────────────────────────────────────────────────────────────
-  // ADR-0012 : un seul type de marqueur (Premium supprimé)
+  // ADR-0012 : un seul type de marqueur (Premium supprimé). Données servies depuis
+  // le cache (unstable_cache, revalidate 120 s) : aucune requête DB sur le chemin
+  // critique du rendu.
   if (vue === 'carte') {
-    const todayStart = new Date(`${todayParisDateString()}T00:00:00.000Z`)
-
-    const { docs: evenementsDocs } = await withDbRetry(
-      () =>
-        payload.find({
-          collection: 'evenements',
-          where: {
-            and: [
-              { statut: { equals: 'publie' } },
-              { lieuLatitude: { exists: true } },
-              { lieuLongitude: { exists: true } },
-              {
-                or: [
-                  { dateFin: { greater_than_equal: todayStart.toISOString() } },
-                  {
-                    and: [
-                      { dateFin: { exists: false } },
-                      { dateDebut: { greater_than_equal: todayStart.toISOString() } },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          depth: 1,
-          limit: 800, // amorce SSR (la carte recharge le viewport réel via l'API bbox au 1er idle)
-          overrideAccess: true,
-          select: {
-            slug: true,
-            titre: true,
-            dateDebut: true,
-            dateFin: true,
-            lieuVille: true,
-            lieuLatitude: true,
-            lieuLongitude: true,
-            lienInscription: true,
-            reseau: true,
-          } as Record<string, boolean>,
-        }),
-      { label: 'evenements-carte:find' },
-    )
-
-    type ReseauLiteDoc = { id: number | string; slug?: string | null; nom?: string | null }
-
-    const features = evenementsDocs
-      .filter((doc) => doc.lieuLatitude != null && doc.lieuLongitude != null)
-      .map((doc) => {
-        const reseauDoc = doc.reseau as ReseauLiteDoc | null | undefined
-        return toFeature(doc.lieuLongitude as number, doc.lieuLatitude as number, {
-          slug: doc.slug ?? null,
-          titre: (doc.titre as string | undefined) ?? null,
-          dateDebut: (doc.dateDebut as string | undefined) ?? null,
-          lieuVille: (doc.lieuVille as string | undefined) ?? null,
-          lienInscription: (doc.lienInscription as string | null | undefined) ?? null,
-          reseauNom: reseauDoc?.nom ?? null,
-          reseauSlug: reseauDoc?.slug ?? null,
-        })
-      })
-
-    const initialData = toFeatureCollection(features)
+    const { initialData, reseauxFiltres, initialComplete } = await getCarteEvenementsInitial()
 
     return (
       <MapEvenementsReseauteursLoader
         initialData={initialData}
         initialSlug={null}
+        initialComplete={initialComplete}
         reseaux={reseauxFiltres}
         toolbar={
           <Suspense fallback={null}>
@@ -212,7 +225,49 @@ export default async function EvenementsPage({
     )
   }
 
-  // ─── VUE AGENDA (défaut) ────────────────────────────────────────────────────
+  // ─── VUE AGENDA ─────────────────────────────────────────────────────────────
+  const payload = await getPayload({ config })
+
+  // Référentiels des filtres en parallèle : réseaux + types d'événement (spec 2026-07-13)
+  const [{ docs: reseauxDocs }, { docs: typesDocs }] = await Promise.all([
+    withDbRetry(
+      () =>
+        payload.find({
+          collection: 'reseaux',
+          where: { statut: { equals: 'publiee' } },
+          select: { nom: true, slug: true } as Record<string, boolean>,
+          depth: 0,
+          limit: 200,
+          sort: 'nom',
+          overrideAccess: true,
+        }),
+      { label: 'evenements:find reseaux' },
+    ),
+    withDbRetry(
+      () =>
+        payload.find({
+          collection: 'types-evenement',
+          select: { label: true, value: true } as Record<string, boolean>,
+          depth: 0,
+          limit: 50,
+          sort: 'ordre',
+          overrideAccess: true,
+        }),
+      { label: 'evenements:find types' },
+    ),
+  ])
+
+  const reseauxListe = (reseauxDocs as Reseau[]).map((r) => ({ slug: r.slug ?? '', nom: r.nom }))
+  const reseauxFiltres: ReseauLiteFilter[] = reseauxDocs.map((r) => ({
+    id: r.id as number,
+    slug: (r.slug as string) ?? '',
+    nom: (r.nom as string) ?? '',
+  }))
+  const typesListe = typesDocs.map((t) => ({
+    value: (t.value as string) ?? '',
+    label: (t.label as string) ?? '',
+  })).filter((t) => t.value && t.label)
+
   // Slug réseau → id (résolu depuis les réseaux déjà chargés) ; -1 si slug inconnu.
   const reseauId = sp.reseau
     ? (reseauxFiltres.find((r) => r.slug === sp.reseau)?.id ?? -1)
@@ -359,19 +414,23 @@ export default async function EvenementsPage({
                               <MapPin size={11} aria-hidden />
                               {ev.lieuVille}
                             </div>
+                            {/* Ligne organisateur — accent par type (ADR-0013) :
+                                navy = réseau · orange = réseauteur Plus (mêmes couleurs que la carte) */}
                             {reseau && (
                               <Link
                                 href={`/reseau/${reseau.slug}`}
-                                className="text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
+                                className="inline-flex items-center gap-1.5 text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
                               >
+                                <span className="w-2 h-2 rounded-full bg-[#16284f] shrink-0" aria-hidden />
                                 {reseau.nom}
                               </Link>
                             )}
                             {!reseau && orgRz && (
                               <Link
                                 href={`/reseauteur/${orgRz.slug}`}
-                                className="text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
+                                className="inline-flex items-center gap-1.5 text-xs text-[#c2410c] hover:text-[#9a3412] no-underline transition-colors font-medium"
                               >
+                                <span className="w-2 h-2 rounded-full bg-[#f5851f] shrink-0" aria-hidden />
                                 Par {orgRz.prenom} {orgRz.nom}
                               </Link>
                             )}

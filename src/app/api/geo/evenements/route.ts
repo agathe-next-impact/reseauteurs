@@ -208,10 +208,17 @@ export async function GET(request: Request) {
   // ── Requête principale ──────────────────────────────────────────────
   const where: Where = { and: conditions }
 
+  // Payload allégé (vue France = jusqu'à 5000 features) : ni image ni description
+  // détaillée — la preview/fiche passe par /api/evenements/public/v2/[slug]. Le réseau
+  // organisateur est réduit à nom+slug via `populate` (le doc complet — présentation,
+  // fonctionnement… — multipliait le poids du JSON).
   const { docs } = await payload.find({
     collection: 'evenements',
     where,
-    depth: 1,   // populate reseau (nom, slug) + image (url)
+    depth: 1,
+    // Le réseauteur organisateur est réduit au slug : seul le discriminant
+    // réseau/réseauteur (couleur du marqueur — ADR-0013) est nécessaire ici.
+    populate: { reseaux: { nom: true, slug: true }, reseauteurs: { slug: true } },
     limit: MAX_RESULTS,
     overrideAccess: true,
     select: {
@@ -224,29 +231,19 @@ export async function GET(request: Request) {
       lieuLongitude: true,
       lienInscription: true,
       reseau: true,
-      image: true,
-      description: true,
+      organisateurReseauteur: true,
+      descriptionCourte: true,
     } as Record<string, boolean>,
   })
 
   // ── Mapping vers GeoJSON ────────────────────────────────────────────
   // ADR-0012 : un seul type de marqueur événement (plus de variante Premium).
   type ReseauLite = { id: number | string; slug?: string | null; nom?: string | null }
-  type MediaLite = {
-    url?: string | null
-    sizes?: Record<string, { url?: string | null } | undefined>
-  }
 
   const features = docs
     .filter((doc) => doc.lieuLatitude != null && doc.lieuLongitude != null)
     .map((doc) => {
       const reseauDoc = doc.reseau as ReseauLite | null | undefined
-      const imageDoc = doc.image as MediaLite | null | undefined
-      const imageUrl =
-        imageDoc?.sizes?.['card']?.url ??
-        imageDoc?.sizes?.['thumbnail']?.url ??
-        imageDoc?.url ??
-        null
 
       return toFeature(doc.lieuLongitude as number, doc.lieuLatitude as number, {
         slug: doc.slug ?? null,
@@ -257,10 +254,11 @@ export async function GET(request: Request) {
         lienInscription: (doc.lienInscription as string | null | undefined) ?? null,
         reseauNom: reseauDoc?.nom ?? null,
         reseauSlug: reseauDoc?.slug ?? null,
-        imageUrl,
+        // Discriminant XOR (ADR-0013) : couleur du marqueur réseau vs réseauteur Plus
+        organisateur: doc.organisateurReseauteur != null ? 'reseauteur' : 'reseau',
         // Description courte (120 chars max) pour la preview carte
-        descriptionCourte: doc.description
-          ? String(doc.description).slice(0, 120)
+        descriptionCourte: doc.descriptionCourte
+          ? String(doc.descriptionCourte).slice(0, 120)
           : null,
       })
     })

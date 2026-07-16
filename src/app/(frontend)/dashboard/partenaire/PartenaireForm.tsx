@@ -242,7 +242,7 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
               <Tag size={14} className="text-[#f5851f]" aria-hidden /> Offre réservée aux réseauteurs
             </h2>
             <p className="text-xs text-[#71717a] mb-3">
-              Visible uniquement par les réseauteurs connectés (dans leur espace « Offres partenaires »).
+              Visible uniquement par les réseauteurs connectés (dans leur espace « Offres entreprises »).
               Laissez le titre vide pour ne pas proposer d&apos;offre.
             </p>
             <div className="space-y-3">

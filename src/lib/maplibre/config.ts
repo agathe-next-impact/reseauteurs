@@ -8,9 +8,22 @@
 export const MAP_DEFAULTS = {
   /** Centre de la France métropolitaine */
   center: [1.888334, 46.603354] as [number, number],
-  /** Zoom pour voir toute la France */
+  /** Zoom de repli (préférer FRANCE_BOUNDS : un zoom fixe coupe la France selon le viewport) */
   zoom: 5.5,
 } as const
+
+/**
+ * Emprise de la France métropolitaine, Corse incluse — [[ouest, sud], [est, nord]].
+ * Cadrage initial des cartes via fitBounds : le zoom s'adapte au viewport,
+ * garantissant que TOUTE la France est visible au chargement (mobile compris).
+ */
+export const FRANCE_BOUNDS: [[number, number], [number, number]] = [
+  [-5.4, 41.2],
+  [9.8, 51.3],
+]
+
+/** Marge (px) autour de l'emprise France lors du fitBounds. */
+export const FRANCE_FIT_PADDING = 24
 
 /**
  * Style OpenFreeMap "liberty" — basé sur OSM, claire, lisible, sans API key.
@@ -53,8 +66,10 @@ export const MAP_COLORS = {
    * événements (ADR-0012 : événement Premium supprimé).
    */
   premium: '#f5851f',
-  /** Navy : marqueur événement standard */
+  /** Navy : marqueur événement organisé par un réseau */
   evenement: '#16284f',
+  /** Orange accent : marqueur événement organisé par un réseauteur Plus (ADR-0013) */
+  evenementReseauteur: '#f5851f',
   /** Violet secondaire : marqueur réseau local (chapitre/section — ADR-0012) */
   reseau: '#a855f7',
   /** Gris neutre : états vides, marqueurs sans catégorie */

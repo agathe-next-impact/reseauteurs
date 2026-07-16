@@ -37,6 +37,10 @@ export default function RootLayout(props: { children: React.ReactNode }) {
     <html lang="fr" className={hanken.variable} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://js.stripe.com" />
+        {/* CDN cartes : connexion TLS prête avant le style/glyphes/tuiles MapLibre
+            (la vue carte est la vue par défaut de /reseauteurs et /evenements). */}
+        <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
       </head>
       <body suppressHydrationWarning className="font-[family-name:var(--font-hanken)] overflow-x-hidden antialiased">
         {/* Thème : clair par défaut. Ré-applique le mode sombre choisi AVANT
@@ -98,7 +102,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
               href="/partenaires"
               className="ir-plasma-nav-link text-sm no-underline transition-colors hidden sm:inline font-medium"
             >
-              Partenaires
+              Entreprises
             </Link>
             <ThemeToggle />
             <div className="hidden sm:flex">

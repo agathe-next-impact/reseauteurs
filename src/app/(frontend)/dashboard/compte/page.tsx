@@ -57,7 +57,7 @@ export default async function ComptePage() {
       </Reveal>
 
       {/* Account info */}
-      <Card className="rsn-card hover:shadow-sm hover:translate-y-0 mb-6">
+      <Card className="rsn-card hover:translate-y-0 mb-6">
         <CardBody>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-text-light mb-4">
             Informations du compte
@@ -88,7 +88,7 @@ export default async function ComptePage() {
       </Card>
 
       {/* RGPD / Privacy section */}
-      <Card className="rsn-card hover:shadow-sm hover:translate-y-0 mb-6">
+      <Card className="rsn-card hover:translate-y-0 mb-6">
         <CardBody>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-text-light mb-4 flex items-center gap-1.5">
             <ShieldCheck size={14} />
@@ -177,7 +177,7 @@ export default async function ComptePage() {
       </Card>
 
       {/* Danger zone */}
-      <Card className="rsn-card hover:shadow-sm hover:translate-y-0 border-red-200">
+      <Card className="rsn-card hover:translate-y-0 border-red-200">
         <CardBody>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-red-500 mb-4 flex items-center gap-1.5">
             <AlertTriangle size={14} />

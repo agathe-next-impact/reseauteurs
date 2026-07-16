@@ -24,7 +24,11 @@ export default async function PlusPage() {
   const { user } = await payload.auth({ headers: hdrs })
   if (!user) redirect('/login')
 
-  const freshUser = await payload.findByID({ collection: 'users', id: user.id, overrideAccess: true })
+  const freshUser = await payload.findByID({
+    collection: 'users',
+    id: user.id,
+    overrideAccess: true,
+  })
   if (freshUser.role === 'admin') redirect('/admin')
   if (freshUser.role === 'organisateur') redirect('/dashboard/reseau')
   if (freshUser.role === 'partenaire') redirect('/dashboard/partenaire')
@@ -45,19 +49,22 @@ export default async function PlusPage() {
           >
             <ArrowLeft size={14} aria-hidden /> Mon profil
           </Link>
-          <p className="rsn-eyebrow">Espace connecté</p>
           <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2 mb-2">
             <Sparkles size={20} className="text-[#f5851f]" aria-hidden />
             Réseauteur Plus
           </h1>
           <p className="text-sm text-[#71717a] mb-8">
-            Créez et publiez vos propres événements de networking, visibles sur la carte et référencés
-            sur la plateforme.
+            Créez et publiez vos propres événements de networking, visibles sur la carte et
+            référencés sur la plateforme.
           </p>
         </Reveal>
 
         <PlusClient
-          actif={estPlus({ id: freshUser.id, plusActif: u.plusActif, plusExpireAt: u.plusExpireAt })}
+          actif={estPlus({
+            id: freshUser.id,
+            plusActif: u.plusActif,
+            plusExpireAt: u.plusExpireAt,
+          })}
           expireAt={u.plusExpireAt ?? null}
           source={(u.plusSource as 'abonnement' | 'licence' | null) ?? null}
         />

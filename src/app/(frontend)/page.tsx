@@ -179,19 +179,39 @@ export default async function HomePage() {
       { label: 'home:find top reseaux' },
     ),
     withDbRetry(
-      () => payload.count({ collection: 'reseauteurs', where: badgeWhere('bronze'), overrideAccess: true }),
+      () =>
+        payload.count({
+          collection: 'reseauteurs',
+          where: badgeWhere('bronze'),
+          overrideAccess: true,
+        }),
       { label: 'home:count bronze' },
     ),
     withDbRetry(
-      () => payload.count({ collection: 'reseauteurs', where: badgeWhere('argent'), overrideAccess: true }),
+      () =>
+        payload.count({
+          collection: 'reseauteurs',
+          where: badgeWhere('argent'),
+          overrideAccess: true,
+        }),
       { label: 'home:count argent' },
     ),
     withDbRetry(
-      () => payload.count({ collection: 'reseauteurs', where: badgeWhere('gold'), overrideAccess: true }),
+      () =>
+        payload.count({
+          collection: 'reseauteurs',
+          where: badgeWhere('gold'),
+          overrideAccess: true,
+        }),
       { label: 'home:count gold' },
     ),
     withDbRetry(
-      () => payload.count({ collection: 'reseauteurs', where: badgeWhere('platinum'), overrideAccess: true }),
+      () =>
+        payload.count({
+          collection: 'reseauteurs',
+          where: badgeWhere('platinum'),
+          overrideAccess: true,
+        }),
       { label: 'home:count platinum' },
     ),
   ])
@@ -447,7 +467,11 @@ export default async function HomePage() {
               desc: 'Ville, secteur, réseau, badge : trouvez la bonne personne en quelques clics.',
             },
           ].map(({ href, icon: Icon, title, desc }) => (
-            <Link key={href} href={href} className="rsn-strip-cell rsn-shine rsn-linkrow no-underline">
+            <Link
+              key={href}
+              href={href}
+              className="rsn-strip-cell rsn-shine rsn-linkrow no-underline"
+            >
               <span className="rsn-strip-ico">
                 <Icon size={20} aria-hidden />
               </span>
@@ -543,101 +567,99 @@ export default async function HomePage() {
       {/* ─── VUE D'ENSEMBLE (donut badges — style « gauge ») ──── */}
       <section className="bg-white border-y border-[#e4e4e7] py-16" aria-labelledby="apercu-titre">
         <div className="px-6">
-        <Reveal>
-          <div className="rsn-split">
-            <div>
-              <p className="rsn-eyebrow">
-                <TrendingUp size={13} aria-hidden />
-                Vue d&apos;ensemble
-              </p>
-              <h2 id="apercu-titre" className="rsn-h2">
-                La communauté en un coup d&apos;œil
-              </h2>
-              <p className="rsn-sub">
-                Chaque réseauteur affiche un badge selon son activité de networking : plus il
-                fréquente d&apos;événements, plus son badge monte. Une communauté vivante, lisible
-                d&apos;un regard.
-              </p>
+          <Reveal>
+            <div className="rsn-split">
+              <div>
+                <p className="rsn-eyebrow">
+                  <TrendingUp size={13} aria-hidden />
+                  Vue d&apos;ensemble
+                </p>
+                <h2 id="apercu-titre" className="rsn-h2">
+                  La communauté en un coup d&apos;œil
+                </h2>
+                <p className="rsn-sub">
+                  Chaque réseauteur affiche un badge selon son activité de networking : plus il
+                  fréquente d&apos;événements, plus son badge monte. Une communauté vivante, lisible
+                  d&apos;un regard.
+                </p>
 
-              <div className="rsn-kpis">
-                <div className="rsn-kpi">
-                  <span className="rsn-kpi-val">
-                    {reseauteurCount > 0 ? <CountUp value={reseauteurCount} suffix="+" /> : '—'}
-                  </span>
-                  <span className="rsn-kpi-label">Réseauteurs inscrits</span>
+                <div className="rsn-kpis">
+                  <div className="rsn-kpi">
+                    <span className="rsn-kpi-val">
+                      {reseauteurCount > 0 ? <CountUp value={reseauteurCount} suffix="+" /> : '—'}
+                    </span>
+                    <span className="rsn-kpi-label">Réseauteurs inscrits</span>
+                  </div>
+                  <div className="rsn-kpi">
+                    <span className="rsn-kpi-val">
+                      {evenementCount > 0 ? <CountUp value={evenementCount} suffix="+" /> : '—'}
+                    </span>
+                    <span className="rsn-kpi-label">Événements référencés</span>
+                  </div>
+                  <div className="rsn-kpi">
+                    <span className="rsn-kpi-val">
+                      {reseauCount > 0 ? <CountUp value={reseauCount} suffix="+" /> : '—'}
+                    </span>
+                    <span className="rsn-kpi-label">Réseaux d&apos;affaires</span>
+                  </div>
+                  <div className="rsn-kpi">
+                    <span className="rsn-kpi-val">
+                      <CountUp value={4} />
+                    </span>
+                    <span className="rsn-kpi-label">Niveaux de badge</span>
+                  </div>
                 </div>
-                <div className="rsn-kpi">
-                  <span className="rsn-kpi-val">
-                    {evenementCount > 0 ? <CountUp value={evenementCount} suffix="+" /> : '—'}
-                  </span>
-                  <span className="rsn-kpi-label">Événements référencés</span>
-                </div>
-                <div className="rsn-kpi">
-                  <span className="rsn-kpi-val">
-                    {reseauCount > 0 ? <CountUp value={reseauCount} suffix="+" /> : '—'}
-                  </span>
-                  <span className="rsn-kpi-label">Réseaux d&apos;affaires</span>
-                </div>
-                <div className="rsn-kpi">
-                  <span className="rsn-kpi-val">
-                    <CountUp value={4} />
-                  </span>
-                  <span className="rsn-kpi-label">Niveaux de badge</span>
+
+                <div className="mt-8">
+                  <Link href="/inscription" className="ir-atlas-primary rsn-linkrow">
+                    Créer mon profil — gratuit
+                    <ArrowRight size={15} aria-hidden className="rsn-arrow" />
+                  </Link>
                 </div>
               </div>
 
-              <div className="mt-8">
-                <Link href="/inscription" className="ir-atlas-primary rsn-linkrow">
-                  Créer mon profil — gratuit
-                  <ArrowRight size={15} aria-hidden className="rsn-arrow" />
-                </Link>
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="rsn-panel-title">Réseauteurs par badge</span>
+                  <span className="rsn-tag">
+                    <Award size={11} aria-hidden />
+                    {badgePreview ? 'aperçu' : 'live'}
+                  </span>
+                </div>
+                <DonutWithLegend
+                  segments={badgeSegments}
+                  centerValue={badgePreview ? 'Aperçu' : reseauteurCount.toLocaleString('fr-FR')}
+                  centerLabel="réseauteurs"
+                  total={badgeSum}
+                  size={216}
+                  thickness={26}
+                />
               </div>
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <span className="rsn-panel-title">Réseauteurs par badge</span>
-                <span className="rsn-tag">
-                  <Award size={11} aria-hidden />
-                  {badgePreview ? 'aperçu' : 'live'}
-                </span>
-              </div>
-              <DonutWithLegend
-                segments={badgeSegments}
-                centerValue={
-                  badgePreview ? 'Aperçu' : reseauteurCount.toLocaleString('fr-FR')
-                }
-                centerLabel="réseauteurs"
-                total={badgeSum}
-                size={216}
-                thickness={26}
-              />
-            </div>
-          </div>
-        </Reveal>
+          </Reveal>
         </div>
       </section>
 
       {/* ─── CLASSEMENT DES RÉSEAUX (bars) ────────────────────── */}
       <section className="py-16" aria-labelledby="classement-titre">
         <div className="px-6">
-        <Reveal>
-          <div className="rsn-panel">
-            <div className="rsn-panel-head">
-              <div>
-                <h2 id="classement-titre" className="rsn-panel-title text-base">
-                  Les réseaux les plus suivis
-                </h2>
+          <Reveal>
+            <div className="rsn-panel">
+              <div className="rsn-panel-head">
+                <div>
+                  <h2 id="classement-titre" className="rsn-panel-title text-base">
+                    Les réseaux les plus suivis
+                  </h2>
+                </div>
+                <span className="rsn-tag">
+                  {reseauBarsPreview ? 'aperçu' : 'par nombre de membres'}
+                </span>
               </div>
-              <span className="rsn-tag">
-                {reseauBarsPreview ? 'aperçu' : 'par nombre de membres'}
-              </span>
+              <div className="rsn-panel-body">
+                <BarMini bars={reseauBars} height={210} valueSuffix=" membres" />
+              </div>
             </div>
-            <div className="rsn-panel-body">
-              <BarMini bars={reseauBars} height={210} valueSuffix=" membres" />
-            </div>
-          </div>
-        </Reveal>
+          </Reveal>
         </div>
       </section>
 
@@ -703,7 +725,10 @@ export default async function HomePage() {
       <section className="section-dark py-16" aria-labelledby="chiffres-titre">
         <div className="px-6">
           <Reveal>
-            <h2 id="chiffres-titre" className="text-2xl sm:text-3xl font-bold text-[#fafafa] text-center mb-12">
+            <h2
+              id="chiffres-titre"
+              className="text-2xl sm:text-3xl font-bold text-[#fafafa] text-center mb-12"
+            >
               La plateforme nationale du networking
             </h2>
           </Reveal>
@@ -737,63 +762,63 @@ export default async function HomePage() {
       {/* ─── COUVERTURE NATIONALE (carte animée) ──────────────── */}
       <section className="py-16" aria-labelledby="couverture-titre">
         <div className="px-6">
-        <Reveal>
-          <div className="rsn-split">
-            <div>
-              <p className="rsn-eyebrow">
-                <MapPin size={13} aria-hidden />
-                Couverture nationale
-              </p>
-              <h2 id="couverture-titre" className="rsn-h2">
-                Partout où l&apos;on réseaute en France
-              </h2>
-              <p className="rsn-sub">
-                De Paris à Marseille, de Lyon à Lille : les réseauteurs, les événements et les
-                réseaux se rejoignent sur deux cartes nationales. Cherchez par ville, département ou
-                région — ou explorez autour de vous.
-              </p>
-              <div className="ir-atlas-actions mt-8">
-                <Link href="/carte/reseauteurs" className="ir-atlas-primary rsn-linkrow">
-                  <MapPin size={16} aria-hidden />
-                  Ouvrir la carte
-                </Link>
-                <Link href="/reseaux" className="ir-atlas-secondary rsn-linkrow">
-                  Parcourir les réseaux
-                  <ArrowRight size={14} aria-hidden className="rsn-arrow" />
-                </Link>
+          <Reveal>
+            <div className="rsn-split">
+              <div>
+                <p className="rsn-eyebrow">
+                  <MapPin size={13} aria-hidden />
+                  Couverture nationale
+                </p>
+                <h2 id="couverture-titre" className="rsn-h2">
+                  Partout où l&apos;on réseaute en France
+                </h2>
+                <p className="rsn-sub">
+                  De Paris à Marseille, de Lyon à Lille : les réseauteurs, les événements et les
+                  réseaux se rejoignent sur deux cartes nationales. Cherchez par ville, département
+                  ou région — ou explorez autour de vous.
+                </p>
+                <div className="ir-atlas-actions mt-8">
+                  <Link href="/carte/reseauteurs" className="ir-atlas-primary rsn-linkrow">
+                    <MapPin size={16} aria-hidden />
+                    Ouvrir la carte
+                  </Link>
+                  <Link href="/reseaux" className="ir-atlas-secondary rsn-linkrow">
+                    Parcourir les réseaux
+                    <ArrowRight size={14} aria-hidden className="rsn-arrow" />
+                  </Link>
+                </div>
+              </div>
+              <div className="ir-atlas-map-panel" aria-hidden="true">
+                <div className="ir-atlas-map-toolbar">
+                  <span>Carte nationale</span>
+                  <span>Live</span>
+                </div>
+                <div className="ir-atlas-map-canvas">
+                  <span className="ir-atlas-map-node ir-atlas-map-node-a" />
+                  <span className="ir-atlas-map-node ir-atlas-map-node-b" />
+                  <span className="ir-atlas-map-node ir-atlas-map-node-c" />
+                  <span className="ir-atlas-map-node ir-atlas-map-node-d" />
+                  <span className="ir-atlas-route ir-atlas-route-a" />
+                  <span className="ir-atlas-route ir-atlas-route-b" />
+                  <span className="ir-atlas-route ir-atlas-route-c" />
+                </div>
+                <div className="ir-atlas-map-dock">
+                  <div>
+                    <span>{reseauteurCount || 0}+</span>
+                    <small>réseauteurs</small>
+                  </div>
+                  <div>
+                    <span>{evenementCount || 0}+</span>
+                    <small>événements</small>
+                  </div>
+                  <div>
+                    <span>{reseauCount || 0}+</span>
+                    <small>réseaux</small>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="ir-atlas-map-panel" aria-hidden="true">
-              <div className="ir-atlas-map-toolbar">
-                <span>Carte nationale</span>
-                <span>Live</span>
-              </div>
-              <div className="ir-atlas-map-canvas">
-                <span className="ir-atlas-map-node ir-atlas-map-node-a" />
-                <span className="ir-atlas-map-node ir-atlas-map-node-b" />
-                <span className="ir-atlas-map-node ir-atlas-map-node-c" />
-                <span className="ir-atlas-map-node ir-atlas-map-node-d" />
-                <span className="ir-atlas-route ir-atlas-route-a" />
-                <span className="ir-atlas-route ir-atlas-route-b" />
-                <span className="ir-atlas-route ir-atlas-route-c" />
-              </div>
-              <div className="ir-atlas-map-dock">
-                <div>
-                  <span>{reseauteurCount || 0}+</span>
-                  <small>réseauteurs</small>
-                </div>
-                <div>
-                  <span>{evenementCount || 0}+</span>
-                  <small>événements</small>
-                </div>
-                <div>
-                  <span>{reseauCount || 0}+</span>
-                  <small>réseaux</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Reveal>
+          </Reveal>
         </div>
       </section>
 
@@ -806,10 +831,10 @@ export default async function HomePage() {
           <Reveal>
             <div className="text-center mb-8">
               <p className="text-xs font-semibold uppercase tracking-widest text-[#c2410c] mb-2">
-                Nos partenaires
+                Nos entreprises partenaires
               </p>
               <h2 id="partenaires-titre" className="text-2xl font-bold text-[#16284f]">
-                Ils soutiennent le networking français
+                Elles soutiennent le networking français
               </h2>
             </div>
           </Reveal>
@@ -857,9 +882,13 @@ export default async function HomePage() {
             <p className="text-sm text-[#71717a] mb-3">
               Vous représentez un réseau d&apos;affaires ou une entreprise ?
             </p>
-            <Link href="/partenaires" className="ir-atlas-secondary rsn-linkrow" style={{ margin: '0 auto' }}>
+            <Link
+              href="/partenaires"
+              className="ir-atlas-secondary rsn-linkrow"
+              style={{ margin: '0 auto' }}
+            >
               <Building2 size={16} aria-hidden />
-              Devenez partenaire
+              Référencer mon entreprise
               <ArrowRight size={14} aria-hidden className="rsn-arrow" />
             </Link>
           </div>
@@ -867,8 +896,11 @@ export default async function HomePage() {
       </section>
 
       {/* ─── NEWSLETTER ───────────────────────────────────────── */}
-      <section className="py-16 bg-white border-b border-[#e4e4e7]" aria-labelledby="newsletter-titre">
-        <div className="max-w-lg mx-auto px-6 text-center">
+      <section
+        className="py-16 bg-white border-b border-[#e4e4e7]"
+        aria-labelledby="newsletter-titre"
+      >
+        <div className="flex flex-col items-center max-w-lg mx-auto px-6 text-center gap-4">
           <h2 id="newsletter-titre" className="text-xl font-bold text-[#16284f] mb-2">
             Restez informé
           </h2>
@@ -878,7 +910,7 @@ export default async function HomePage() {
           {/* Newsletter à venir (décision produit 2026-06-29) — collecte non branchée,
               champ et bouton désactivés ; pas de <form> pour éviter toute soumission. */}
           <div
-            className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto"
+            className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto"
             aria-label="Inscription à la newsletter (bientôt disponible)"
           >
             <label htmlFor="newsletter-email" className="sr-only">
@@ -891,7 +923,7 @@ export default async function HomePage() {
               placeholder="votre@email.fr"
               disabled
               autoComplete="email"
-              className="flex-1 px-4 py-2.5 border border-[#e4e4e7] text-sm bg-[#f4f4f5] text-[#a1a1aa] placeholder:text-[#a1a1aa] cursor-not-allowed"
+              className="w-full sm:w-flex-1 px-4 py-2.5 border border-[#e4e4e7] text-sm bg-[#f4f4f5] text-[#a1a1aa] placeholder:text-[#a1a1aa] cursor-not-allowed"
             />
             <button
               type="button"

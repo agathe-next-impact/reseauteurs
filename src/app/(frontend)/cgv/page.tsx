@@ -79,7 +79,7 @@ export default function CGVPage() {
           <tr>
             <td>Partenaire annonceur</td>
             <td>Abonnement</td>
-            <td>Logo en page d&apos;accueil et sur la page Partenaires, lien vers le site</td>
+            <td>Logo en page d&apos;accueil et sur la page Entreprises, lien vers le site</td>
           </tr>
         </tbody>
       </table>

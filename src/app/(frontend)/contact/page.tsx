@@ -71,7 +71,7 @@ export default function ContactPage() {
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-12">
         {/* Écrire */}
         <Reveal>
-          <div className="rsn-card p-8 shadow-sm text-center">
+          <div className="rsn-card p-8 text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 mb-4">
               <Mail size={22} className="text-[#2563EB]" aria-hidden />
             </div>

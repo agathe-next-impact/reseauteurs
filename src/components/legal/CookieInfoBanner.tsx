@@ -14,7 +14,7 @@ export default function CookieInfoBanner() {
     <div
       role="dialog"
       aria-label="Information cookies"
-      className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-40 bg-white border border-gray-200 rounded-xl shadow-lg p-4"
+      className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-40 bg-white border border-gray-200 rounded-xl p-4"
     >
       <div className="flex items-start gap-3">
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary-light flex items-center justify-center">

@@ -211,10 +211,13 @@ export async function GET(request: Request) {
   // ── Requête principale ──────────────────────────────────────────────
   const where: Where = { and: conditions }
 
+  // depth 0 : la carte n'exploite ni photo ni secteur (marqueurs colorés par badge,
+  // tooltip nom+ville, détail via /api/reseauteurs/public/[slug]) — les hydrater
+  // alourdissait le JSON de la vue France sans aucun usage côté client.
   const { docs } = await payload.find({
     collection: 'reseauteurs',
     where,
-    depth: 1, // populate photo (url thumbnail) + secteur (label, couleur)
+    depth: 0,
     limit: MAX_RESULTS,
     overrideAccess: true,
     select: {
@@ -226,37 +229,22 @@ export async function GET(request: Request) {
       badge: true,
       latitude: true,
       longitude: true,
-      photo: true,
-      secteur: true,
     } as Record<string, boolean>,
   })
 
   // ── Mapping vers GeoJSON ────────────────────────────────────────────
-  type MediaLite = {
-    url?: string | null
-    sizes?: Record<string, { url?: string | null } | undefined>
-  }
-  type CatLite = { label?: string | null; couleur?: string | null }
-
   const features = docs
     .filter((doc) => doc.latitude != null && doc.longitude != null)
-    .map((doc) => {
-      const photo = doc.photo as MediaLite | null | undefined
-      const photoUrl = photo?.sizes?.['thumbnail']?.url ?? photo?.url ?? null
-      const secteurDoc = doc.secteur as CatLite | null | undefined
-
-      return toFeature(doc.longitude as number, doc.latitude as number, {
+    .map((doc) =>
+      toFeature(doc.longitude as number, doc.latitude as number, {
         slug: doc.slug ?? null,
         prenom: (doc.prenom as string | null | undefined) ?? null,
         nom: (doc.nom as string | null | undefined) ?? null,
         entreprise: (doc.entreprise as string | null | undefined) ?? null,
         ville: (doc.ville as string | null | undefined) ?? null,
         badge: (doc.badge as string | null | undefined) ?? null,
-        photoUrl,
-        secteurLabel: secteurDoc?.label ?? null,
-        secteurCouleur: secteurDoc?.couleur ?? null,
-      })
-    })
+      }),
+    )
 
   return NextResponse.json(toFeatureCollection(features), {
     headers: {

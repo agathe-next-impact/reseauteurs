@@ -64,7 +64,6 @@ export default function MiniMap({
               transform: 'rotate(-45deg)',
               background: color,
               border: '2px solid #ffffff',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
             }}
           />
         </Marker>

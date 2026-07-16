@@ -31,7 +31,7 @@ export default function ReseauxSearch({ initialValue }: { initialValue: string }
         defaultValue={initialValue}
         onChange={(e) => update(e.target.value)}
         placeholder="Rechercher un réseau (BNI, DCF…)"
-        className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#e4e4e7] bg-white text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#f5851f] focus:border-transparent shadow-sm"
+        className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#e4e4e7] bg-white text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#f5851f] focus:border-transparent"
         autoComplete="off"
         aria-label="Rechercher un réseau"
       />

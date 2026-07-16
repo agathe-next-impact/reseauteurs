@@ -13,6 +13,7 @@
  */
 import { Suspense } from 'react'
 import { getPayload } from 'payload'
+import { unstable_cache } from 'next/cache'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -55,62 +56,20 @@ interface SearchParams {
 
 const PAGE_SIZE = 24
 
-function buildWhere(sp: SearchParams, reseauFilterIds?: number[] | null): Where {
-  const conditions: Where[] = [{ statut: { equals: 'valide' } }]
+/** Borne de l'amorce SSR de la carte — la carte recharge par bbox au-delà. */
+const CARTE_SSR_LIMIT = 1500
 
-  if (sp.q) {
-    conditions.push({
-      or: [
-        { prenom: { contains: sp.q } },
-        { nom: { contains: sp.q } },
-        { entreprise: { contains: sp.q } },
-        { fonction: { contains: sp.q } },
-      ],
-    } as Where)
-  }
-  if (sp.ville) conditions.push({ ville: { contains: sp.ville } })
-  if (sp.departement) conditions.push({ departement: { contains: sp.departement } })
-  if (sp.region) conditions.push({ region: { contains: sp.region } })
-  if (sp.badge) conditions.push({ badge: { equals: sp.badge } })
-  if (sp.secteur) conditions.push({ secteur: { equals: sp.secteur } })
-  // Filtre réseau : réseauteurs fréquentant l'un des chapitres ciblés (résolu côté page,
-  // le slug pouvant désigner un chapitre local OU une tête → ses chapitres). Liste vide
-  // (slug inconnu / tête sans chapitre) → sentinelle -1 pour garantir zéro résultat.
-  if (reseauFilterIds) {
-    conditions.push({ reseauxFrequentes: { in: reseauFilterIds.length ? reseauFilterIds : [-1] } } as Where)
-  }
+/**
+ * Amorce SSR de la vue carte (vue France, aucun filtre) — identique pour tous les
+ * visiteurs. La page est rendue dynamiquement (searchParams) : sans ce cache, chaque
+ * affichage payait 3 requêtes Neon avant le premier octet (audit perf cartes H1).
+ * `initialComplete` indique au client si le refetch bbox initial est nécessaire.
+ */
+const getCarteReseauteursInitial = unstable_cache(
+  async () => {
+    const payload = await getPayload({ config })
 
-  return { and: conditions }
-}
-
-export default async function ReseauteursPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>
-}) {
-  const sp = await searchParams
-  // Vue par défaut = carte (URL sans param). L'annuaire reste accessible via ?vue=annuaire.
-  const vue = sp.vue === 'annuaire' ? 'annuaire' : 'carte'
-  const page = Math.max(1, parseInt(sp.page ?? '1', 10))
-  const payload = await getPayload({ config })
-
-  // Données communes : catégories pour le filtre secteur
-  const { docs: categories } = await withDbRetry(
-    () =>
-      payload.find({
-        collection: 'categories',
-        depth: 0,
-        limit: 100,
-        overrideAccess: true,
-      }),
-    { label: 'reseauteurs:find categories' },
-  )
-
-  const categoriesListe = (categories as Categorie[]).map((c) => ({ id: c.id, label: c.label ?? '' }))
-
-  // ─── VUE CARTE ─────────────────────────────────────────────────────────────
-  if (vue === 'carte') {
-    const [{ docs: reseauteursDocs }, { docs: categoriesDocs }, { docs: reseauxDocs }] =
+    const [reseauteursRes, { docs: categoriesDocs }, { docs: reseauxDocs }] =
       await Promise.all([
         withDbRetry(
           () =>
@@ -124,7 +83,7 @@ export default async function ReseauteursPage({
                 ],
               },
               depth: 0,
-              limit: 1500, // SSR borné — la carte recharge par bbox sur déplacement
+              limit: CARTE_SSR_LIMIT,
               overrideAccess: true,
               select: {
                 slug: true,
@@ -170,7 +129,7 @@ export default async function ReseauteursPage({
         ),
       ])
 
-    const features = reseauteursDocs
+    const features = reseauteursRes.docs
       .filter((doc) => doc.latitude != null && doc.longitude != null)
       .map((doc) =>
         toFeature(doc.longitude as number, doc.latitude as number, {
@@ -182,27 +141,83 @@ export default async function ReseauteursPage({
           badge: (doc.badge as string | null | undefined) ?? null,
         }),
       )
-    const initialData = toFeatureCollection(features)
 
-    const carteCategories: CategoryLite[] = categoriesDocs.map((c) => ({
+    const categories: CategoryLite[] = categoriesDocs.map((c) => ({
       id: c.id as number,
       value: (c.value as string) ?? '',
       label: (c.label as string) ?? '',
       couleur: (c.couleur as string | null | undefined) ?? null,
     }))
 
-    const carteReseaux: ReseauLite[] = reseauxDocs.map((r) => ({
+    const reseaux: ReseauLite[] = reseauxDocs.map((r) => ({
       id: r.id as number,
       slug: (r.slug as string) ?? '',
       nom: (r.nom as string) ?? '',
     }))
 
+    return {
+      initialData: toFeatureCollection(features),
+      categories,
+      reseaux,
+      initialComplete: reseauteursRes.totalDocs <= CARTE_SSR_LIMIT,
+    }
+  },
+  ['carte-reseauteurs-initial'],
+  { revalidate: 120 },
+)
+
+function buildWhere(sp: SearchParams, reseauFilterIds?: number[] | null): Where {
+  const conditions: Where[] = [{ statut: { equals: 'valide' } }]
+
+  if (sp.q) {
+    conditions.push({
+      or: [
+        { prenom: { contains: sp.q } },
+        { nom: { contains: sp.q } },
+        { entreprise: { contains: sp.q } },
+        { fonction: { contains: sp.q } },
+      ],
+    } as Where)
+  }
+  if (sp.ville) conditions.push({ ville: { contains: sp.ville } })
+  if (sp.departement) conditions.push({ departement: { contains: sp.departement } })
+  if (sp.region) conditions.push({ region: { contains: sp.region } })
+  if (sp.badge) conditions.push({ badge: { equals: sp.badge } })
+  if (sp.secteur) conditions.push({ secteur: { equals: sp.secteur } })
+  // Filtre réseau : réseauteurs fréquentant l'un des chapitres ciblés (résolu côté page,
+  // le slug pouvant désigner un chapitre local OU une tête → ses chapitres). Liste vide
+  // (slug inconnu / tête sans chapitre) → sentinelle -1 pour garantir zéro résultat.
+  if (reseauFilterIds) {
+    conditions.push({ reseauxFrequentes: { in: reseauFilterIds.length ? reseauFilterIds : [-1] } } as Where)
+  }
+
+  return { and: conditions }
+}
+
+export default async function ReseauteursPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const sp = await searchParams
+  // Vue par défaut = carte (URL sans param). L'annuaire reste accessible via ?vue=annuaire.
+  const vue = sp.vue === 'annuaire' ? 'annuaire' : 'carte'
+  const page = Math.max(1, parseInt(sp.page ?? '1', 10))
+
+  // ─── VUE CARTE ─────────────────────────────────────────────────────────────
+  // Données servies depuis le cache (unstable_cache, revalidate 120 s) : aucune
+  // requête DB sur le chemin critique du rendu.
+  if (vue === 'carte') {
+    const { initialData, categories, reseaux, initialComplete } =
+      await getCarteReseauteursInitial()
+
     return (
       <MapReseauteursLoader
         initialData={initialData}
         initialSlug={null}
-        categories={carteCategories}
-        reseaux={carteReseaux}
+        initialComplete={initialComplete}
+        categories={categories}
+        reseaux={reseaux}
         toolbar={
           <Suspense fallback={null}>
             <EntiteVueToggle entite="reseauteurs" vue="carte" />
@@ -212,21 +227,38 @@ export default async function ReseauteursPage({
     )
   }
 
-  // ─── VUE ANNUAIRE (défaut) ──────────────────────────────────────────────────
-  // Liste des réseaux pour le sélecteur de filtre (têtes + chapitres publiés).
-  const { docs: reseauxFiltreDocs } = await withDbRetry(
-    () =>
-      payload.find({
-        collection: 'reseaux',
-        where: { statut: { equals: 'publiee' } } as Where,
-        select: { slug: true, nom: true } as Record<string, boolean>,
-        depth: 0,
-        limit: 500,
-        sort: 'nom',
-        overrideAccess: true,
-      }),
-    { label: 'reseauteurs-annuaire:reseaux' },
-  )
+  // ─── VUE ANNUAIRE ───────────────────────────────────────────────────────────
+  const payload = await getPayload({ config })
+
+  // Référentiels des filtres en parallèle : catégories (secteur) + réseaux
+  // (têtes + chapitres publiés).
+  const [{ docs: categories }, { docs: reseauxFiltreDocs }] = await Promise.all([
+    withDbRetry(
+      () =>
+        payload.find({
+          collection: 'categories',
+          depth: 0,
+          limit: 100,
+          overrideAccess: true,
+        }),
+      { label: 'reseauteurs:find categories' },
+    ),
+    withDbRetry(
+      () =>
+        payload.find({
+          collection: 'reseaux',
+          where: { statut: { equals: 'publiee' } } as Where,
+          select: { slug: true, nom: true } as Record<string, boolean>,
+          depth: 0,
+          limit: 500,
+          sort: 'nom',
+          overrideAccess: true,
+        }),
+      { label: 'reseauteurs-annuaire:reseaux' },
+    ),
+  ])
+
+  const categoriesListe = (categories as Categorie[]).map((c) => ({ id: c.id, label: c.label ?? '' }))
   const reseauxListe = reseauxFiltreDocs
     .map((r) => ({ slug: (r.slug as string) ?? '', nom: (r.nom as string) ?? '' }))
     .filter((r) => r.slug)

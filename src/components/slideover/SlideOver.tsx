@@ -80,18 +80,18 @@ export default function SlideOver({ isOpen, onClose, children, mobileBottomSheet
         className={[
           'fixed z-[1000] bg-white overflow-y-auto transition-all duration-[280ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
           // Desktop: always side panel
-          'md:top-0 md:right-0 md:h-dvh md:w-1/2 md:min-w-[420px] md:max-w-[680px] md:shadow-[-4px_0_24px_rgba(0,0,0,0.12)]',
+          'md:top-0 md:right-0 md:h-dvh md:w-1/2 md:min-w-[420px] md:max-w-[680px] md:border-l md:border-[#e4e4e7]',
           isOpen ? 'md:translate-x-0' : 'md:translate-x-full',
           // Mobile: bottom sheet or full-screen
           mobileBottomSheet
-            ? `left-0 right-0 bottom-0 h-[34dvh] rounded-t-2xl shadow-[0_-4px_24px_rgba(0,0,0,0.15)] ${
+            ? `left-0 right-0 bottom-0 h-[34dvh] rounded-t-2xl border-t border-[#e4e4e7] ${
                 isOpen ? 'translate-y-0' : 'translate-y-full'
               }`
-            : `top-0 right-0 h-dvh w-full shadow-[-4px_0_24px_rgba(0,0,0,0.12)] ${
+            : `top-0 right-0 h-dvh w-full ${
                 isOpen ? 'translate-x-0' : 'translate-x-full'
               }`,
           // Reset mobile transforms on desktop
-          mobileBottomSheet ? 'md:translate-y-0 md:rounded-none md:left-auto md:w-1/2 md:h-dvh md:shadow-[-4px_0_24px_rgba(0,0,0,0.12)]' : '',
+          mobileBottomSheet ? 'md:translate-y-0 md:rounded-none md:left-auto md:w-1/2 md:h-dvh md:border-l md:border-[#e4e4e7]' : '',
         ].join(' ')}
         style={dragOffset > 0 ? { transform: mobileBottomSheet ? `translateY(${dragOffset}px)` : `translateX(${dragOffset}px)`, transition: 'none' } : undefined}
       >

@@ -22,7 +22,7 @@ export function LegalLayout({ title, updatedAt, children }: LegalLayoutProps) {
           <ChevronRight size={12} />
           <span className="text-text-medium">{title}</span>
         </nav>
-        <article className="rsn-card shadow-sm p-8 sm:p-12">
+        <article className="rsn-card p-8 sm:p-12">
           <header className="mb-8 pb-6 border-b border-[#e4e4e7]">
             <h1 className="text-3xl font-bold text-text-dark mb-2">{title}</h1>
             <p className="text-sm text-text-light">

@@ -70,7 +70,7 @@ export default async function AProposPage() {
         <div className="max-w-3xl mx-auto">
           <Reveal>
             <h2 className="text-2xl font-bold text-[#16284f] mb-6 text-center">Notre mission</h2>
-            <div className="rsn-card p-8 shadow-sm">
+            <div className="rsn-card p-8">
               <blockquote className="text-xl font-medium text-[#18181b] text-center leading-relaxed italic">
                 « Le site ne remplace aucun réseau. Il les rassemble. »
               </blockquote>

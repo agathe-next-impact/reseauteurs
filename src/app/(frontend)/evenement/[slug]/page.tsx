@@ -225,8 +225,10 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
           </nav>
 
           <Reveal>
-            <p className="rsn-eyebrow" style={{ color: '#93c5fd' }}>
+            {/* Accent par organisateur (ADR-0013) : orange = réseauteur Plus, bleu = réseau */}
+            <p className="rsn-eyebrow" style={{ color: isPlusEvent ? '#fdba74' : '#93c5fd' }}>
               {typeDoc?.label ?? 'Événement business'}
+              {isPlusEvent && ' · organisé par un réseauteur'}
             </p>
             <h1 className="rsn-pagehead-title">{e.titre}</h1>
 
@@ -417,9 +419,10 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                     <Users size={14} aria-hidden />
                     Organisé par
                   </h2>
+                  {/* Accent orange = organisateur réseauteur Plus (vs bleu pour un réseau — ADR-0013) */}
                   <Link
                     href={`/reseauteur/${organisateurRz.slug}`}
-                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#f5851f]/50 transition-colors no-underline group"
                   >
                     {organisateurPhotoUrl ? (
                       <Image
@@ -430,19 +433,19 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                         className="w-10 h-10 rounded-full object-cover border border-[#e4e4e7] shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] font-bold text-sm shrink-0" aria-hidden>
+                      <div className="w-10 h-10 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#c2410c] font-bold text-sm shrink-0" aria-hidden>
                         {organisateurRz.prenom?.charAt(0)}{organisateurRz.nom?.charAt(0)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#2563EB] transition-colors">
+                      <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#c2410c] transition-colors">
                         {organisateurRz.prenom} {organisateurRz.nom}
                       </p>
                       <p className="text-xs text-[#71717a]">
                         Réseauteur{organisateurRz.ville ? ` · ${organisateurRz.ville}` : ''}
                       </p>
                     </div>
-                    <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                    <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#c2410c] transition-colors shrink-0 rsn-arrow" aria-hidden />
                   </Link>
                 </section>
               </Reveal>
@@ -538,7 +541,9 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                     latitude={e.lieuLatitude}
                     longitude={e.lieuLongitude}
                     zoom={14}
-                    color={MAP_COLORS.evenement}
+                    // Même accent que les marqueurs de la carte (ADR-0013) :
+                    // orange = organisé par un réseauteur Plus, navy = réseau
+                    color={isPlusEvent ? MAP_COLORS.evenementReseauteur : MAP_COLORS.evenement}
                     label={`Lieu de l'événement ${e.titre}${e.lieuVille ? ` à ${e.lieuVille}` : ''}`}
                   />
                 </section>

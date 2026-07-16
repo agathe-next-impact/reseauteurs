@@ -86,7 +86,7 @@ export default function EntiteVueToggle({ entite, vue }: EntiteVueToggleProps) {
               onClick={() => switchVue(v)}
               className={`px-3.5 py-1.5 text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
                 vue === v
-                  ? 'bg-white text-[#16284f] shadow-sm'
+                  ? 'bg-white text-[#16284f]'
                   : 'text-[#71717a] hover:text-[#18181b]'
               }`}
               aria-pressed={vue === v}

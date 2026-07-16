@@ -47,6 +47,9 @@ next-env.d.ts
 # Backup files
 *.bak
 
+# Comptes de démo (identifiants locaux, ne pas pousser)
+COMPTES-DEMO.local.md
+
 # Playwright
 node_modules/
 /test-results/

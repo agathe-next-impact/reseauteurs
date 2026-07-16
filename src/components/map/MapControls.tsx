@@ -12,7 +12,7 @@
 
 import { useState } from 'react'
 import { Plus, Minus, LocateFixed, Loader2, Frame } from 'lucide-react'
-import { MAP_DEFAULTS } from '@/lib/maplibre/config'
+import { FRANCE_BOUNDS, FRANCE_FIT_PADDING } from '@/lib/maplibre/config'
 
 interface MapControlsProps {
   /** Ref vers le composant react-map-gl <Map> (expose getMap()). */
@@ -33,11 +33,8 @@ export default function MapControls({ mapRef }: MapControlsProps) {
   const recenter = () => {
     const map = getMap()
     if (!map) return
-    map.flyTo({
-      center: MAP_DEFAULTS.center as [number, number],
-      zoom: MAP_DEFAULTS.zoom,
-      duration: 900,
-    })
+    // Même cadrage que le chargement initial : toute la France, zoom adapté au viewport.
+    map.fitBounds(FRANCE_BOUNDS, { padding: FRANCE_FIT_PADDING, duration: 900 })
   }
 
   const locate = () => {

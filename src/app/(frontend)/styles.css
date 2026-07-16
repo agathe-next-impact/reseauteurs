@@ -408,7 +408,6 @@ body {
 .ir-plasma :where(.bg-\[\#2563EB\], .bg-primary) {
   background: var(--ir-grad-main);
   color: #fff;
-  box-shadow: 0 12px 32px rgba(var(--ir-accent-rgb), 0.22);
 }
 
 .ir-plasma :where(.hover\:bg-\[\#1d4ed8\]:hover, .hover\:bg-primary\/80:hover) {
@@ -441,11 +440,6 @@ body {
     var(--ir-surface);
   border-color: rgba(var(--ir-line-rgb), 0.1);
   color: var(--ir-text);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
-}
-
-.ir-plasma :where(.shadow-sm, .hover\:shadow-md:hover) {
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
 }
 
 .ir-plasma :where(input, textarea, select) {
@@ -475,7 +469,6 @@ body {
 .ir-plasma .ir-btn-plasma {
   background: var(--ir-grad-main);
   color: #fff;
-  box-shadow: 0 12px 32px rgba(var(--ir-accent-rgb), 0.22);
 }
 
 .ir-plasma .ir-btn-outline-plasma {
@@ -580,7 +573,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0;
+  gap: 10px;
   margin-top: 34px;
 }
 
@@ -605,7 +598,6 @@ body {
 .ir-atlas-primary {
   background: var(--ir-grad-main);
   color: #fff;
-  box-shadow: 0 18px 42px rgba(var(--ir-accent-rgb), 0.24);
 }
 
 .ir-atlas-secondary {
@@ -640,7 +632,6 @@ body {
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #0a0a0d;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
 }
 
 .ir-atlas-map-toolbar {
@@ -686,9 +677,6 @@ body {
   border: 3px solid rgba(255, 255, 255, 0.86);
   border-radius: 999px;
   background: var(--ir-grad-main);
-  box-shadow:
-    0 0 0 8px rgba(var(--ir-accent-rgb), 0.14),
-    0 0 32px rgba(var(--ir-accent-rgb), 0.55);
 }
 
 .ir-atlas-map-node-a {
@@ -959,7 +947,6 @@ p {
   overflow: hidden;
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
   background: var(--ir-surface);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 .rsn-map-ctrl {
   width: 38px;
@@ -988,7 +975,6 @@ p {
 }
 .rsn-map-ctrl-solo {
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 /* Légende repliable */
@@ -1001,7 +987,6 @@ p {
   max-width: 230px;
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
   background: var(--ir-surface);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 }
 .rsn-map-legend-head {
   width: 100%;
@@ -1339,7 +1324,6 @@ p {
   overflow-y: auto;
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
   background: var(--ir-surface);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
 }
 .rsn-map-filterdrop {
   padding: 16px;
@@ -1372,7 +1356,6 @@ p {
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
   background: var(--ir-surface);
   color: var(--ir-text-2);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   transition:
     color 0.15s ease,
@@ -1400,7 +1383,6 @@ p {
   text-align: center;
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
   background: var(--ir-surface);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
 }
 
 @media (max-width: 1023.98px) {
@@ -1415,7 +1397,10 @@ p {
   border-radius: 6px;
   font-size: 13px;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+/* MapLibre : neutralise l'ombre par défaut des popups (design plat) */
+.maplibregl-popup-content {
+  box-shadow: none;
 }
 .map-tooltip .mapboxgl-popup-tip {
   border-top-color: #fff;
@@ -1527,17 +1512,7 @@ p {
 }
 
 /* ── Micro-interactions génériques ──────────────────────────── */
-.rsn-lift {
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
-}
-.rsn-lift:hover {
-  transform: translateY(-3px);
-  border-color: rgba(var(--ir-accent-rgb), 0.4);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.1);
-}
+
 .rsn-shine {
   position: relative;
   overflow: hidden;
@@ -1594,7 +1569,6 @@ p {
     radial-gradient(circle at 78% 12%, rgba(var(--ir-accent-rgb), 0.24), transparent 16rem),
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
     #0a0a0d;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.45);
 }
 .rsn-hero-dash-bar {
   display: flex;
@@ -2243,7 +2217,6 @@ p {
   background: var(--ir-surface);
   border: 1px solid rgba(var(--ir-line-rgb), 0.12);
   padding: clamp(26px, 4vw, 36px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.1);
 }
 .rsn-auth-brand {
   display: inline-flex;

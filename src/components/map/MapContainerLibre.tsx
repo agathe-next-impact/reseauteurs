@@ -13,7 +13,7 @@
 import { useEffect, useState } from 'react'
 import { Map } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
-import { MAP_DEFAULTS, MAP_STYLE_LIGHT, MAP_STYLE_DARK } from '@/lib/maplibre/config'
+import { FRANCE_BOUNDS, FRANCE_FIT_PADDING, MAP_STYLE_LIGHT, MAP_STYLE_DARK } from '@/lib/maplibre/config'
 import MapControls from './MapControls'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -60,9 +60,10 @@ export default function MapContainerLibre({
         ref={mapRef}
         mapStyle={dark ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
         initialViewState={{
-          longitude: MAP_DEFAULTS.center[0],
-          latitude: MAP_DEFAULTS.center[1],
-          zoom: MAP_DEFAULTS.zoom,
+          // fitBounds sur l'emprise France : toute la France visible quel que
+          // soit le viewport (un zoom fixe coupait le nord/la Corse sur mobile).
+          bounds: FRANCE_BOUNDS,
+          fitBoundsOptions: { padding: FRANCE_FIT_PADDING },
         }}
         fadeDuration={0}
         interactiveLayerIds={interactiveLayerIds}

@@ -34,7 +34,11 @@ export default async function ParticipationsPage() {
   const { user } = await payload.auth({ headers: hdrs })
   if (!user) redirect('/login')
 
-  const freshUser = await payload.findByID({ collection: 'users', id: user.id, overrideAccess: true })
+  const freshUser = await payload.findByID({
+    collection: 'users',
+    id: user.id,
+    overrideAccess: true,
+  })
   if (freshUser.role === 'organisateur') redirect('/dashboard/reseau')
   if (freshUser.role === 'admin') redirect('/admin')
 
@@ -64,7 +68,12 @@ export default async function ParticipationsPage() {
           {
             or: [
               { dateFin: { greater_than_equal: todayISO } },
-              { and: [{ dateFin: { exists: false } }, { dateDebut: { greater_than_equal: todayISO } }] },
+              {
+                and: [
+                  { dateFin: { exists: false } },
+                  { dateDebut: { greater_than_equal: todayISO } },
+                ],
+              },
             ],
           },
         ],
@@ -73,7 +82,10 @@ export default async function ParticipationsPage() {
       limit: 200,
       sort: 'dateDebut',
       overrideAccess: true,
-      select: { titre: true, dateDebut: true, lieuVille: true, reseau: true } as Record<string, boolean>,
+      select: { titre: true, dateDebut: true, lieuVille: true, reseau: true } as Record<
+        string,
+        boolean
+      >,
     })
     events = evDocs.map((e) => {
       const r = e.reseau as { nom?: string | null } | null | undefined
@@ -97,14 +109,13 @@ export default async function ParticipationsPage() {
           >
             <ArrowLeft size={14} aria-hidden /> Mon profil
           </Link>
-          <p className="rsn-eyebrow">Espace connecté</p>
           <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2 mb-2">
             <CalendarCheck size={20} aria-hidden />
             Mes participations
           </h1>
           <p className="text-sm text-[#71717a] mb-8">
-            Signalez votre présence aux événements des réseaux que vous fréquentez. Cette information
-            apparaît sur votre fiche publique et sur la fiche de chaque événement.
+            Signalez votre présence aux événements des réseaux que vous fréquentez. Cette
+            information apparaît sur votre fiche publique et sur la fiche de chaque événement.
           </p>
         </Reveal>
 
@@ -116,7 +127,10 @@ export default async function ParticipationsPage() {
             <p className="text-sm text-[#71717a] mb-4">
               Ajoutez vos réseaux dans votre profil pour voir leurs événements ici.
             </p>
-            <Link href="/dashboard/profil" className="text-sm text-[#2563EB] font-medium no-underline">
+            <Link
+              href="/dashboard/profil"
+              className="text-sm text-[#2563EB] font-medium no-underline"
+            >
               Compléter mon profil →
             </Link>
           </div>

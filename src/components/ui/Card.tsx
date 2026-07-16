@@ -22,7 +22,7 @@ export function Card({
   const ctaLabel = upgradePlan === 'infinite' ? 'Passer Infinite' : 'Passer Premium'
   return (
     <div
-      className={`ir-card relative bg-white border border-gray-200 shadow-sm rounded-xl transition-all duration-200 hover:shadow-md hover:-translate-y-px ${className}`}
+      className={`ir-card relative bg-white border border-gray-200 rounded-xl transition-all duration-200 hover:-translate-y-px ${className}`}
       {...rest}
     >
       {children}

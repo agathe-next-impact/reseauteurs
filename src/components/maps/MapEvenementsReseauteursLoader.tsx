@@ -20,6 +20,8 @@ const MapEvenementsReseauteurs = dynamic(() => import('./MapEvenementsReseauteur
 interface MapEvenementsReseauteursLoaderProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
+  /** true si l'amorce SSR contient tous les points — évite le refetch bbox initial. */
+  initialComplete?: boolean
   reseaux: ReseauLiteFilter[]
   /** Bascule agenda/carte (rendue dans la barre de navigation supérieure). */
   toolbar?: React.ReactNode

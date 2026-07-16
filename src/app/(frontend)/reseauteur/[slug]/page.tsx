@@ -337,7 +337,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                 <section aria-labelledby="partenaire-titre">
                   <h2 id="partenaire-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
                     <Building2 size={14} className="text-[#f5851f]" aria-hidden />
-                    Partenaire
+                    Entreprise
                   </h2>
                   <Link
                     href={`/partenaire/${partenaireLien.slug}`}

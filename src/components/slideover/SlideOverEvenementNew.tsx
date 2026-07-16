@@ -273,7 +273,8 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                     className="w-10 h-10 rounded-full object-cover border border-[#e4e4e7]"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] font-bold text-sm" aria-hidden>
+                  // Accent orange = organisateur réseauteur Plus (vs bleu pour un réseau — ADR-0013)
+                  <div className="w-10 h-10 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#c2410c] font-bold text-sm" aria-hidden>
                     {data.organisateurReseauteur.prenom?.charAt(0)}
                     {data.organisateurReseauteur.nom?.charAt(0)}
                   </div>
@@ -285,7 +286,7 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                   {data.organisateurReseauteur.slug && (
                     <Link
                       href={`/reseauteur/${data.organisateurReseauteur.slug}`}
-                      className="text-xs text-[#2563EB] hover:underline"
+                      className="text-xs text-[#c2410c] hover:underline"
                     >
                       Voir le profil réseauteur
                     </Link>

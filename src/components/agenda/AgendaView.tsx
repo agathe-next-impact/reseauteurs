@@ -113,7 +113,7 @@ export default function AgendaView({ data, onEventClick, typesEvenement }: Agend
               return (
                 <div
                   key={p.id as string}
-                  className="flex items-stretch bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md hover:-translate-y-px transition-all duration-150 group"
+                  className="flex items-stretch bg-white border border-gray-200 rounded-lg overflow-hidden hover:-translate-y-px transition-all duration-150 group"
                 >
                   {/* Left color border */}
                   <div

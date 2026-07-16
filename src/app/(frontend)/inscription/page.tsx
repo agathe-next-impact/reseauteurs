@@ -218,7 +218,7 @@ export default function InscriptionPage() {
             onClick={() => setAccountType('partenaire')}
             className="p-5 border border-gray-200 rounded-xl hover:border-[#f5851f] hover:bg-[#fff7ed] transition-all text-left cursor-pointer"
           >
-            <h3 className="font-semibold text-text-dark mb-1">Partenaire (annonceur)</h3>
+            <h3 className="font-semibold text-text-dark mb-1">Entreprise (annonceur)</h3>
             <p className="text-sm text-text-light">
               Vous représentez une entreprise et souhaitez être visible auprès des réseauteurs :
               logo en page d&apos;accueil, fiche dédiée et offre exclusive. Sur abonnement.

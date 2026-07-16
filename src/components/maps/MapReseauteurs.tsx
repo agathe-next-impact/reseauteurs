@@ -63,6 +63,9 @@ const BADGE_LOOKUP = new Map(BADGE_MARKER_COLORS.map((b) => [b.value, b]))
 interface MapReseauteursProps {
   initialData: GeoJSONFeatureCollection
   initialSlug?: string | null
+  /** true si l'amorce SSR contient TOUS les points (pas tronquée par la limite SSR) :
+   *  le refetch bbox initial est alors inutile — il n'a lieu qu'au premier déplacement/filtre. */
+  initialComplete?: boolean
   categories: CategoryLite[]
   reseaux: ReseauLite[]
   /** Bascule annuaire/carte (rendue dans la barre de navigation supérieure). */
@@ -72,6 +75,7 @@ interface MapReseauteursProps {
 export default function MapReseauteurs({
   initialData,
   initialSlug,
+  initialComplete = false,
   categories,
   reseaux,
   toolbar,
@@ -156,9 +160,11 @@ export default function MapReseauteurs({
   }, [geojsonData])
 
   // ── Handlers carte ──────────────────────────────────────────────────
-  const handleLoad = useCallback((e: MapEvent) => {
-    const map = e.target
-    map.once('idle', () => setMapReady(true))
+  const handleLoad = useCallback((_e: MapEvent) => {
+    // Prêt dès `load` (style chargé) : les marqueurs s'affichent pendant que les
+    // tuiles arrivent. Attendre `idle` (= toutes les tuiles) retardait tout le
+    // premier rendu de plusieurs secondes sur connexion lente.
+    setMapReady(true)
   }, [])
 
   const handleClick = useCallback((e: MapMouseEvent) => {
@@ -317,13 +323,15 @@ export default function MapReseauteurs({
     window.history.replaceState(null, '', '/carte/reseauteurs')
   }, [])
 
-  // Au 1er idle : recharge le viewport RÉEL via l'API bbox (le dataset SSR n'est qu'une amorce).
+  // Refetch bbox initial UNIQUEMENT si l'amorce SSR est tronquée (initialComplete=false).
+  // Sinon les données du viewport France sont déjà là : re-télécharger la même chose
+  // doublait le coût de chaque chargement de page (audit perf cartes H2).
   useEffect(() => {
     if (mapReady && !didInitialFetch.current) {
       didInitialFetch.current = true
-      fetchWithBbox(filters)
+      if (!initialComplete) fetchWithBbox(filters)
     }
-  }, [mapReady, fetchWithBbox, filters])
+  }, [mapReady, initialComplete, fetchWithBbox, filters])
 
   // Nettoyage des timers
   useEffect(() => {
@@ -381,7 +389,7 @@ export default function MapReseauteurs({
             className="absolute inset-0 z-[600] bg-white/30 flex items-start justify-center pt-4 pointer-events-none"
             aria-hidden="true"
           >
-            <div className="bg-white rounded-full px-3 py-1 shadow text-xs text-[#2563EB] font-medium flex items-center gap-1.5">
+            <div className="bg-white rounded-full px-3 py-1 border border-[#e4e4e7] text-xs text-[#2563EB] font-medium flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#2563EB] animate-pulse" />
               Mise à jour...
             </div>

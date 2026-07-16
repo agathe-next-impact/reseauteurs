@@ -349,7 +349,7 @@ export default function MapReseaux({
             className="absolute inset-0 z-[600] bg-white/30 flex items-start justify-center pt-4 pointer-events-none"
             aria-hidden="true"
           >
-            <div className="bg-white rounded-full px-3 py-1 shadow text-xs text-[#a855f7] font-medium flex items-center gap-1.5">
+            <div className="bg-white rounded-full px-3 py-1 border border-[#e4e4e7] text-xs text-[#a855f7] font-medium flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#a855f7] animate-pulse" />
               Mise à jour...
             </div>

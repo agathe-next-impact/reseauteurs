@@ -125,7 +125,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
 
           {/* Slide-in panel */}
           <nav
-            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white shadow-2xl flex flex-col animate-[slideLeft_200ms_ease-out]"
+            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#e4e4e7] flex flex-col animate-[slideLeft_200ms_ease-out]"
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navigation"

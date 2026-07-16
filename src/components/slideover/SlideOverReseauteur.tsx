@@ -141,7 +141,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
             {/* Photo */}
             <div className="absolute -bottom-8 left-6">
               {data.photo?.thumbnailUrl ? (
-                <div className="w-16 h-16 rounded-2xl border-4 border-white bg-white shadow-md overflow-hidden">
+                <div className="w-16 h-16 rounded-2xl border-4 border-white bg-white overflow-hidden">
                   <Image
                     src={data.photo.thumbnailUrl}
                     alt={data.photo.alt ?? `${data.prenom} ${data.nom}`}
@@ -152,7 +152,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
                 </div>
               ) : (
                 <div
-                  className="w-16 h-16 rounded-2xl border-4 border-white bg-white shadow-md flex items-center justify-center"
+                  className="w-16 h-16 rounded-2xl border-4 border-white bg-white flex items-center justify-center"
                   style={{ background: `${secteurColor}20` }}
                 >
                   <span

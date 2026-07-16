@@ -164,7 +164,7 @@ export default function FAQUtilisateursPage() {
       />
       <div className="max-w-3xl mx-auto px-6 py-12">
         <Reveal>
-          <div className="rsn-card p-6 sm:p-8 shadow-sm">
+          <div className="rsn-card p-6 sm:p-8">
             <FAQAccordion sections={sections} />
           </div>
         </Reveal>

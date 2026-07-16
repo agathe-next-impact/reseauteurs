@@ -29,7 +29,7 @@ export default function FooterReseauteurs() {
             </li>
             <li>
               <Link href="/partenaires" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
-                Partenaires
+                Entreprises
               </Link>
             </li>
           </ul>
