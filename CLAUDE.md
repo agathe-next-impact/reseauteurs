@@ -71,7 +71,8 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
    > permanentes, événements gérés séparément). **`niveau` = un seul champ à 4 valeurs** (réconciliation
    > 2026-07-13 : « portée » et « niveau » = la même caractéristique). La **hiérarchie umbrella reste à
    > 2 étages** : une **tête de réseau** = *régional / national / international* (parent null, porte
-   > l'abonnement, peut avoir des chapitres) ; un **chapitre** = *local* (rattaché à une tête). Les gates
+   > l'abonnement, peut avoir des groupes) ; un **groupe** = *local* (rattaché à une tête ; terme UI
+   > tranché 2026-07-16 — l'ancien mot « chapitre » est banni de toute copie visible). Les gates
    > (facturation, publication d'événements, unicité « 1 tête par compte ») raisonnent **« tête (non-local)
    > vs local »** — cf. `estTete()` dans `lib/reseau-hierarchie.ts`.
 
@@ -103,13 +104,13 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
 > existante (checkout, Customer Portal, webhooks idempotents signés, factures PDF, crons d'expiration) est
 > **réutilisée**. Le statut payant est **toujours** posé côté serveur (webhook), jamais par le client (§11).
 
-### 4.1 Réseauteur — 2 niveaux d'accès (Plus **= 59 €/an** — gate P0 D2)
+### 4.1 Réseauteur — 2 niveaux d'accès (Plus **= 39 € HT/an** — décision 2026-07-16)
 | Niveau | Type | Accès |
 |---|---|---|
 | **Gratuit** *(actuel)* | — | Profil, fiche publique, carte, réseaux fréquentés, participation aux événements, offres partenaires, **inscription en ligne aux événements Plus**. |
-| **Plus** | Abonnement **59 €/an** (Subscription) | Tout le gratuit **+ créer des événements** (illimités, publication auto sur la carte) **+ gérer les inscriptions** de ses événements (liste des inscrits) **+ modifier/supprimer** ses événements. |
+| **Plus** | Abonnement **39 € HT/an** (Subscription) | Tout le gratuit **+ créer des événements** (illimités, publication auto sur la carte) **+ gérer les inscriptions** de ses événements (liste des inscrits) **+ modifier/supprimer** ses événements. |
 
-> **Prix : 59 €/an** (tranché au gate P0 D2, réaffirmé 2026-07-13 — *le « 39 € » de certains briefs est caduc*).
+> **Prix : 39 € HT/an** (décision 2026-07-16 — remplace le 59 €/an du gate P0 D2). ⚠️ Le prix Stripe réel est porté par `STRIPE_PLUS_PRICE_ID` : créer/pointer un Price à 39 € HT dans Stripe, sinon le checkout facture encore l'ancien montant.
 > **Pas de « profil vérifié » en V1** (reste une évolution future — §12).
 
 Le niveau est porté par le **compte réseauteur** (statut d'abonnement posé par le webhook Stripe). Un

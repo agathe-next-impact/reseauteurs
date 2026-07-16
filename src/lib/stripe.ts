@@ -125,7 +125,7 @@ export const PRODUITS = {
     },
     mode: 'subscription' as const,
   },
-  // ── ADR-0013 (gate P0 D2/D3) : Réseauteur Plus 59 €/an (Subscription) ;
+  // ── ADR-0013 (gate P0 D2/D3) : Réseauteur Plus 39 € HT/an (Subscription) ;
   //    packs de licences 10/50/100 à 300/600/1 000 € (Checkout one-shot).
   reseauteurPlus: {
     label: 'Réseauteur Plus',

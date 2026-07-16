@@ -1,16 +1,15 @@
 /**
- * Dashboard organisateur — Réseau, événements, abonnement.
+ * Dashboard organisateur — Fiche réseau + abonnement.
  *
  * ADR-0012 : deux cas selon la propriété du compte organisateur :
  *
  * 1. **National** (user possède un réseau `niveau=national`) :
  *    - Fiche du national + abonnement
- *    - Gestion des chapitres locaux (liste + point d'insertion `accounts-and-billing`)
- *    - Événements (nationaux + locaux visibles grâce à `peutGererReseau` umbrella)
- *
  * 2. **Local délégué** (user possède uniquement un réseau `niveau=local`) :
- *    - Fiche du local uniquement + ses événements
- *    - Pas de création de local ni d'abonnement (visible en lecture)
+ *    - Fiche du local uniquement
+ *
+ * La gestion des GROUPES LOCAUX vit sur /dashboard/locaux et celle des
+ * ÉVÉNEMENTS sur /dashboard/evenements (items dédiés de la barre latérale).
  *
  * Premium supprimé (ADR-0012) — la mécanique Stripe/abonnement/paliers est gérée
  * par `accounts-and-billing` (vague 3). Points d'insertion marqués clairement.
@@ -32,22 +31,17 @@ import {
   Mail,
   Phone,
   MapPin,
-  Plus,
   CheckCircle,
   AlertCircle,
-  Clock,
-  Users,
   Network,
   ExternalLink,
-  Lock,
 } from 'lucide-react'
 import { FicheReseauForm } from './FicheReseauForm'
-import { EvenementsManager } from './EvenementsManager'
-import { CheckoutPartenaireButton, PortalButton } from './CheckoutButtons'
+import { PortalButton } from './CheckoutButtons'
 import { BadgePartenaire } from '@/components/ui/BadgeReseauteur'
 import { AbonnementNationalStatus } from '@/components/billing/AbonnementNationalStatus'
 import Reveal from '@/components/home/Reveal'
-import type { Reseau, Media } from '@/types/reseauteurs-domain'
+import type { Media } from '@/types/reseauteurs-domain'
 
 export const metadata = {
   title: 'Mon réseau — Tableau de bord | RÉSEAUTEURS',
@@ -87,12 +81,7 @@ export default async function DashboardReseauPage() {
 
   if (national) {
     // ─── VUE NATIONALE ─────────────────────────────────────────────────────
-    return (
-      <NationalDashboard
-        national={national}
-        userId={user.id as string | number}
-      />
-    )
+    return <NationalDashboard national={national} />
   }
 
   // ─── VUE LOCAL DÉLÉGUÉ ──────────────────────────────────────────────────
@@ -137,30 +126,23 @@ export default async function DashboardReseauPage() {
 
 // ─── Dashboard national ─────────────────────────────────────────────────────
 
-async function NationalDashboard({
-  national,
-  userId,
-}: {
-  national: Record<string, unknown>
-  userId: string | number
-}) {
+async function NationalDashboard({ national }: { national: Record<string, unknown> }) {
   const payload = await getPayload({ config })
 
-  // Chapitres locaux du national
+  // Groupes locaux du national (compteur du résumé — gestion sur /dashboard/locaux)
   const { docs: locauxDocs, totalDocs: totalLocaux } = await payload.find({
     collection: 'reseaux',
     where: { parent: { equals: national.id as string | number } },
-    limit: 50,
-    sort: 'nom',
+    limit: 200,
     depth: 0,
     overrideAccess: true,
   })
 
-  // Événements du national ET de ses locaux (umbrella — peutGererReseau)
+  // Événements du national ET de ses locaux (compteur — gestion sur /dashboard/evenements)
   const localIds = locauxDocs.map((l) => l.id)
   const reseauIds = [national.id as string | number, ...localIds]
 
-  const { docs: evenements, totalDocs: totalEvenements } = await payload.find({
+  const { totalDocs: totalEvenements } = await payload.count({
     collection: 'evenements',
     where: {
       and: [
@@ -168,24 +150,12 @@ async function NationalDashboard({
         { reseau: { in: reseauIds } },
       ],
     },
-    limit: 50,
-    sort: '-dateDebut',
-    depth: 1,
     overrideAccess: true,
   })
 
   const estPartenaire = Boolean(national.partenaire)
-  const expireAt = national.partenaireExpireAt as string | null | undefined
   const logoMedia = national.logo as Media | null | undefined
   const logoUrl = logoMedia?.sizes?.thumbnail?.url ?? logoMedia?.url
-
-  const partenaireExpireDisplay = expireAt
-    ? new Date(expireAt).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : null
 
   return (
     <div className="rsn-page">
@@ -238,7 +208,7 @@ async function NationalDashboard({
           <div className="shrink-0 flex gap-3 text-xs text-[#71717a]">
             <span className="flex items-center gap-1">
               <Network size={11} className="text-[#a855f7]" aria-hidden />
-              {totalLocaux} chapitre{totalLocaux !== 1 ? 's' : ''}
+              {totalLocaux} groupe{totalLocaux !== 1 ? 's' : ''}
             </span>
             <span className="flex items-center gap-1">
               <Calendar size={11} aria-hidden />
@@ -287,151 +257,6 @@ async function NationalDashboard({
         </div>
       </div>
 
-      {/* Chapitres locaux */}
-      {/* POINT D'INSERTION accounts-and-billing (vague 3) :
-          - Remplacer le bouton "+ Créer un chapitre" par CreerLocalButton
-          - CreerLocalButton appelle la Server Action createLocalReseau (gate peutCreerLocal côté serveur)
-          - Si capacité dépassée → afficher "Montez de palier" avec lien portail Stripe
-          - Si non abonné → gate déjà visible via le bloc abonnement ci-dessus
-      */}
-      <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-            <Network size={14} className="text-[#a855f7]" aria-hidden />
-            Chapitres locaux
-            <span className="text-[#a1a1aa] font-normal">({totalLocaux})</span>
-          </h2>
-          {estPartenaire ? (
-            <Link
-              href="/dashboard/locaux"
-              className="flex items-center gap-1.5 text-xs bg-[#a855f7] text-white hover:bg-[#9333ea] px-3 py-1.5 rounded-lg font-medium transition-colors no-underline"
-            >
-              <Plus size={13} aria-hidden />
-              Gérer les chapitres
-            </Link>
-          ) : (
-            <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
-              <Lock size={13} aria-hidden />
-              Abonnement requis
-            </span>
-          )}
-        </div>
-        {locauxDocs.length === 0 ? (
-          <div className="p-8 text-center">
-            <Network size={28} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-            {estPartenaire ? (
-              <>
-                <p className="text-sm text-[#71717a] mb-4">
-                  Aucun chapitre local pour l&apos;instant. Créez votre premier chapitre.
-                </p>
-                <Link
-                  href="/dashboard/locaux"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#a855f7] text-white text-sm font-semibold hover:bg-[#9333ea] transition-colors no-underline"
-                >
-                  <Plus size={14} aria-hidden />
-                  Créer un chapitre
-                </Link>
-              </>
-            ) : (
-              <p className="text-sm text-[#71717a]">
-                Souscrivez un abonnement pour créer vos chapitres locaux.
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="divide-y divide-[#e4e4e7]">
-            {(locauxDocs as unknown as Record<string, unknown>[]).slice(0, 10).map((local) => {
-              const localLogo = local.logo as Media | null | undefined
-              const localLogoUrl = localLogo?.sizes?.thumbnail?.url ?? localLogo?.url
-              return (
-                <div key={local.id as string} className="flex items-center gap-3 px-6 py-3">
-                  {localLogoUrl ? (
-                    <Image
-                      src={localLogoUrl}
-                      alt={`Logo ${local.nom as string}`}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-lg object-contain border border-[#e4e4e7] shrink-0"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-lg bg-[#f3e8ff]/50 flex items-center justify-center text-[#a855f7] shrink-0" aria-hidden>
-                      <Network size={14} />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#18181b] truncate">{local.nom as string}</p>
-                    {(local.ville as string | null | undefined) && (
-                      <p className="text-xs text-[#71717a] flex items-center gap-1">
-                        <MapPin size={10} aria-hidden />
-                        {local.ville as string}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0 text-xs text-[#71717a]">
-                    <span>{(local.nbReseauteurs as number | null) ?? 0} membres</span>
-                    <Link
-                      href={`/reseau/${local.slug as string}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
-                      aria-label={`Voir la fiche de ${local.nom as string}`}
-                    >
-                      <ExternalLink size={12} aria-hidden />
-                    </Link>
-                  </div>
-                </div>
-              )
-            })}
-            {totalLocaux > 10 && (
-              <div className="px-6 py-3">
-                <Link href="/dashboard/locaux" className="text-xs text-[#a855f7] hover:text-[#9333ea] no-underline font-medium transition-colors">
-                  Voir tous les chapitres ({totalLocaux}) →
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Événements */}
-      <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-            <Calendar size={14} aria-hidden />
-            Événements
-            <span className="text-[#a1a1aa] font-normal">({totalEvenements})</span>
-          </h2>
-          {estPartenaire ? (
-            <button
-              type="button"
-              className="flex items-center gap-1.5 text-xs bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer"
-              data-action="new-event"
-            >
-              <Plus size={13} aria-hidden />
-              Nouvel événement
-            </button>
-          ) : (
-            <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
-              <Lock size={13} aria-hidden />
-              Abonnement requis
-            </span>
-          )}
-        </div>
-        {!estPartenaire ? (
-          <div className="p-8 text-center">
-            <AlertCircle size={28} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-            <p className="text-sm text-[#71717a]">
-              La publication d&apos;événements est réservée aux réseaux partenaires.
-            </p>
-          </div>
-        ) : (
-          <EvenementsManager
-            evenements={evenements as unknown as Record<string, unknown>[]}
-            reseauId={national.id as string | number}
-          />
-        )}
-      </div>
-
       {/* Factures */}
       {/* POINT D'INSERTION accounts-and-billing (vague 3) : composant FacturesList */}
       {estPartenaire && (
@@ -473,13 +298,10 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
       ? (local.parent as Record<string, unknown>)
       : null
 
-  // Événements du local délégué uniquement
-  const { docs: evenements, totalDocs: totalEvenements } = await payload.find({
+  // Événements du local délégué (compteur — gestion sur /dashboard/evenements)
+  const { totalDocs: totalEvenements } = await payload.count({
     collection: 'evenements',
     where: { reseau: { equals: local.id as string | number } },
-    limit: 50,
-    sort: '-dateDebut',
-    depth: 0,
     overrideAccess: true,
   })
 
@@ -501,7 +323,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
             <Network size={20} className="text-[#a855f7]" aria-hidden />
-            Mon chapitre local
+            Mon groupe local
           </h1>
           {!!local.slug && (
             <Link
@@ -585,7 +407,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Globe size={14} aria-hidden />
-            Informations du chapitre
+            Informations du groupe
           </h2>
         </div>
         <div className="p-6">
@@ -593,44 +415,6 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
         </div>
       </div>
 
-      {/* Événements */}
-      <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-            <Calendar size={14} aria-hidden />
-            Événements
-            <span className="text-[#a1a1aa] font-normal">({totalEvenements})</span>
-          </h2>
-          {nationalPartenaire ? (
-            <button
-              type="button"
-              className="flex items-center gap-1.5 text-xs bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer"
-              data-action="new-event"
-            >
-              <Plus size={13} aria-hidden />
-              Nouvel événement
-            </button>
-          ) : (
-            <span className="text-xs text-[#a1a1aa] flex items-center gap-1">
-              <Lock size={13} aria-hidden />
-              National non abonné
-            </span>
-          )}
-        </div>
-        {!nationalPartenaire ? (
-          <div className="p-8 text-center">
-            <AlertCircle size={28} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-            <p className="text-sm text-[#71717a]">
-              La publication d&apos;événements nécessite que le réseau national soit partenaire.
-            </p>
-          </div>
-        ) : (
-          <EvenementsManager
-            evenements={evenements as unknown as Record<string, unknown>[]}
-            reseauId={local.id as string | number}
-          />
-        )}
-      </div>
       </div>
     </div>
   )

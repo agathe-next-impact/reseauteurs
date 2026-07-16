@@ -109,6 +109,7 @@ export const Evenements: CollectionConfig = {
             { statut: { equals: 'publie' } },
             { 'reseau.user': { equals: user.id } },
             { 'organisateurReseauteur.user': { equals: user.id } },
+            { creeParUser: { equals: user.id } },
           ],
         } as Where
       }
@@ -116,12 +117,16 @@ export const Evenements: CollectionConfig = {
     },
     // Création : organisateur, réseauteur (Plus — vérifié dans le hook) ou admin.
     // Les vérifications ownership + statut payant sont faites dans le hook beforeValidate
-    // (abonnement du national pour un réseau ; estPlus pour un réseauteur — ADR-0013).
+    // (abonnement du national pour un réseau ; estPlus pour un réseauteur — ADR-0013 ;
+    // Plus admin déclaré du groupe local pour un événement de groupe — décision 2026-07-16).
     create: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
       return user.role === 'organisateur' || user.role === 'reseauteur'
     },
+    // creeParUser : un réseauteur Plus gère les événements qu'il a créés POUR un groupe
+    // local (reseau ≠ null, organisateurReseauteur = null) — sans toucher à ceux du
+    // compte organisateur du réseau.
     update: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
@@ -129,6 +134,7 @@ export const Evenements: CollectionConfig = {
         or: [
           { 'reseau.user': { equals: user.id } },
           { 'organisateurReseauteur.user': { equals: user.id } },
+          { creeParUser: { equals: user.id } },
         ],
       } as Where
     },
@@ -139,12 +145,23 @@ export const Evenements: CollectionConfig = {
         or: [
           { 'reseau.user': { equals: user.id } },
           { 'organisateurReseauteur.user': { equals: user.id } },
+          { creeParUser: { equals: user.id } },
         ],
       } as Where
     },
   },
   hooks: {
     beforeValidate: [
+      // ── Traçabilité/ownership : fige le compte créateur à la création (jamais le client).
+      //    Sert de clé d'ownership pour les événements de groupe créés par un réseauteur
+      //    Plus admin déclaré (reseau ≠ null, organisateurReseauteur = null).
+      async ({ data, req, operation }) => {
+        if (!data) return data
+        if (operation === 'create' && req.user && req.user.role !== 'admin') {
+          data.creeParUser = req.user.id
+        }
+        return data
+      },
       // ── Génère un slug stable depuis le titre (création uniquement)
       async ({ data, req, operation }) => {
         if (!data) return data
@@ -287,6 +304,46 @@ export const Evenements: CollectionConfig = {
               depth: 1,
               overrideAccess: true,
             })
+
+            // ── Branche réseauteur PLUS admin déclaré d'un groupe local (décision 2026-07-16).
+            //    Le Plus actif + la déclaration adminReseaux remplacent le gate d'abonnement
+            //    du national : c'est l'abonnement Plus qui ouvre la publication.
+            if (req.user.role === 'reseauteur') {
+              if ((reseau as { niveau?: string }).niveau !== 'local') {
+                throw new Error(
+                  'Vous ne pouvez créer un événement que pour un groupe local dont vous êtes admin.',
+                )
+              }
+              const freshUser = await req.payload.findByID({
+                collection: 'users',
+                id: req.user.id,
+                depth: 0,
+                overrideAccess: true,
+              })
+              if (!estPlus(freshUser as { id: number | string; plusActif?: boolean | null; plusExpireAt?: string | null })) {
+                throw new Error(
+                  'La création d\'événements est réservée aux réseauteurs Plus. ' +
+                  'Passez Plus depuis votre tableau de bord (abonnement ou code partenaire).',
+                )
+              }
+              const { totalDocs: estAdminDuGroupe } = await req.payload.count({
+                collection: 'reseauteurs',
+                where: {
+                  and: [
+                    { user: { equals: req.user.id } },
+                    { adminReseaux: { contains: reseauId } },
+                  ],
+                },
+                overrideAccess: true,
+              })
+              if (estAdminDuGroupe === 0) {
+                throw new Error(
+                  'Déclarez-vous d\'abord admin de ce groupe local (3 max) depuis votre espace ' +
+                  'Réseauteur Plus pour pouvoir créer ses événements.',
+                )
+              }
+              return data
+            }
 
             // ── Vérification ownership (direct ou umbrella national→local)
             if (!peutGererReseau(req.user as UserForHierarchy, reseau as unknown as ReseauForHierarchy)) {
@@ -707,6 +764,21 @@ export const Evenements: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Nom de la personne ayant créé l\'événement (traçabilité).',
+      },
+    },
+    {
+      name: 'creeParUser',
+      type: 'relationship',
+      relationTo: 'users',
+      index: true,
+      label: 'Créé par (compte)',
+      access: { update: isAdmin },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description:
+          'Compte ayant créé l\'événement (figé serveur à la création). Ownership des événements ' +
+          'de groupe créés par un réseauteur Plus admin déclaré (décision 2026-07-16).',
       },
     },
     // ============================================================

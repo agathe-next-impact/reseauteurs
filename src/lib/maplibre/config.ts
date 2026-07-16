@@ -70,7 +70,7 @@ export const MAP_COLORS = {
   evenement: '#16284f',
   /** Orange accent : marqueur événement organisé par un réseauteur Plus (ADR-0013) */
   evenementReseauteur: '#f5851f',
-  /** Violet secondaire : marqueur réseau local (chapitre/section — ADR-0012) */
+  /** Violet secondaire : marqueur réseau local (groupe/section — ADR-0012) */
   reseau: '#a855f7',
   /** Gris neutre : états vides, marqueurs sans catégorie */
   neutral: '#9ca3af',

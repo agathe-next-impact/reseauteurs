@@ -198,7 +198,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error('[admin/deleguer-local] Réassignation user failed:', err)
     return NextResponse.json(
-      { error: 'Erreur lors de la réassignation du chapitre.' },
+      { error: 'Erreur lors de la réassignation du groupe.' },
       { status: 500 },
     )
   }

@@ -21,11 +21,19 @@ export interface InscritLite {
   dateInscription: string
 }
 
+export interface GroupeAdminLite {
+  id: number
+  nom: string
+}
+
 export interface MonEvenement {
   id: number
   slug: string | null
   /** Calculé côté serveur (règle de pureté — pas de Date.now() en rendu client). */
   past: boolean
+  /** Groupe local organisateur (événement créé « pour un groupe » — décision 2026-07-16). */
+  reseauId: number | null
+  reseauNom: string | null
   titre: string
   type: number
   descriptionCourte: string | null
@@ -75,9 +83,12 @@ function toLocalInput(iso: string | null): string {
 export function MesEvenementsClient({
   evenements,
   types,
+  groupesAdmin = [],
 }: {
   evenements: MonEvenement[]
   types: TypeEvLite[]
+  /** Groupes locaux dont le réseauteur est admin déclaré (choix d'organisateur à la création). */
+  groupesAdmin?: GroupeAdminLite[]
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState<MonEvenement | 'new' | null>(null)
@@ -91,6 +102,9 @@ export function MesEvenementsClient({
     const data: EvenementFormData = {
       titre: s('titre'),
       type: Number(fd.get('type')),
+      // Organisateur (création uniquement) : '' = en mon nom, sinon id du groupe admin
+      organisateurReseau:
+        editing === 'new' && fd.get('organisateurReseau') ? Number(fd.get('organisateurReseau')) : null,
       descriptionCourte: s('descriptionCourte'),
       description: s('description'),
       intervenants: s('intervenants'),
@@ -156,6 +170,27 @@ export function MesEvenementsClient({
           <h2 className="text-sm font-semibold text-[#18181b]">
             {current ? `Modifier « ${current.titre} »` : 'Nouvel événement'}
           </h2>
+
+          {/* Organisateur — en mon nom OU pour un groupe admin (création ; figé ensuite) */}
+          {!current && groupesAdmin.length > 0 && (
+            <div>
+              <label htmlFor="organisateurReseau" className={labelClass}>Organisateur</label>
+              <select id="organisateurReseau" name="organisateurReseau" defaultValue="" className={inputClass}>
+                <option value="">En mon nom</option>
+                {groupesAdmin.map((g) => (
+                  <option key={g.id} value={g.id}>Pour le groupe : {g.nom}</option>
+                ))}
+              </select>
+              <p className="text-xs text-[#a1a1aa] mt-1">
+                Un événement de groupe apparaît au nom du groupe sur sa fiche et sur la carte.
+              </p>
+            </div>
+          )}
+          {current?.reseauNom && (
+            <p className="text-xs text-[#71717a] bg-[#fafafa] border border-[#e4e4e7] rounded-xl px-3 py-2">
+              Événement organisé pour le groupe <strong>{current.reseauNom}</strong> (non modifiable).
+            </p>
+          )}
 
           <div>
             <label htmlFor="titre" className={labelClass}>Titre *</label>
@@ -369,6 +404,11 @@ export function MesEvenementsClient({
                       {ev.titre}
                       {past && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">passé</span>}
                       {ev.statut !== 'publie' && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-amber-600">{ev.statut}</span>}
+                      {ev.reseauNom && (
+                        <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-[#a855f7]">
+                          Pour {ev.reseauNom}
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-[#71717a] flex items-center gap-2 mt-0.5">
                       <span className="inline-flex items-center gap-1"><CalendarDays size={11} aria-hidden />{d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>

@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildTogglePageMetadata('/reseaux', {
     title: `Réseaux d'affaires — BNI, DCF, CJD et tous les réseaux | ${SITE_NAME}`,
     description:
-      'Tous les réseaux d\'affaires et leurs chapitres locaux sur RÉSEAUTEURS : BNI, DCF, CJD, Dynabuy, Rotary, CPME… Explorez en annuaire ou sur la carte.',
+      'Tous les réseaux d\'affaires et leurs groupes locaux sur RÉSEAUTEURS : BNI, DCF, CJD, Dynabuy, Rotary, CPME… Explorez en annuaire ou sur la carte.',
   })
 }
 
@@ -173,7 +173,7 @@ export default async function ReseauxPage({
 
   const nationaux = nationauxRaw as Reseau[]
 
-  // Agrégation SSR des compteurs des chapitres locaux (Q7) — SQL GROUP BY borné aux
+  // Agrégation SSR des compteurs des groupes locaux (Q7) — SQL GROUP BY borné aux
   // têtes de la PAGE COURANTE (remplace un fetch-all `limit: 10000` + somme JS).
   type AggEntry = { nbReseauteurs: number; nbEvenements: number; nbLocaux: number }
   const aggregates: Record<string, AggEntry> = {}
@@ -307,7 +307,7 @@ export default async function ReseauxPage({
                         {agg.nbLocaux > 0 && (
                           <span className="flex items-center gap-1 text-xs text-[#71717a]">
                             <Network size={11} className="text-[#a855f7]" aria-hidden />
-                            {agg.nbLocaux} chapitre{agg.nbLocaux !== 1 ? 's' : ''}
+                            {agg.nbLocaux} groupe{agg.nbLocaux !== 1 ? 's' : ''}
                           </span>
                         )}
                       </div>

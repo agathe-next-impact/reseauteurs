@@ -1,6 +1,6 @@
 /**
  * Espace réseauteur — Réseauteur Plus (/dashboard/plus) — ADR-0013 P2.B.
- * Deux chemins d'activation : abonnement Stripe (59 €/an) OU code promo partenaire.
+ * Deux chemins d'activation : abonnement Stripe (39 € HT/an) OU code promo partenaire.
  * Le statut est lu FRAIS côté serveur (jamais le JWT).
  */
 import { headers } from 'next/headers'
@@ -12,6 +12,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
 import { PlusClient } from './PlusClient'
+import { AdminGroupesClient, type GroupeLite } from './AdminGroupesClient'
 
 export const metadata = {
   title: 'Réseauteur Plus — Tableau de bord | RÉSEAUTEURS',
@@ -38,6 +39,40 @@ export default async function PlusPage() {
     plusExpireAt?: string | null
     plusSource?: string | null
   }
+  const actif = estPlus({ id: freshUser.id, plusActif: u.plusActif, plusExpireAt: u.plusExpireAt })
+
+  // Déclaration des groupes administrés (décision 2026-07-16) — Plus actif uniquement.
+  let groupes: GroupeLite[] = []
+  let adminActuels: number[] = []
+  if (actif) {
+    const [{ docs: locaux }, { docs: profs }] = await Promise.all([
+      payload.find({
+        collection: 'reseaux',
+        where: { and: [{ niveau: { equals: 'local' } }, { statut: { equals: 'publiee' } }] },
+        depth: 0,
+        limit: 500,
+        sort: 'nom',
+        overrideAccess: true,
+        select: { nom: true, ville: true } as Record<string, boolean>,
+      }),
+      payload.find({
+        collection: 'reseauteurs',
+        where: { user: { equals: user.id } },
+        depth: 0,
+        limit: 1,
+        overrideAccess: true,
+      }),
+    ])
+    groupes = locaux.map((l) => ({
+      id: l.id as number,
+      nom: ((l as { nom?: string }).nom as string) ?? String(l.id),
+      ville: ((l as { ville?: string | null }).ville as string | null) ?? null,
+    }))
+    const rels = (profs[0] as { adminReseaux?: unknown } | undefined)?.adminReseaux
+    adminActuels = (Array.isArray(rels) ? rels : [])
+      .map((r) => Number(typeof r === 'object' && r !== null ? (r as { id?: unknown }).id : r))
+      .filter(Number.isFinite)
+  }
 
   return (
     <div className="rsn-page">
@@ -60,14 +95,17 @@ export default async function PlusPage() {
         </Reveal>
 
         <PlusClient
-          actif={estPlus({
-            id: freshUser.id,
-            plusActif: u.plusActif,
-            plusExpireAt: u.plusExpireAt,
-          })}
+          actif={actif}
           expireAt={u.plusExpireAt ?? null}
           source={(u.plusSource as 'abonnement' | 'licence' | null) ?? null}
         />
+
+        {/* Groupes administrés (décision 2026-07-16) — Plus actif uniquement */}
+        {actif && (
+          <div className="mt-6">
+            <AdminGroupesClient groupes={groupes} initialSelected={adminActuels} />
+          </div>
+        )}
       </div>
     </div>
   )

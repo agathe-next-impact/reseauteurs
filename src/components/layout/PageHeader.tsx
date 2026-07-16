@@ -11,7 +11,7 @@ import StatStrip, { type Stat } from './StatStrip'
  *   <PageHeader
  *     eyebrow="Réseaux" icon={<Network size={13} />} tone="orange"
  *     title={<>Réseaux d'affaires</>}
- *     lead="Tous les réseaux et leurs chapitres locaux."
+ *     lead="Tous les réseaux et leurs groupes locaux."
  *     actions={<Link className="ir-atlas-primary" href="…">…</Link>}
  *     stats={[{ value: 120, label: 'Réseaux' }]}
  *   />

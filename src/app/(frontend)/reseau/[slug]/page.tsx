@@ -92,7 +92,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
 
   // Réseauteurs et événements liés (affichage limité à 12/6 en fiche)
   // + locaux du national (pour subOrganization JSON-LD — ADR-0012)
-  const [{ docs: reseauteurs }, { docs: evenements }, locauxRes] = await Promise.all([
+  // + admins déclarés du groupe local (réseauteurs Plus — décision 2026-07-16)
+  const [{ docs: reseauteurs }, { docs: evenements }, locauxRes, adminsRes] = await Promise.all([
     withDbRetry(
       () => payload.find({
         collection: 'reseauteurs',
@@ -151,6 +152,27 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
           { label: `reseau:find locaux ${slug}` },
         )
       : Promise.resolve(null),
+    // Admins déclarés du groupe (réseauteurs Plus — décision 2026-07-16) : locaux uniquement.
+    reseau.niveau === 'local'
+      ? withDbRetry(
+          () =>
+            payload.find({
+              collection: 'reseauteurs',
+              where: {
+                and: [
+                  { adminReseaux: { contains: reseau.id } },
+                  { statut: { equals: 'valide' } },
+                ],
+              },
+              depth: 0,
+              sort: 'nom',
+              limit: 12,
+              overrideAccess: true,
+              select: { slug: true, prenom: true, nom: true, fonction: true } as Record<string, boolean>,
+            }),
+          { label: `reseau:find admins ${slug}` },
+        )
+      : Promise.resolve(null),
   ])
 
   const logoMedia = reseau.logo as Media | null | undefined
@@ -207,6 +229,14 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   const reseauteursDocs = reseauteurs as Reseauteur[]
   const evenementsDocs = evenements as Evenement[]
   const locauxDocs = locauxRes?.docs as ReseauLocalLite[] | undefined
+  // Admins déclarés du groupe (réseauteurs Plus) — fiche d'un réseau LOCAL uniquement
+  const adminsDocs = (adminsRes?.docs ?? []) as Array<{
+    id: number
+    slug?: string | null
+    prenom?: string | null
+    nom?: string | null
+    fonction?: string | null
+  }>
 
   // Compteurs agrégés SSR pour un national (Q7 ADR-0012)
   const isNational = reseau.niveau !== 'local'
@@ -217,8 +247,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
     ? (locauxDocs ?? []).reduce((sum, l) => sum + ((l as unknown as Reseau).nbEvenements ?? 0), 0)
     : (reseau.nbEvenements ?? 0)
 
-  // Chart « chapitres locaux » — uniquement si données réelles (nbReseauteurs par chapitre).
-  const chapitresBars: BarDatum[] = (locauxDocs ?? [])
+  // Chart « groupes locaux » — uniquement si données réelles (nbReseauteurs par groupe).
+  const groupesBars: BarDatum[] = (locauxDocs ?? [])
     .map((l) => ({ label: l.nom, value: (l as unknown as Reseau).nbReseauteurs ?? 0 }))
     .filter((b) => b.value > 0)
     .sort((a, b) => b.value - a.value)
@@ -328,7 +358,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                     <span className="flex items-center gap-1.5 text-sm text-white/80">
                       <Network size={14} className="text-[#d8b4fe]" aria-hidden />
                       <strong className="font-semibold text-white">{locauxDocs!.length}</strong>
-                      <span>chapitre{(locauxDocs?.length ?? 0) > 1 ? 's' : ''}</span>
+                      <span>groupe{(locauxDocs?.length ?? 0) > 1 ? 's' : ''}</span>
                     </span>
                   )}
                 </div>
@@ -449,16 +479,16 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </Reveal>
             )}
 
-            {/* Chapitres locaux — classement par nombre de réseauteurs (données réelles) */}
-            {isNational && chapitresBars.length > 1 && (
+            {/* Groupes locaux — classement par nombre de réseauteurs (données réelles) */}
+            {isNational && groupesBars.length > 1 && (
               <Reveal>
                 <div className="rsn-panel rounded-xl">
                   <div className="rsn-panel-head">
-                    <h2 className="rsn-panel-title">Chapitres les plus suivis</h2>
+                    <h2 className="rsn-panel-title">Groupes les plus suivis</h2>
                     <span className="rsn-tag">par réseauteurs</span>
                   </div>
                   <div className="rsn-panel-body">
-                    <BarMini bars={chapitresBars} height={180} color="#a855f7" valueSuffix=" membres" />
+                    <BarMini bars={groupesBars} height={180} color="#a855f7" valueSuffix=" membres" />
                   </div>
                 </div>
               </Reveal>
@@ -581,14 +611,14 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </Reveal>
             )}
 
-              {/* Chapitres locaux (uniquement pour un national — ADR-0012) */}
+              {/* Groupes locaux (uniquement pour un national — ADR-0012) */}
             {isNational && locauxDocs && locauxDocs.length > 0 && (
               <Reveal>
                 <section aria-labelledby="locaux-titre">
                   <div className="flex items-center justify-between mb-3">
                     <h2 id="locaux-titre" className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
                       <Network size={14} className="text-[#a855f7]" aria-hidden />
-                      Chapitres locaux
+                      Groupes locaux
                       <span className="text-[#a1a1aa] font-normal">({locauxDocs.length})</span>
                     </h2>
                     {locauxDocs.length > 8 && (
@@ -601,7 +631,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                       </Link>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="list" aria-label="Chapitres locaux">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="list" aria-label="Groupes locaux">
                     {(locauxDocs as ReseauLocalLite[]).slice(0, 8).map((local) => (
                       <Link
                         key={local.id}
@@ -620,9 +650,43 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                   </div>
                   {locauxDocs.length > 8 && (
                     <p className="text-xs text-[#a1a1aa] mt-2 text-center">
-                      et {locauxDocs.length - 8} autre{locauxDocs.length - 8 > 1 ? 's' : ''} chapitre{locauxDocs.length - 8 > 1 ? 's' : ''}
+                      et {locauxDocs.length - 8} autre{locauxDocs.length - 8 > 1 ? 's' : ''} groupe{locauxDocs.length - 8 > 1 ? 's' : ''}
                     </p>
                   )}
+                </section>
+              </Reveal>
+            )}
+
+          {/* Admins du groupe — réseauteurs Plus déclarés (décision 2026-07-16) */}
+            {adminsDocs.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="admins-groupe-titre">
+                  <h2 id="admins-groupe-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                    <Users size={14} aria-hidden />
+                    Admins du groupe
+                  </h2>
+                  <div className="space-y-2">
+                    {adminsDocs.map((a) => (
+                      <Link
+                        key={a.id}
+                        href={`/reseauteur/${a.slug ?? ''}`}
+                        className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#f5851f]/50 transition-colors no-underline group"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#c2410c] font-bold text-xs shrink-0" aria-hidden>
+                          {a.prenom?.charAt(0)}{a.nom?.charAt(0)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-[#18181b] truncate group-hover:text-[#c2410c] transition-colors">
+                            {a.prenom} {a.nom}
+                          </p>
+                          <p className="text-[11px] text-[#a1a1aa] truncate">
+                            Admin du groupe{a.fonction ? ` · ${a.fonction}` : ''}
+                          </p>
+                        </div>
+                        <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#c2410c] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                      </Link>
+                    ))}
+                  </div>
                 </section>
               </Reveal>
             )}
@@ -705,7 +769,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             )}
           </div>
 
-          {/* Maillage interne — autres chapitres du même national (seo-engineer — ADR-0012) */}
+          {/* Maillage interne — autres groupes du même national (seo-engineer — ADR-0012) */}
           {reseau.niveau === 'local' && parentDoc && (
             <MaillageReseau
               excludeId={reseau.id}

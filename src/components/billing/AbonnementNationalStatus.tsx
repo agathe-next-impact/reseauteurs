@@ -49,7 +49,7 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-green-800 mb-1">Abonnement réseau actif</p>
             <p className="text-xs text-green-700">
-              Création de chapitres locaux · Publication d&apos;événements · Fiche enrichie · Logo page d&apos;accueil.
+              Création de groupes locaux · Publication d&apos;événements · Fiche enrichie · Logo page d&apos;accueil.
             </p>
           </div>
           <PortalButton className="shrink-0 text-xs text-green-700 border border-green-300 bg-white hover:bg-green-50 px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-60">
@@ -66,10 +66,10 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
           </div>
           <div className="flex items-center gap-1.5 text-green-700">
             <Network size={12} aria-hidden />
-            <span className="font-medium">Chapitres locaux :</span>
+            <span className="font-medium">Groupes locaux :</span>
             <span
               className={capaciteAtteinte ? 'text-amber-700 font-semibold' : ''}
-              aria-label={`${nbLocaux} chapitres sur ${maxLocauxPalier} autorisés`}
+              aria-label={`${nbLocaux} groupes sur ${maxLocauxPalier} autorisés`}
             >
               {nbLocaux} / {maxLocauxPalier === 999 ? '∞' : maxLocauxPalier}
             </span>
@@ -88,10 +88,10 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
             <TrendingUp size={15} className="text-amber-600 shrink-0 mt-0.5" aria-hidden />
             <div className="flex-1">
               <p className="text-xs font-semibold text-amber-800 mb-0.5">
-                Capacité atteinte — {nbLocaux} chapitre{nbLocaux > 1 ? 's' : ''} sur {maxLocauxPalier === 999 ? '∞' : maxLocauxPalier}
+                Capacité atteinte — {nbLocaux} groupe{nbLocaux > 1 ? 's' : ''} sur {maxLocauxPalier === 999 ? '∞' : maxLocauxPalier}
               </p>
               <p className="text-xs text-amber-700">
-                Votre palier actuel ({palier ?? 'starter'}) est plein. Montez de palier pour créer davantage de chapitres.
+                Votre palier actuel ({palier ?? 'starter'}) est plein. Montez de palier pour créer davantage de groupes.
               </p>
               <PortalButton className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-amber-800 border border-amber-300 bg-white hover:bg-amber-50 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60">
                 <TrendingUp size={11} aria-hidden />
@@ -112,7 +112,7 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#18181b] mb-1">Sans abonnement</p>
           <p className="text-xs text-[#71717a] mb-3">
-            Souscrivez un abonnement pour créer vos chapitres locaux et publier des événements.
+            Souscrivez un abonnement pour créer vos groupes locaux et publier des événements.
           </p>
           {/* Sélecteur de palier */}
           <PalierSelector reseauId={national.id as string | number} />

@@ -4,13 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Check, UserPlus, Sparkles } from 'lucide-react'
+import { Check, UserPlus, Sparkles, CalendarPlus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell from '@/components/layout/AuthShell'
 
-// Toutes les inscriptions créent un compte gratuit. Les réseauteurs sont gratuits ;
-// un organisateur souscrit l'abonnement réseau partenaire depuis /dashboard/abonnement
-// après vérification de son email (évite une session Stripe orpheline si la vérif échoue).
+// Toutes les inscriptions créent un compte gratuit — y compris le choix « Réseauteur+ » :
+// l'abonnement Plus (39 € HT/an) se souscrit depuis /dashboard/plus après vérification de
+// l'email (évite une session Stripe orpheline si la vérif échoue). Le choix fait à
+// l'inscription oriente simplement le parcours post-connexion. Même logique pour un
+// organisateur (abonnement réseau partenaire depuis /dashboard/abonnement).
 const STEPS_RESEAUTEUR = ['Votre compte', 'Votre profil']
 const STEPS_ORGANISATEUR = ['Votre compte', 'Votre organisation']
 
@@ -31,14 +33,14 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
 export default function InscriptionPage() {
   const searchParams = useSearchParams()
   const groupeCodeParam = (searchParams.get('code') ?? '').trim().slice(0, 20).toUpperCase()
-  const postSignupLoginUrl = groupeCodeParam
-    ? `/login?redirect=${encodeURIComponent(`/dashboard/groupe?code=${groupeCodeParam}`)}`
-    : '/login'
 
   const typeParam = searchParams.get('type')
   const [accountType, setAccountType] = useState<'reseauteur' | 'organisateur' | 'partenaire' | null>(
     typeParam === 'partenaire' ? 'partenaire' : typeParam === 'organisateur' ? 'organisateur' : null,
   )
+  // Choix de formule réseauteur (étape immédiatement après le choix « Réseauteur ») :
+  // gratuit, ou Réseauteur+ (l'abonnement se souscrit après vérification de l'email).
+  const [offreReseauteur, setOffreReseauteur] = useState<'gratuit' | 'plus' | null>(null)
   const [step, setStep] = useState(0)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -59,6 +61,13 @@ export default function InscriptionPage() {
   const [ville, setVille] = useState('')
 
   const pwStrength = getPasswordStrength(password)
+
+  // Destination après connexion : code de groupe > activation Réseauteur+ > défaut.
+  const postSignupLoginUrl = groupeCodeParam
+    ? `/login?redirect=${encodeURIComponent(`/dashboard/groupe?code=${groupeCodeParam}`)}`
+    : accountType === 'reseauteur' && offreReseauteur === 'plus'
+      ? `/login?redirect=${encodeURIComponent('/dashboard/plus')}`
+      : '/login'
 
   function nextStep() {
     setError('')
@@ -92,7 +101,10 @@ export default function InscriptionPage() {
   function prevStep() {
     setError('')
     if (step === 0) {
-      setAccountType(null)
+      // Réseauteur : retour à l'étape de choix de formule (Gratuit / Réseauteur+) ;
+      // les autres types reviennent au choix du type de compte.
+      if (accountType === 'reseauteur') setOffreReseauteur(null)
+      else setAccountType(null)
       return
     }
     setStep((s) => s - 1)
@@ -156,7 +168,9 @@ export default function InscriptionPage() {
           <p className="text-sm text-text-light mb-4">
             {accountType === 'organisateur'
               ? "Pour publier vos événements, souscrivez à l'abonnement réseau partenaire depuis votre tableau de bord après vérification de votre email."
-              : 'Votre compte réseauteur est gratuit. Complétez votre profil pour apparaître sur la carte des réseauteurs.'}
+              : accountType === 'reseauteur' && offreReseauteur === 'plus'
+                ? 'Après vérification de votre email et connexion, activez votre abonnement Réseauteur+ (39 € HT / an) depuis votre tableau de bord pour créer vos propres événements.'
+                : 'Votre compte réseauteur est gratuit. Complétez votre profil pour apparaître sur la carte des réseauteurs.'}
           </p>
           {groupeCodeParam && (
             <p className="text-sm text-text-light mb-4">
@@ -229,6 +243,189 @@ export default function InscriptionPage() {
     )
   }
 
+  // Étape immédiatement après le choix « Réseauteur » : Gratuit ou Réseauteur+.
+  if (accountType === 'reseauteur' && offreReseauteur === null) {
+    const AVANTAGES_GRATUIT = [
+      'Création d\'une fiche professionnelle',
+      'Être visible sur la carte des Réseauteurs',
+      'Être contacté par les autres membres',
+      'Rechercher et contacter les Réseauteurs',
+      'Consulter tous les événements',
+      'S\'inscrire aux événements',
+      'Découvrir les réseaux partenaires',
+      'Accéder aux partenaires de la plateforme',
+    ]
+    const EXEMPLES_EVENEMENTS = [
+      'Petit-déjeuner networking',
+      'Déjeuner entre entrepreneurs',
+      'Afterwork',
+      'Visite de votre entreprise',
+      'Rencontre informelle',
+      'Atelier ou conférence',
+    ]
+    const CHAMPS_EVENEMENT = [
+      'le titre',
+      'la description',
+      'la date',
+      'les horaires',
+      'le lieu',
+      'le nombre de places',
+      'les modalités d\'inscription',
+      'les éventuelles conditions de participation',
+    ]
+    return (
+      <AuthShell
+        wide
+        title="Choisissez votre formule"
+        subtitle="Compte réseauteur"
+        footer={
+          <p>
+            Déjà un compte ?{' '}
+            <Link href="/login" className="font-medium text-primary hover:text-primary-hover">
+              Se connecter
+            </Link>
+          </p>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+          {/* ── Offre gratuite ── */}
+          <section
+            aria-label="Offre Réseauteur gratuit"
+            className="flex flex-col rounded-2xl border border-[#e4e4e7] bg-white p-6"
+          >
+            <h2 className="text-lg font-bold text-[#16284f]">Réseauteur</h2>
+            <p className="text-2xl font-extrabold text-[#16284f] mt-1">Gratuit</p>
+            <p className="text-sm text-[#71717a] mt-2 mb-4">
+              Pour les personnes qui souhaitent développer leur réseau professionnel.
+            </p>
+            <ul className="space-y-2 text-sm text-[#52525b] flex-1">
+              {AVANTAGES_GRATUIT.map((a) => (
+                <li key={a} className="flex items-start gap-2">
+                  <Check size={15} className="text-[#2563EB] shrink-0 mt-0.5" aria-hidden />
+                  {a}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => setOffreReseauteur('gratuit')}
+              className="mt-6 w-full py-2.5 px-4 rounded-xl border border-[#d4d4d8] text-sm font-semibold text-[#16284f] bg-white hover:bg-[#f4f4f5] transition-colors cursor-pointer"
+            >
+              S&apos;inscrire gratuitement
+            </button>
+          </section>
+
+          {/* ── Offre Réseauteur+ (mise en avant) ── */}
+          <section
+            aria-label="Offre Réseauteur+ recommandée"
+            className="relative flex flex-col rounded-2xl border-2 border-[#f5851f] bg-[#fffbf5] p-6 shadow-lg shadow-[#f5851f]/15"
+          >
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#f5851f] text-white text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+              Recommandé
+            </span>
+            <h2 className="text-lg font-bold text-[#16284f]">⭐ Réseauteur+</h2>
+            <p className="text-2xl font-extrabold text-[#c2410c] mt-1">
+              39 € <span className="text-base font-semibold">HT / an</span>
+            </p>
+            <p className="text-sm font-semibold text-[#16284f] mt-3">
+              Tout ce qui est inclus dans le compte Réseauteur, <strong>PLUS :</strong>
+            </p>
+            <div className="mt-3 flex-1">
+              <p className="text-sm font-bold text-[#16284f] flex items-center gap-1.5">
+                <CalendarPlus size={15} className="text-[#c2410c]" aria-hidden />
+                Créez vos propres événements
+              </p>
+              <p className="text-sm text-[#52525b] mt-1">
+                Vous pouvez organiser librement vos propres rencontres, sans passer par un réseau
+                ou une association.
+              </p>
+              <p className="text-xs font-semibold text-[#71717a] uppercase tracking-wide mt-3 mb-1.5">
+                Par exemple
+              </p>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5 text-sm text-[#52525b]">
+                {EXEMPLES_EVENEMENTS.map((e) => (
+                  <li key={e} className="flex items-start gap-2">
+                    <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+                    {e}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs font-semibold text-[#71717a] uppercase tracking-wide mt-4 mb-1.5">
+                Lors de la création d&apos;un événement, le membre peut définir
+              </p>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-sm text-[#52525b]">
+                {CHAMPS_EVENEMENT.map((c) => (
+                  <li key={c} className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-[#f5851f] shrink-0 mt-2" aria-hidden />
+                    {c}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm text-[#52525b] mt-3">
+                Les autres Réseauteurs peuvent ensuite s&apos;inscrire directement à cet événement.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOffreReseauteur('plus')}
+              className="mt-6 w-full py-3 px-4 rounded-xl bg-[#f5851f] text-white text-base font-bold hover:bg-[#e47318] transition-colors shadow-md shadow-[#f5851f]/30 cursor-pointer"
+            >
+              Devenir Réseauteur+
+            </button>
+          </section>
+        </div>
+
+        {/* ── Encadré : devenez créateur de connexions ── */}
+        <aside
+          aria-label="Devenez créateur de connexions"
+          className="mt-5 rounded-2xl bg-[#16284f] text-white p-6"
+        >
+          <h2 className="text-base font-bold">🚀 Devenez créateur de connexions</h2>
+          <p className="text-sm text-white/85 mt-2">
+            Avec Réseauteur+, vous ne vous contentez plus de participer aux événements…{' '}
+            <strong className="text-white">Vous les créez.</strong>
+          </p>
+          <p className="text-sm text-white/85 mt-3">Invitez les membres de Réseauteurs à venir :</p>
+          <ul className="mt-1.5 space-y-1 text-sm text-white/85">
+            <li className="flex items-start gap-2">
+              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              découvrir votre entreprise,
+            </li>
+            <li className="flex items-start gap-2">
+              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              partager un café,
+            </li>
+            <li className="flex items-start gap-2">
+              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              participer à un déjeuner,
+            </li>
+            <li className="flex items-start gap-2">
+              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              échanger lors d&apos;un afterwork,
+            </li>
+            <li className="flex items-start gap-2">
+              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              ou organiser toute autre rencontre professionnelle.
+            </li>
+          </ul>
+          <p className="text-sm text-white/85 mt-3">
+            Vous développez ainsi votre réseau personnel tout au long de l&apos;année.
+          </p>
+        </aside>
+
+        <div className="mt-5 text-center">
+          <button
+            type="button"
+            onClick={() => setAccountType(null)}
+            className="text-sm text-[#71717a] hover:text-[#16284f] transition-colors cursor-pointer"
+          >
+            ← Choisir un autre type de compte
+          </button>
+        </div>
+      </AuthShell>
+    )
+  }
+
   return (
     <AuthShell
       title={
@@ -236,7 +433,9 @@ export default function InscriptionPage() {
           ? 'Créez votre compte organisateur'
           : accountType === 'partenaire'
             ? 'Créez votre compte partenaire'
-            : 'Créez votre profil réseauteur — gratuit'
+            : offreReseauteur === 'plus'
+              ? 'Créez votre compte Réseauteur+'
+              : 'Créez votre profil réseauteur — gratuit'
       }
       footer={
         <>
@@ -268,6 +467,21 @@ export default function InscriptionPage() {
               Code <span className="font-mono font-semibold">{groupeCodeParam}</span> — il sera
               disponible pour rejoindre le groupe depuis votre tableau de bord après vérification
               de votre email.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {accountType === 'reseauteur' && offreReseauteur === 'plus' && (
+        <div className="mb-6 bg-[#fff7ed] border border-[#fed7aa] rounded-xl p-4 flex items-start gap-3">
+          <Sparkles size={20} className="text-[#c2410c] shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-text-dark">
+              Formule choisie : ⭐ Réseauteur+ — 39 € HT / an
+            </p>
+            <p className="text-sm text-text-medium mt-0.5">
+              Votre compte est créé gratuitement ; vous activerez votre abonnement depuis votre
+              tableau de bord après vérification de votre email.
             </p>
           </div>
         </div>

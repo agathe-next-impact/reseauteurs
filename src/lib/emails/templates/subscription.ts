@@ -39,7 +39,7 @@ export function subscriptionConfirmationEmail(
       title: `Abonnement ${esc(planLabel)} actif`,
       body: `<p style="margin:0">Merci pour votre confiance. Votre abonnement est en place et votre fiche bénéficie désormais de toutes les fonctionnalités associées.</p>`,
     })}
-    ${paragraph(`Vous pouvez dès maintenant publier vos événements, gérer vos chapitres locaux et accéder à votre tableau de bord organisateur.`)}
+    ${paragraph(`Vous pouvez dès maintenant publier vos événements, gérer vos groupes locaux et accéder à votre tableau de bord organisateur.`)}
     ${button({ href: `${SITE_URL}/dashboard/reseau`, label: 'Accéder à mon espace', variant: 'primary' })}
   `
   return renderEmail({

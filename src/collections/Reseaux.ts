@@ -89,7 +89,7 @@ export const Reseaux: CollectionConfig = {
       return { statut: { equals: 'publiee' } }
     },
     // Création réservée à l'admin : la tête d'un organisateur est auto-créée par le hook
-    // afterChange de Users, les chapitres locaux via /dashboard/locaux et la délégation
+    // afterChange de Users, les groupes locaux via /dashboard/locaux et la délégation
     // admin — tous en overrideAccess. Aucun create utilisateur-contexte légitime → on ferme
     // l'API générique (C3 : partenaire/niveau posés au create via POST /api/reseaux).
     create: isAdmin,
@@ -184,7 +184,7 @@ export const Reseaux: CollectionConfig = {
           data.parent = null
         }
 
-        // CHAPITRE local → parent requis, et le parent doit être une tête.
+        // GROUPE local → parent requis, et le parent doit être une tête.
         if (niveau === 'local') {
           if (!data.parent) {
             throw new Error(
@@ -317,7 +317,7 @@ export const Reseaux: CollectionConfig = {
           overrideAccess: true,
         })
         const niveauReseau = reseau?.niveau ?? 'national'
-        // Toute tête (non-local) avec des chapitres locaux ne peut pas être supprimée.
+        // Toute tête (non-local) avec des groupes locaux ne peut pas être supprimée.
         if (niveauReseau !== 'local') {
           const { totalDocs: nbLocaux } = await req.payload.count({
             collection: 'reseaux',
@@ -383,9 +383,9 @@ export const Reseaux: CollectionConfig = {
       type: 'select',
       // Échelle du réseau — champ UNIQUE à 4 valeurs (réconciliation 2026-07-13).
       // Tête de réseau = Régional / National / International (porte l'abonnement, peut
-      // avoir des chapitres locaux) ; Local = chapitre rattaché à une tête.
+      // avoir des groupes locaux) ; Local = groupe rattaché à une tête.
       options: [
-        { label: 'Local (chapitre, section)', value: 'local' },
+        { label: 'Local (groupe, section)', value: 'local' },
         { label: 'Régional (tête de réseau)', value: 'regional' },
         { label: 'National (tête de réseau)', value: 'national' },
         { label: 'International (tête de réseau)', value: 'international' },
@@ -400,8 +400,8 @@ export const Reseaux: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description:
-          'Échelle du réseau. Régional/National/International = tête de réseau (abonnement + chapitres) ; ' +
-          'Local = chapitre rattaché à une tête.',
+          'Échelle du réseau. Régional/National/International = tête de réseau (abonnement + groupes) ; ' +
+          'Local = groupe rattaché à une tête.',
       },
     },
     {

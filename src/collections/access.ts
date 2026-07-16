@@ -60,7 +60,7 @@ export async function canCreateNational(req: PayloadRequest): Promise<boolean> {
       and: [
         { user: { equals: user.id } },
         // Une seule TÊTE de réseau par compte (national/régional/international) — les
-        // chapitres 'local' ne sont pas concernés (pas d'unicité sur local.user).
+        // groupes 'local' ne sont pas concernés (pas d'unicité sur local.user).
         { niveau: { not_equals: 'local' } },
       ],
     },

@@ -15,6 +15,12 @@ import { revalidatePath } from 'next/cache'
 export interface EvenementFormData {
   titre: string
   type: number | string
+  /**
+   * Organisateur (création uniquement — décision 2026-07-16) : null/absent = en mon nom
+   * (organisateurReseauteur) ; id d'un groupe local = pour ce groupe (reseau). Le hook
+   * serveur vérifie que le réseauteur Plus s'est déclaré admin du groupe.
+   */
+  organisateurReseau?: number | null
   descriptionCourte?: string
   description?: string
   intervenants?: string
@@ -121,12 +127,21 @@ export async function createMonEvenement(data: EvenementFormData): Promise<Actio
   if (!ctx) return { ok: false, error: 'Non authentifié.' }
   if (!ctx.profil) return { ok: false, error: 'Profil réseauteur introuvable.' }
 
+  // XOR organisateur : en mon nom (défaut) OU pour un groupe local dont je me suis
+  // déclaré admin (décision 2026-07-16 — gate Plus + adminReseaux vérifié par les hooks).
+  const organisateurReseau =
+    data.organisateurReseau != null && Number(data.organisateurReseau) > 0
+      ? Number(data.organisateurReseau)
+      : null
+
   try {
     const doc = await ctx.payload.create({
       collection: 'evenements',
       data: {
         ...sanitize(data),
-        organisateurReseauteur: Number(ctx.profil.id),
+        ...(organisateurReseau
+          ? { reseau: organisateurReseau }
+          : { organisateurReseauteur: Number(ctx.profil.id) }),
         statut: 'publie' as const,
       } as unknown as import('payload').RequiredDataFromCollectionSlug<'evenements'>,
       user: ctx.user,

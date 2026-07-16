@@ -169,7 +169,7 @@ async function activerReseauPartenaire(
   const niveau = (reseau as unknown as Record<string, unknown>).niveau as string | null | undefined
   if (niveau === 'local') {
     console.error(
-      `[stripe-webhook] activerReseauPartenaire: réseau ${reseauId} est un chapitre local, ` +
+      `[stripe-webhook] activerReseauPartenaire: réseau ${reseauId} est un groupe local, ` +
         'ignoré (abonnement significatif sur une tête de réseau uniquement — ADR-0012 §3).',
     )
     return

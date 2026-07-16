@@ -49,14 +49,49 @@ export default async function MesEvenementsPage() {
   const profil = profs[0]
   if (!profil) redirect('/dashboard/profil')
 
+  // Ses événements : en son nom (organisateurReseauteur) ET ceux qu'il a créés pour
+  // un groupe local dont il est admin déclaré (creeParUser — décision 2026-07-16).
   const { docs: evDocs } = await payload.find({
     collection: 'evenements',
-    where: { organisateurReseauteur: { equals: profil.id } },
+    where: {
+      or: [
+        { organisateurReseauteur: { equals: profil.id } },
+        { creeParUser: { equals: user.id } },
+      ],
+    },
     depth: 0,
     limit: 100,
     sort: '-dateDebut',
     overrideAccess: true,
   })
+
+  // Groupes locaux qu'il administre (sélecteur d'organisateur du formulaire)
+  const adminReseauxIds = (Array.isArray(profil.adminReseaux) ? profil.adminReseaux : [])
+    .map((r) => Number(typeof r === 'object' && r !== null ? (r as { id?: unknown }).id : r))
+    .filter(Number.isFinite)
+  // Noms des groupes référencés (sélecteur + étiquette « Pour <groupe> » de la liste)
+  const reseauIdsAffiches = [
+    ...new Set([
+      ...adminReseauxIds,
+      ...evDocs
+        .map((e) => Number(typeof e.reseau === 'object' && e.reseau !== null ? (e.reseau as { id?: unknown }).id : e.reseau))
+        .filter(Number.isFinite),
+    ]),
+  ]
+  const { docs: reseauxDocs } = reseauIdsAffiches.length
+    ? await payload.find({
+        collection: 'reseaux',
+        where: { id: { in: reseauIdsAffiches } },
+        depth: 0,
+        limit: 100,
+        overrideAccess: true,
+        select: { nom: true } as Record<string, boolean>,
+      })
+    : { docs: [] as Array<{ id: unknown; nom?: string }> }
+  const nomParReseau = new Map(reseauxDocs.map((r) => [Number(r.id), ((r as { nom?: string }).nom as string) ?? String(r.id)]))
+  const groupesAdmin = adminReseauxIds
+    .map((id) => ({ id, nom: nomParReseau.get(id) ?? String(id) }))
+    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
 
   // Borne « aujourd'hui » calculée via lib (règle de pureté — pas de Date.now() en rendu)
   const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
@@ -67,10 +102,16 @@ export default async function MesEvenementsPage() {
     evDocs.map((e) => e.id as number),
   )
 
-  const evenements: MonEvenement[] = evDocs.map((e) => ({
+  const evenements: MonEvenement[] = evDocs.map((e) => {
+    const reseauId = Number(
+      typeof e.reseau === 'object' && e.reseau !== null ? (e.reseau as { id?: unknown }).id : e.reseau,
+    )
+    return {
     past: new Date((e.dateDebut as string) ?? '').getTime() < todayStartMs,
     id: e.id as number,
     slug: (e.slug as string | null) ?? null,
+    reseauId: Number.isFinite(reseauId) ? reseauId : null,
+    reseauNom: Number.isFinite(reseauId) ? (nomParReseau.get(reseauId) ?? null) : null,
     titre: (e.titre as string) ?? '',
     type:
       typeof e.type === 'object' && e.type !== null
@@ -112,7 +153,8 @@ export default async function MesEvenementsPage() {
       ville: i.ville,
       dateInscription: i.dateInscription,
     })),
-  }))
+    }
+  })
 
   const { docs: typesDocs } = await payload.find({
     collection: 'types-evenement',
@@ -141,12 +183,12 @@ export default async function MesEvenementsPage() {
             Mes événements
           </h1>
           <p className="text-sm text-[#71717a] mb-8">
-            Vos événements sont publiés en votre nom (« Organisé par ») et apparaissent sur la carte
-            et dans l&apos;agenda.
+            Vos événements sont publiés en votre nom (« Organisé par ») ou au nom d&apos;un groupe
+            local dont vous êtes admin, et apparaissent sur la carte et dans l&apos;agenda.
           </p>
         </Reveal>
 
-        <MesEvenementsClient evenements={evenements} types={types} />
+        <MesEvenementsClient evenements={evenements} types={types} groupesAdmin={groupesAdmin} />
       </div>
     </div>
   )

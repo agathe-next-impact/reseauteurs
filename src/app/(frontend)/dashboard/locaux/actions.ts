@@ -40,7 +40,7 @@ export async function createLocalReseau(formData: FormData): Promise<CreateLocal
   }
 
   if (user.role !== 'organisateur' && user.role !== 'admin') {
-    return { success: false, error: 'Seul un compte organisateur peut créer un chapitre local.' }
+    return { success: false, error: 'Seul un compte organisateur peut créer un groupe local.' }
   }
 
   // Validation Zod serveur
@@ -76,7 +76,7 @@ export async function createLocalReseau(formData: FormData): Promise<CreateLocal
   if (nationalNiveau === 'local') {
     return {
       success: false,
-      error: 'Ce réseau est un chapitre local. Impossible d\'y rattacher un autre chapitre (hiérarchie à 2 étages).',
+      error: 'Ce réseau est un groupe local. Impossible d\'y rattacher un autre groupe (hiérarchie à 2 étages).',
     }
   }
 
@@ -92,7 +92,7 @@ export async function createLocalReseau(formData: FormData): Promise<CreateLocal
   if (user.role !== 'admin' && String(nationalOwnerId) !== String(user.id)) {
     return {
       success: false,
-      error: 'Vous ne pouvez créer des chapitres que pour votre propre réseau national.',
+      error: 'Vous ne pouvez créer des groupes que pour votre propre réseau national.',
     }
   }
 
@@ -128,7 +128,7 @@ export async function createLocalReseau(formData: FormData): Promise<CreateLocal
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`[dashboard/locaux/actions] createLocalReseau failed: ${message}`)
-    return { success: false, error: 'Erreur lors de la création du chapitre. Réessayez.' }
+    return { success: false, error: 'Erreur lors de la création du groupe. Réessayez.' }
   }
 
   // Revalidation des pages dashboard

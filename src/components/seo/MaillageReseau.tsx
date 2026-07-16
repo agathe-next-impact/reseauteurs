@@ -2,11 +2,11 @@
  * MaillageReseau — maillage interne sur la fiche réseau LOCAL.
  * Server Component : fetch direct depuis Payload (SSR/ISR — pas de client waterfall).
  *
- * Affiche les autres chapitres locaux rattachés au même réseau national
- * (« Autres chapitres de [NomNational] »). Renforce le maillage interne entre
+ * Affiche les autres groupes locaux rattachés au même réseau national
+ * (« Autres groupes de [NomNational] »). Renforce le maillage interne entre
  * fiches locales d'une même marque et guide l'utilisateur vers la fiche nationale.
  *
- * Contexte ADR-0012 §7 — maillage « même national » : chaque chapitre local doit
+ * Contexte ADR-0012 §7 — maillage « même national » : chaque groupe local doit
  * pouvoir naviguer vers ses frères (sibling chapters) et vers le national parent.
  * Cette section s'affiche UNIQUEMENT sur les fiches réseau de niveau local.
  *
@@ -88,7 +88,7 @@ export async function MaillageReseau({
           className="text-xs font-semibold text-[#71717a] uppercase tracking-wide flex items-center gap-1.5"
         >
           <Network size={12} aria-hidden />
-          Autres chapitres {nationalNom}
+          Autres groupes {nationalNom}
         </h2>
         {nationalSlug && (
           <Link

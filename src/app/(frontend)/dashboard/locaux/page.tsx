@@ -1,12 +1,12 @@
 /**
- * Dashboard — Gestion des chapitres locaux (/dashboard/locaux)
+ * Dashboard — Gestion des groupes locaux (/dashboard/locaux)
  *
  * Réservé aux organisateurs qui possèdent un réseau national.
  * Les délégués (locaux seulement) sont redirigés vers /dashboard/reseau.
  * Les réseauteurs et admins sont redirigés.
  *
  * ══ POINTS D'INSERTION accounts-and-billing (vague 3) ══════════════════════
- * 1. Bouton « Créer un chapitre » : remplacer par <CreerLocalButton reseauNationalId={...} />
+ * 1. Bouton « Créer un groupe » : remplacer par <CreerLocalButton reseauNationalId={...} />
  *    → la Server Action `createLocalReseau` doit vérifier `peutCreerLocal(user)` (gate serveur)
  *    → si capacité dépassée : message FR + lien portail Stripe (monter de palier)
  *    → si non abonné : message FR + lien abonnement
@@ -22,7 +22,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   Network,
-  Plus,
   MapPin,
   Users,
   Calendar,
@@ -36,7 +35,7 @@ import { CreerLocalButton } from '@/components/billing/CreerLocalButton'
 import Reveal from '@/components/home/Reveal'
 
 export const metadata = {
-  title: 'Mes chapitres locaux — Tableau de bord | RÉSEAUTEURS',
+  title: 'Mes groupes locaux — Tableau de bord | RÉSEAUTEURS',
   robots: { index: false },
 }
 
@@ -78,7 +77,7 @@ export default async function DashboardLocauxPage() {
 
   const estPartenaire = Boolean(national.partenaire)
 
-  // Chapitres locaux du national
+  // Groupes locaux du national
   const { docs: locauxDocs, totalDocs: totalLocaux } = await payload.find({
     collection: 'reseaux',
     where: { parent: { equals: national.id as string | number } },
@@ -97,7 +96,7 @@ export default async function DashboardLocauxPage() {
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
             <Network size={20} className="text-[#a855f7]" aria-hidden />
-            Mes chapitres locaux
+            Mes groupes locaux
           </h1>
           <Link
             href="/dashboard/reseau"
@@ -138,7 +137,7 @@ export default async function DashboardLocauxPage() {
             <div>
               <p className="text-sm font-semibold text-amber-800 mb-1">Abonnement requis</p>
               <p className="text-xs text-amber-700 mb-3">
-                Pour créer des chapitres locaux et leur permettre de publier des événements, votre réseau national doit avoir un abonnement actif.
+                Pour créer des groupes locaux et leur permettre de publier des événements, votre réseau national doit avoir un abonnement actif.
               </p>
               <Link
                 href="/dashboard/reseau"
@@ -151,12 +150,12 @@ export default async function DashboardLocauxPage() {
         </div>
       )}
 
-      {/* Liste des chapitres */}
+      {/* Liste des groupes */}
       <div className="rsn-card rounded-2xl">
         <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
             <Network size={14} className="text-[#a855f7]" aria-hidden />
-            Chapitres
+            Groupes
             <span className="text-[#a1a1aa] font-normal">({totalLocaux})</span>
           </h2>
           {/* E2.A — accounts-and-billing : CreerLocalButton avec gate palier serveur */}
@@ -173,14 +172,14 @@ export default async function DashboardLocauxPage() {
         {locauxDocs.length === 0 ? (
           <div className="p-12 text-center">
             <Network size={36} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-            <p className="text-sm font-medium text-[#52525b] mb-2">Aucun chapitre local</p>
+            <p className="text-sm font-medium text-[#52525b] mb-2">Aucun groupe local</p>
             {estPartenaire ? (
               <p className="text-sm text-[#71717a]">
-                Créez votre premier chapitre local pour structurer la présence régionale de votre réseau.
+                Créez votre premier groupe local pour structurer la présence régionale de votre réseau.
               </p>
             ) : (
               <p className="text-sm text-[#71717a]">
-                Souscrivez un abonnement pour créer des chapitres locaux.
+                Souscrivez un abonnement pour créer des groupes locaux.
               </p>
             )}
           </div>
@@ -260,20 +259,6 @@ export default async function DashboardLocauxPage() {
         )}
       </div>
 
-      {/* Note délégation (Q2 : admin-only) */}
-      <div className="bg-[#faf9f5] rounded-2xl border border-[#e4e4e7] p-4">
-        <p className="text-xs text-[#71717a] leading-relaxed">
-          <strong className="text-[#52525b]">Délégation de chapitre :</strong>{' '}
-          Pour déléguer la gestion d&apos;un chapitre à un organisateur local distinct,
-          contactez notre équipe qui procédera à la réassignation via le back-office.
-        </p>
-        <a
-          href="mailto:contact@reseauteurs.fr?subject=Délégation de chapitre"
-          className="inline-flex items-center gap-1 text-xs text-[#2563EB] hover:text-[#1d4ed8] mt-2 no-underline transition-colors font-medium"
-        >
-          Demander une délégation →
-        </a>
-      </div>
       </div>
     </div>
   )

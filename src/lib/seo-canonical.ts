@@ -104,7 +104,7 @@ export function buildTogglePageCanonical(pathname: string): string {
  *   return buildTogglePageMetadata('/reseaux', {
  *     title: `Réseaux d'affaires — BNI, DCF, CJD et tous les réseaux | ${SITE_NAME}`,
  *     description:
- *       'Découvrez tous les réseaux d\'affaires et leurs chapitres locaux : ' +
+ *       'Découvrez tous les réseaux d\'affaires et leurs groupes locaux : ' +
  *       'BNI, DCF, CJD, Rotary, Cafés Business… Filtrez par ville ou national.',
  *   })
  * }

@@ -157,7 +157,7 @@ export default async function AbonnementPage() {
                 <p className="text-sm text-[#71717a] mb-3">
                   Publiez vos événements, affichez votre badge partenaire et gagnez en visibilité
                   auprès des milliers de réseauteurs inscrits.
-                  Choisissez le palier adapté au nombre de vos chapitres locaux.
+                  Choisissez le palier adapté au nombre de vos groupes locaux.
                 </p>
                 {/* Palier Starter par défaut — l'utilisateur peut upgrader depuis le portail Stripe */}
                 <CheckoutPartenaireButton

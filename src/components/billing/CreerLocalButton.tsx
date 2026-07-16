@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CreerLocalButton — Bouton + formulaire inline pour créer un chapitre local.
+ * CreerLocalButton — Bouton + formulaire inline pour créer un groupe local.
  *
  * Gate côté serveur (Server Action) :
  *   - Vérifie peutCreerLocalAsync(userId, payload)
@@ -40,7 +40,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
         formRef.current?.reset()
         setOpen(false)
         onSuccess?.()
-        return { status: 'success', message: 'Chapitre créé avec succès.' }
+        return { status: 'success', message: 'Groupe créé avec succès.' }
       }
       return { status: 'error', message: result.error ?? 'Erreur lors de la création.' }
     },
@@ -61,7 +61,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
           className="flex items-center gap-1.5 text-xs bg-[#a855f7] text-white hover:bg-[#9333ea] px-3 py-1.5 rounded-lg font-medium transition-colors"
         >
           <Plus size={13} aria-hidden />
-          Nouveau chapitre
+          Nouveau groupe
         </button>
       </div>
     )
@@ -72,7 +72,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
           <Network size={14} className="text-[#a855f7]" aria-hidden />
-          Nouveau chapitre local
+          Nouveau groupe local
         </p>
         <button
           type="button"
@@ -93,7 +93,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
       <form ref={formRef} action={formAction} className="space-y-3">
         <div>
           <label htmlFor="local-nom" className="block text-xs font-medium text-[#52525b] mb-1">
-            Nom du chapitre <span className="text-red-500" aria-hidden>*</span>
+            Nom du groupe <span className="text-red-500" aria-hidden>*</span>
           </label>
           <input
             id="local-nom"
@@ -132,7 +132,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
             name="description"
             rows={2}
             maxLength={500}
-            placeholder="Présentez ce chapitre en quelques mots…"
+            placeholder="Présentez ce groupe en quelques mots…"
             className="w-full border border-[#e4e4e7] rounded-xl px-3 py-2 text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/30 focus:border-[#a855f7] bg-white resize-none"
           />
         </div>
@@ -151,7 +151,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
             ) : (
               <>
                 <Plus size={13} aria-hidden />
-                Créer le chapitre
+                Créer le groupe
               </>
             )}
           </button>

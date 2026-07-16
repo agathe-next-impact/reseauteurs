@@ -13,15 +13,18 @@ export default function AuthShell({
   subtitle,
   children,
   footer,
+  wide = false,
 }: {
   title: ReactNode
   subtitle?: ReactNode
   children: ReactNode
   footer?: ReactNode
+  /** Élargit la carte (écrans à deux colonnes, ex. choix Gratuit / Réseauteur+). */
+  wide?: boolean
 }) {
   return (
     <div className="rsn-auth">
-      <div className="rsn-auth-card">
+      <div className="rsn-auth-card" style={wide ? { maxWidth: '960px' } : undefined}>
         <div className="text-center mb-6">
           <Link href="/" className="rsn-auth-brand" aria-label={`Accueil ${SITE_NAME}`}>
             <Image src="/img/logo.png" alt="" width={34} height={34} priority />

@@ -36,7 +36,7 @@ const bodySchema = z.discriminatedUnion('type', [
     type: z.literal('partenaire_annonceur'),
     partenaireId: z.string().min(1),
   }),
-  // ADR-0013 : abonnement Réseauteur Plus (Subscription 59 €/an — gate P0 D2).
+  // ADR-0013 : abonnement Réseauteur Plus (Subscription 39 € HT/an — gate P0 D2).
   z.object({
     type: z.literal('reseauteur_plus'),
   }),
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
           return NextResponse.json(
             {
               error: "L'abonnement réseau ne peut être souscrit que sur une tête de réseau (régional/national/international). " +
-                     'Les chapitres locaux bénéficient de l\'abonnement de leur tête de réseau parent.',
+                     'Les groupes locaux bénéficient de l\'abonnement de leur tête de réseau parent.',
             },
             { status: 400 },
           )

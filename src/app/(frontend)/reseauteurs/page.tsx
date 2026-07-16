@@ -184,9 +184,9 @@ function buildWhere(sp: SearchParams, reseauFilterIds?: number[] | null): Where 
   if (sp.region) conditions.push({ region: { contains: sp.region } })
   if (sp.badge) conditions.push({ badge: { equals: sp.badge } })
   if (sp.secteur) conditions.push({ secteur: { equals: sp.secteur } })
-  // Filtre réseau : réseauteurs fréquentant l'un des chapitres ciblés (résolu côté page,
-  // le slug pouvant désigner un chapitre local OU une tête → ses chapitres). Liste vide
-  // (slug inconnu / tête sans chapitre) → sentinelle -1 pour garantir zéro résultat.
+  // Filtre réseau : réseauteurs fréquentant l'un des groupes ciblés (résolu côté page,
+  // le slug pouvant désigner un groupe local OU une tête → ses groupes). Liste vide
+  // (slug inconnu / tête sans groupe) → sentinelle -1 pour garantir zéro résultat.
   if (reseauFilterIds) {
     conditions.push({ reseauxFrequentes: { in: reseauFilterIds.length ? reseauFilterIds : [-1] } } as Where)
   }
@@ -231,7 +231,7 @@ export default async function ReseauteursPage({
   const payload = await getPayload({ config })
 
   // Référentiels des filtres en parallèle : catégories (secteur) + réseaux
-  // (têtes + chapitres publiés).
+  // (têtes + groupes publiés).
   const [{ docs: categories }, { docs: reseauxFiltreDocs }] = await Promise.all([
     withDbRetry(
       () =>
@@ -263,8 +263,8 @@ export default async function ReseauteursPage({
     .map((r) => ({ slug: (r.slug as string) ?? '', nom: (r.nom as string) ?? '' }))
     .filter((r) => r.slug)
 
-  // Résolution du filtre réseau : un réseauteur fréquente des CHAPITRES locaux.
-  // slug local → ce chapitre ; slug tête → ses chapitres ; slug inconnu → aucun résultat.
+  // Résolution du filtre réseau : un réseauteur fréquente des GROUPES locaux.
+  // slug local → ce groupe ; slug tête → ses groupes ; slug inconnu → aucun résultat.
   let reseauFilterIds: number[] | null = null
   if (sp.reseau) {
     const { docs: rsel } = await payload.find({

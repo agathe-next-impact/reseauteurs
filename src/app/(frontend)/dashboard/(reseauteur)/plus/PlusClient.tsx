@@ -144,7 +144,7 @@ export function PlusClient({
 
       {/* Abonnement */}
       <section className="rsn-card rounded-2xl p-5">
-        <h2 className="text-sm font-semibold text-[#18181b] mb-1">Passer Plus — 59 €/an</h2>
+        <h2 className="text-sm font-semibold text-[#18181b] mb-1">Passer Plus — 39 € HT / an</h2>
         <p className="text-xs text-[#71717a] mb-4">
           Débloquez la création d&apos;événements. Sans engagement — gérable à tout moment depuis
           le portail de facturation.

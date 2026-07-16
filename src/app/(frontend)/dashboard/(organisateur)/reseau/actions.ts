@@ -13,6 +13,7 @@ import { revalidatePath } from 'next/cache'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import config from '@payload-config'
 import { z } from 'zod/v4'
+import { addWeeks, addMonths } from 'date-fns'
 import { peutPublierEvenement, type ReseauForHierarchy } from '@/lib/reseau-hierarchie'
 
 export type ActionResult = { success: true } | { error: string }
@@ -129,7 +130,50 @@ const EvenementSchema = z.object({
   parking: z.boolean().optional(),
   accesPmr: z.boolean().optional(),
   infosPratiques: z.string().max(1000).optional(),
+  // Récurrence (création uniquement — ignorée à la mise à jour) : un événement
+  // DISTINCT est créé par date, modifiable/supprimable individuellement.
+  // Pas de série ni de serieId (modèle « occurrences » retiré — ADR-0011 §12).
+  recurrence: z.enum(['aucune', 'hebdomadaire', 'quinzaine', 'mensuelle']).optional(),
+  recurrenceFin: z.string().optional(),
 })
+
+/** Plafond d'occurrences par création récurrente (le dédoublonnage de slug borne à ~50 collisions). */
+const MAX_OCCURRENCES = 26
+
+/**
+ * Calcule les dates de début des occurrences (la 1re = dateDebut saisie).
+ * `recurrenceFin` (date seule, incluse) borne la série ; plafond MAX_OCCURRENCES.
+ */
+function datesRecurrence(
+  dateDebut: Date,
+  recurrence: 'hebdomadaire' | 'quinzaine' | 'mensuelle',
+  recurrenceFin: string,
+): Date[] | { error: string } {
+  const fin = new Date(recurrenceFin)
+  if (Number.isNaN(fin.getTime())) return { error: 'Date de fin de récurrence invalide.' }
+  fin.setHours(23, 59, 59, 999) // « jusqu'au » inclus
+  if (fin <= dateDebut) {
+    return { error: 'La fin de récurrence doit être postérieure à la date de début.' }
+  }
+  const nth = (i: number) =>
+    recurrence === 'hebdomadaire'
+      ? addWeeks(dateDebut, i)
+      : recurrence === 'quinzaine'
+        ? addWeeks(dateDebut, 2 * i)
+        : addMonths(dateDebut, i)
+  const dates: Date[] = [dateDebut]
+  for (let i = 1; ; i++) {
+    const d = nth(i)
+    if (d > fin) break
+    if (dates.length >= MAX_OCCURRENCES) {
+      return {
+        error: `La récurrence dépasse ${MAX_OCCURRENCES} événements — rapprochez la date de fin.`,
+      }
+    }
+    dates.push(d)
+  }
+  return dates
+}
 
 // Normalise les champs additionnels d'un événement ('' → null, enums whitelistés, nombre/date parsés).
 function evenementExtras(d: z.infer<typeof EvenementSchema>): Record<string, unknown> {
@@ -221,11 +265,13 @@ export async function updateFicheReseau(
 
 // ─────────────────────────────────────────────────────────────────
 // Action : création d'un événement (gate partenaire côté serveur)
+// Récurrence optionnelle : crée 1 événement DISTINCT par date (hebdo /
+// quinzaine / mensuel jusqu'à recurrenceFin incluse, max MAX_OCCURRENCES).
 // ─────────────────────────────────────────────────────────────────
 
 export async function createEvenement(
   data: z.infer<typeof EvenementSchema>,
-): Promise<ActionResult & { id?: string | number }> {
+): Promise<ActionResult & { id?: string | number; count?: number }> {
   const hdrs = await headers()
   const payload = await getPayload({ config })
   const auth = await requireOrganisateur(payload, hdrs)
@@ -245,26 +291,65 @@ export async function createEvenement(
     return { error: parsed.error.issues[0]?.message ?? 'Données invalides' }
   }
 
-  const { lienInscription, dateFin, ...rest } = parsed.data
+  const { lienInscription, dateFin, recurrence, recurrenceFin, ...rest } = parsed.data
 
+  const premiereDate = new Date(parsed.data.dateDebut)
+  if (Number.isNaN(premiereDate.getTime())) {
+    return { error: 'Date de début invalide.' }
+  }
+
+  // Récurrence : liste des dates de début (1 événement distinct par date)
+  let occurrences: Date[] = [premiereDate]
+  if (recurrence && recurrence !== 'aucune') {
+    if (!recurrenceFin) {
+      return { error: 'Indiquez la date de fin de la récurrence.' }
+    }
+    const result = datesRecurrence(premiereDate, recurrence, recurrenceFin)
+    if (!Array.isArray(result)) return result
+    occurrences = result
+  }
+
+  // dateFin / dateLimiteInscription suivent chaque occurrence avec le même décalage
+  const extras = evenementExtras(parsed.data)
+  const decale = (iso: string, occ: Date): string =>
+    new Date(new Date(iso).getTime() + (occ.getTime() - premiereDate.getTime())).toISOString()
+
+  let firstId: string | number | undefined
+  let crees = 0
   try {
-    const created = await payload.create({
-      collection: 'evenements',
-      data: {
-        ...rest,
-        ...evenementExtras(parsed.data),
-        dateFin: dateFin || null,
-        lienInscription: lienInscription || null,
-        reseau: auth.reseau.id,
-        statut: 'publie',
-      } as unknown as RequiredDataFromCollectionSlug<'evenements'>,
-      overrideAccess: true,
-    })
+    for (const occ of occurrences) {
+      const created = await payload.create({
+        collection: 'evenements',
+        data: {
+          ...rest,
+          ...extras,
+          dateDebut: occ.toISOString(),
+          dateFin: dateFin ? decale(dateFin, occ) : null,
+          dateLimiteInscription: extras.dateLimiteInscription
+            ? decale(extras.dateLimiteInscription as string, occ)
+            : null,
+          lienInscription: lienInscription || null,
+          reseau: auth.reseau.id,
+          statut: 'publie',
+        } as unknown as RequiredDataFromCollectionSlug<'evenements'>,
+        overrideAccess: true,
+      })
+      firstId ??= created.id
+      crees++
+    }
     revalidatePath('/dashboard/reseau')
-    return { success: true, id: created.id }
+    revalidatePath('/dashboard/evenements')
+    return { success: true, id: firstId, count: crees }
   } catch (err) {
     console.error('[action/createEvenement]', err)
-    return { error: 'Erreur lors de la création de l\'événement.' }
+    revalidatePath('/dashboard/reseau')
+    revalidatePath('/dashboard/evenements')
+    return {
+      error:
+        crees > 0
+          ? `Erreur en cours de route : ${crees} événement(s) sur ${occurrences.length} créé(s). Rechargez la page pour vérifier avant de réessayer.`
+          : 'Erreur lors de la création de l\'événement.',
+    }
   }
 }
 
@@ -303,7 +388,8 @@ export async function updateEvenement(
     return { error: parsed.error.issues[0]?.message ?? 'Données invalides' }
   }
 
-  const { lienInscription, dateFin, ...rest } = parsed.data
+  // recurrence/recurrenceFin : création uniquement — jamais réappliqués à un événement existant
+  const { lienInscription, dateFin, recurrence: _r, recurrenceFin: _rf, ...rest } = parsed.data
 
   try {
     await payload.update({
@@ -318,6 +404,7 @@ export async function updateEvenement(
       overrideAccess: true,
     })
     revalidatePath('/dashboard/reseau')
+    revalidatePath('/dashboard/evenements')
     return { success: true }
   } catch (err) {
     console.error('[action/updateEvenement]', err)
@@ -354,6 +441,7 @@ export async function deleteEvenement(evenementId: string | number): Promise<Act
       overrideAccess: true,
     })
     revalidatePath('/dashboard/reseau')
+    revalidatePath('/dashboard/evenements')
     return { success: true }
   } catch (err) {
     console.error('[action/deleteEvenement]', err)

@@ -4,7 +4,7 @@
  *
  * Crée des données réalistes pour les 2 cartes en dev local :
  *   - 5 réseaux NATIONAUX (marques : BNI, DCF, CJD, Afterwork, Réseau Entreprendre)
- *   - 8 réseaux LOCAUX (chapitres rattachés à un national, géolocalisés — ce sont EUX
+ *   - 8 réseaux LOCAUX (groupes rattachés à un national, géolocalisés — ce sont EUX
  *     qui portent les marqueurs sur la carte des réseaux, ADR-0012 §1)
  *   - 8 réseauteurs validés, affiliés à des réseaux LOCAUX (jamais aux nationaux, ADR-0012 §2)
  *   - 6 événements (organisés par un local, ou par le national pour l'événement national)
@@ -12,7 +12,7 @@
  *
  * Modèle hiérarchique (ADR-0012) :
  *   - niveau 'national' → la marque, sans parent, pas de marqueur carte.
- *   - niveau 'local'    → un chapitre, parent = un national, géolocalisé (centroïde ville).
+ *   - niveau 'local'    → un groupe, parent = un national, géolocalisé (centroïde ville).
  *   - reseauxFrequentes d'un réseauteur = uniquement des LOCAUX ; le national est dérivé.
  *
  * Idempotent : vérifie l'existence (par nom / identité) avant d'insérer.
@@ -97,12 +97,12 @@ async function seed() {
     console.log(`[seed-dev] National créé : ${r.nom} (id=${created.id})`)
   }
 
-  // ── 1b. Réseaux LOCAUX (chapitres) ───────────────────────────────────
+  // ── 1b. Réseaux LOCAUX (groupes) ───────────────────────────────────
   // parent = un national déjà créé ci-dessus ; géolocalisés → marqueurs de la carte réseaux.
   const locauxData = [
-    { key: 'bni-paris', nom: 'BNI Paris 8e', parentKey: 'bni', ville: 'Paris', description: 'Chapitre BNI du 8e arrondissement de Paris — petit-déjeuners networking hebdomadaires.' },
-    { key: 'bni-marseille', nom: 'BNI Marseille Vieux-Port', parentKey: 'bni', ville: 'Marseille', description: 'Chapitre BNI du Vieux-Port de Marseille.' },
-    { key: 'bni-nantes', nom: 'BNI Nantes Atlantique', parentKey: 'bni', ville: 'Nantes', description: 'Chapitre BNI de Nantes Atlantique.' },
+    { key: 'bni-paris', nom: 'BNI Paris 8e', parentKey: 'bni', ville: 'Paris', description: 'Groupe BNI du 8e arrondissement de Paris — petit-déjeuners networking hebdomadaires.' },
+    { key: 'bni-marseille', nom: 'BNI Marseille Vieux-Port', parentKey: 'bni', ville: 'Marseille', description: 'Groupe BNI du Vieux-Port de Marseille.' },
+    { key: 'bni-nantes', nom: 'BNI Nantes Atlantique', parentKey: 'bni', ville: 'Nantes', description: 'Groupe BNI de Nantes Atlantique.' },
     { key: 'dcf-lyon', nom: 'DCF Lyon', parentKey: 'dcf', ville: 'Lyon', description: 'Délégation DCF de Lyon et sa région.' },
     { key: 'dcf-strasbourg', nom: 'DCF Strasbourg', parentKey: 'dcf', ville: 'Strasbourg', description: 'Délégation DCF de Strasbourg et du Grand Est.' },
     { key: 'cjd-bordeaux', nom: 'CJD Bordeaux', parentKey: 'cjd', ville: 'Bordeaux', description: 'Section CJD de Bordeaux Gironde.' },
@@ -156,7 +156,7 @@ async function seed() {
   console.log(`[seed-dev] ${secteurs.totalDocs} secteurs disponibles.`)
 
   // ── 3. Réseauteurs ───────────────────────────────────────────────────
-  // reseaux = clés de réseaux LOCAUX (ADR-0012 : affiliation aux chapitres, jamais aux nationaux).
+  // reseaux = clés de réseaux LOCAUX (ADR-0012 : affiliation aux groupes, jamais aux nationaux).
   const reseauteursData = [
     { prenom: 'Marie', nom: 'Dupont', ville: 'Paris', departement: 'Paris', region: 'Île-de-France', entreprise: 'MD Consulting', fonction: 'Consultante RH', evenementsParMois: 8, reseaux: ['bni-paris', 'dcf-lyon'], secteur: 'conseil-services-b2b' },
     { prenom: 'Jean', nom: 'Martin', ville: 'Lyon', departement: 'Rhône', region: 'Auvergne-Rhône-Alpes', entreprise: 'Martin Immobilier', fonction: 'Directeur commercial', evenementsParMois: 4, reseaux: ['dcf-lyon'], secteur: 'btp-immobilier' },
@@ -214,7 +214,7 @@ async function seed() {
   }
 
   // ── 4. Événements ────────────────────────────────────────────────────
-  // reseau = clé d'un réseau LOCAL (organisateur = chapitre) ou NATIONAL (événement national).
+  // reseau = clé d'un réseau LOCAL (organisateur = groupe) ou NATIONAL (événement national).
   const typesEvt = await payload.find({ collection: 'types-evenement', limit: 10, overrideAccess: true })
   const typeMap: Record<string, number | string> = {}
   for (const t of typesEvt.docs) {
@@ -274,7 +274,7 @@ async function seed() {
       type: 'conferences',
     },
     {
-      // Événement national (organisé par la tête de réseau, pas un chapitre).
+      // Événement national (organisé par la tête de réseau, pas un groupe).
       titre: 'BNI National Congress — Paris La Défense',
       reseau: 'bni',
       lieuVille: 'Paris',

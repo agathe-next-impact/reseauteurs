@@ -518,9 +518,13 @@ export interface Reseauteur {
       }[]
     | null;
   /**
-   * Chapitres/sections de réseaux d'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.
+   * Groupes/sections de réseaux d'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.
    */
   reseauxFrequentes?: (number | Reseau)[] | null;
+  /**
+   * Groupes locaux dont ce réseauteur se déclare admin (3 max — réservé aux réseauteurs Plus). Son nom apparaît sur la fiche du groupe et il peut créer des événements pour ce groupe.
+   */
+  adminReseaux?: (number | Reseau)[] | null;
   /**
    * Événements des réseaux que vous fréquentez auxquels vous signalez votre présence. Affiché sur votre fiche publique et sur la fiche de chaque événement.
    */
@@ -612,7 +616,7 @@ export interface Reseau {
    */
   source: 'revendique' | 'importe';
   /**
-   * Échelle du réseau. Régional/National/International = tête de réseau (abonnement + chapitres) ; Local = chapitre rattaché à une tête.
+   * Échelle du réseau. Régional/National/International = tête de réseau (abonnement + groupes) ; Local = groupe rattaché à une tête.
    */
   niveau: 'local' | 'regional' | 'national' | 'international';
   /**
@@ -902,6 +906,10 @@ export interface Evenement {
    * Nom de la personne ayant créé l'événement (traçabilité).
    */
   creePar?: string | null;
+  /**
+   * Compte ayant créé l'événement (figé serveur à la création). Ownership des événements de groupe créés par un réseauteur Plus admin déclaré (décision 2026-07-16).
+   */
+  creeParUser?: (number | null) | User;
   /**
    * Latitude (auto-calculée par géocodage).
    */
@@ -1368,6 +1376,7 @@ export interface ReseauteursSelect<T extends boolean = true> {
         id?: T;
       };
   reseauxFrequentes?: T;
+  adminReseaux?: T;
   evenementsParticipes?: T;
   evenementsParMois?: T;
   badge?: T;
@@ -1506,6 +1515,7 @@ export interface EvenementsSelect<T extends boolean = true> {
   infosPratiques?: T;
   statut?: T;
   creePar?: T;
+  creeParUser?: T;
   lieuLatitude?: T;
   lieuLongitude?: T;
   seo?:

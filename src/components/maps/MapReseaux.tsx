@@ -4,8 +4,8 @@
 /**
  * MapReseaux — Carte des réseaux locaux (ADR-0006, ADR-0012).
  *
- * Marqueur = un réseau local (chapitre/section rattaché à un national).
- * Position : centroïde de la ville du chapitre (donnée publique).
+ * Marqueur = un réseau local (groupe/section rattaché à un national).
+ * Position : centroïde de la ville du groupe (donnée publique).
  *
  * INVARIANT ADR-0012 : les réseaux nationaux ne sont JAMAIS des marqueurs
  * (pas de point unique — on les présente en annuaire / page dédiée).

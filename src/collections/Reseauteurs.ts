@@ -31,6 +31,10 @@ import { cleanupOrphanedMediaOnChange, cleanupMediaOnDelete } from '../lib/media
 import { stripEmojis } from '../lib/sanitize'
 import { seoField } from './fields/seoField'
 import { deriverBadge } from '../lib/badge'
+import { estPlus } from '../lib/acces-plus'
+
+/** Nombre maximum de groupes locaux qu'un réseauteur Plus peut administrer (décision 2026-07-16). */
+export const MAX_ADMIN_RESEAUX = 3
 
 // Champs texte sur lesquels les emojis sont interdits
 const RESEAUTEUR_TEXT_FIELDS = [
@@ -269,9 +273,58 @@ export const Reseauteurs: CollectionConfig = {
           const noms = nationaux.map((r: { nom?: string }) => r.nom ?? r.id).join(', ')
           throw new Error(
             `Affiliation refusée : les réseaux suivants sont des têtes de réseau : ${noms}. ` +
-            'Vous pouvez uniquement vous affilier à des réseaux locaux (chapitres/sections). ' +
+            'Vous pouvez uniquement vous affilier à des réseaux locaux (groupes/sections). ' +
             'La tête de réseau est déduite automatiquement de vos affiliations locales.',
           )
+        }
+        return data
+      },
+      // ── Groupes administrés (adminReseaux) — décision 2026-07-16.
+      //    Déclaration LIBRE mais bornée serveur : réservée aux réseauteurs PLUS actifs
+      //    (statut lu FRAIS, jamais le JWT), MAX_ADMIN_RESEAUX groupes, LOCAUX uniquement.
+      //    Effets : nom affiché sur la fiche du groupe + droit de créer ses événements
+      //    (gate re-vérifié dans Evenements.beforeValidate). Admin plateforme non restreint.
+      async ({ data, originalDoc, req }) => {
+        if (!data || !Object.prototype.hasOwnProperty.call(data, 'adminReseaux')) return data
+        const toIds = (rels: unknown): Array<string | number> =>
+          Array.isArray(rels)
+            ? (rels
+                .map((r) => (typeof r === 'object' && r !== null ? ((r as { id?: unknown }).id ?? null) : r))
+                .filter((v) => v != null) as Array<string | number>)
+            : []
+        const ids = toIds(data.adminReseaux)
+        if (ids.length === 0) return data
+
+        if (ids.length > MAX_ADMIN_RESEAUX) {
+          throw new Error(
+            `Vous pouvez vous déclarer admin de ${MAX_ADMIN_RESEAUX} groupes locaux maximum.`,
+          )
+        }
+        const { totalDocs: nonLocaux } = await req.payload.count({
+          collection: 'reseaux',
+          where: { and: [{ id: { in: ids } }, { niveau: { not_equals: 'local' } }] },
+          overrideAccess: true,
+          req,
+        })
+        if (nonLocaux > 0) {
+          throw new Error('Vous ne pouvez vous déclarer admin que de groupes locaux.')
+        }
+        if (req.user && req.user.role !== 'admin') {
+          const prev = new Set(toIds(originalDoc?.adminReseaux).map(String))
+          const ajouts = ids.filter((id) => !prev.has(String(id)))
+          if (ajouts.length > 0) {
+            const freshUser = await req.payload.findByID({
+              collection: 'users',
+              id: req.user.id,
+              depth: 0,
+              overrideAccess: true,
+            })
+            if (!estPlus(freshUser as { id: number | string; plusActif?: boolean | null; plusExpireAt?: string | null })) {
+              throw new Error(
+                'La déclaration comme admin d\'un groupe local est réservée aux réseauteurs Plus.',
+              )
+            }
+          }
         }
         return data
       },
@@ -589,8 +642,32 @@ export const Reseauteurs: CollectionConfig = {
       },
       admin: {
         description:
-          'Chapitres/sections de réseaux d\'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). ' +
+          'Groupes/sections de réseaux d\'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). ' +
           'Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.',
+      },
+    },
+    // ============================================================
+    // GROUPES ADMINISTRÉS (décision 2026-07-16 — réservé aux réseauteurs PLUS)
+    // Déclaration libre, max 3 groupes LOCAUX. Effets : nom affiché sur la fiche
+    // du groupe comme admin + droit de créer des événements pour ce groupe.
+    // Règles vérifiées serveur (hook beforeValidate) — jamais confiance au client.
+    // ============================================================
+    {
+      name: 'adminReseaux',
+      type: 'relationship',
+      relationTo: 'reseaux',
+      hasMany: true,
+      maxRows: MAX_ADMIN_RESEAUX,
+      label: 'Groupes administrés (Réseauteur Plus)',
+      index: true,
+      filterOptions: {
+        // Filtre UI admin : locaux uniquement (la validation serveur est le garde définitif).
+        niveau: { equals: 'local' },
+      },
+      admin: {
+        description:
+          'Groupes locaux dont ce réseauteur se déclare admin (3 max — réservé aux réseauteurs Plus). ' +
+          'Son nom apparaît sur la fiche du groupe et il peut créer des événements pour ce groupe.',
       },
     },
     // ============================================================

@@ -6,17 +6,19 @@ import { Calendar, Pencil, Trash2, X } from 'lucide-react'
 import { createEvenement, updateEvenement, deleteEvenement } from './actions'
 
 interface EvenementsManagerProps {
+  /** Le réseau cible est résolu côté serveur (Server Action) — jamais transmis par le client. */
   evenements: Record<string, unknown>[]
-  reseauId: string | number
 }
 
 type FormMode = 'idle' | 'create' | { edit: Record<string, unknown> }
 
-export function EvenementsManager({ evenements, reseauId }: EvenementsManagerProps) {
+export function EvenementsManager({ evenements }: EvenementsManagerProps) {
   const [mode, setMode] = useState<FormMode>('idle')
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [localEvenements, setLocalEvenements] = useState(evenements)
+  // Récurrence (création uniquement) — pilote l'affichage du champ « jusqu'au »
+  const [recurrence, setRecurrence] = useState('aucune')
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -52,6 +54,9 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
       parking: fd.get('parking') === 'on',
       accesPmr: fd.get('accesPmr') === 'on',
       infosPratiques: gs('infosPratiques'),
+      // Le select n'émet que des valeurs de l'enum ; Zod revalide côté serveur.
+      recurrence: gs('recurrence') as 'aucune' | 'hebdomadaire' | 'quinzaine' | 'mensuelle' | undefined,
+      recurrenceFin: gs('recurrenceFin'),
     }
 
     startTransition(async () => {
@@ -266,6 +271,48 @@ export function EvenementsManager({ evenements, reseauId }: EvenementsManagerPro
                 />
               </div>
             </div>
+
+            {/* Récurrence — création uniquement : 1 événement distinct créé par date */}
+            {mode === 'create' && (
+              <fieldset className="space-y-3 pt-1 border-t border-[#f4f4f5]">
+                <legend className="text-xs font-semibold text-[#52525b]">Récurrence</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="recurrence" className={labelClass}>Répétition</label>
+                    <select
+                      id="recurrence"
+                      name="recurrence"
+                      value={recurrence}
+                      onChange={(e) => setRecurrence(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="aucune">Aucune (événement unique)</option>
+                      <option value="hebdomadaire">Chaque semaine</option>
+                      <option value="quinzaine">Toutes les 2 semaines</option>
+                      <option value="mensuelle">Chaque mois</option>
+                    </select>
+                  </div>
+                  {recurrence !== 'aucune' && (
+                    <div>
+                      <label htmlFor="recurrenceFin" className={labelClass}>Répéter jusqu&apos;au (inclus) *</label>
+                      <input
+                        id="recurrenceFin"
+                        name="recurrenceFin"
+                        type="date"
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                  )}
+                </div>
+                {recurrence !== 'aucune' && (
+                  <p className="text-xs text-[#a1a1aa]">
+                    Un événement distinct sera créé pour chaque date (26 maximum), modifiable ou
+                    supprimable individuellement ensuite.
+                  </p>
+                )}
+              </fieldset>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>

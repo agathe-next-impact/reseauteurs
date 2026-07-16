@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Loader2, LogOut, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2 } from 'lucide-react'
+import { Loader2, LogOut, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar } from 'lucide-react'
 
 interface DashboardSidebarReseauteursProps {
   role: 'reseauteur' | 'organisateur' | 'admin'
@@ -42,10 +42,16 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/dashboard/locaux',
-    label: 'Mes chapitres',
+    label: 'Mes groupes',
     icon: Network,
     roles: ['organisateur'],
     nationalOnly: true,
+  },
+  {
+    href: '/dashboard/evenements',
+    label: 'Événements',
+    icon: Calendar,
+    roles: ['organisateur'],
   },
   {
     href: '/dashboard/abonnement',

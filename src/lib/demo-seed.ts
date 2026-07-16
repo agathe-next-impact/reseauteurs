@@ -243,7 +243,7 @@ export async function runDemoSeed(
           ville: l.ville,
           source: 'importe',
           statut: 'publiee',
-          description: `Chapitre local de ${l.parent} à ${l.ville}. ${DEMO_TAG}`,
+          description: `Groupe local de ${l.parent} à ${l.ville}. ${DEMO_TAG}`,
           latitude: city?.lat,
           longitude: city?.lng,
         },

@@ -264,7 +264,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
             Réseaux fréquentés
           </legend>
           <p className="text-xs text-[#71717a] mb-3">
-            Cochez les chapitres locaux que vous fréquentez. Seuls les chapitres locaux sont disponibles.
+            Cochez les groupes locaux que vous fréquentez. Seuls les groupes locaux sont disponibles.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-[#e4e4e7] rounded-xl p-3">
             {reseauxLocaux.map((r) => (

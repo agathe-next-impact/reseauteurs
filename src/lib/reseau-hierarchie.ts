@@ -21,19 +21,19 @@
 // TYPES MINIMAUX (indépendants de payload-types)
 // ─────────────────────────────────────────────
 
-/** Valeurs de `niveau` (échelle du réseau = tête ou chapitre). */
+/** Valeurs de `niveau` (échelle du réseau = tête ou groupe). */
 export type NiveauReseau = 'local' | 'regional' | 'national' | 'international'
 
-/** Niveaux « tête de réseau » (porteurs de l'abonnement, parents des chapitres locaux). */
+/** Niveaux « tête de réseau » (porteurs de l'abonnement, parents des groupes locaux). */
 export const NIVEAUX_TETE: NiveauReseau[] = ['regional', 'national', 'international']
 
 /**
  * Une TÊTE de réseau = tout niveau sauf 'local' (regional/national/international, ou
  * null pour les données historiques). Une tête porte l'abonnement, peut avoir des
- * chapitres locaux et gate la publication d'événements. Un 'local' est un CHAPITRE.
+ * groupes locaux et gate la publication d'événements. Un 'local' est un GROUPE.
  *
  * (Réconciliation 2026-07-13 : le champ `niveau` unique a 4 valeurs ; la hiérarchie
- * umbrella reste à 2 étages — tête → chapitres — donc on raisonne « tête vs local ».)
+ * umbrella reste à 2 étages — tête → groupes — donc on raisonne « tête vs local ».)
  */
 export function estTete(niveau?: string | null): boolean {
   return niveau !== 'local'
@@ -93,7 +93,7 @@ export function nationalDe(reseau: ReseauForHierarchy): ReseauForHierarchy | nul
   if (!reseau) return null
   // Une tête (regional/national/international, ou null historique) est sa propre tête.
   if (estTete(reseau.niveau)) return reseau
-  // Un chapitre 'local' → sa tête est le parent (requis populé depth >= 1).
+  // Un groupe 'local' → sa tête est le parent (requis populé depth >= 1).
   const parent = reseau.parent
   if (parent == null || typeof parent === 'string' || typeof parent === 'number') {
     // Parent non populé : on ne peut pas résoudre la tête
@@ -250,7 +250,7 @@ export async function peutCreerLocalAsync(
   if (!national) {
     return {
       autorise: false,
-      raison: 'Vous ne possédez pas de réseau tête (national, régional ou international). Créez-le d\'abord avant d\'y rattacher des chapitres locaux.',
+      raison: 'Vous ne possédez pas de réseau tête (national, régional ou international). Créez-le d\'abord avant d\'y rattacher des groupes locaux.',
     }
   }
 
