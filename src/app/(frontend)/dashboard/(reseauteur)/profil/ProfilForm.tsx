@@ -8,10 +8,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateProfilReseauteur } from './actions'
 import type { ProfilFormData } from './actions'
-import type { Reseauteur, Reseau } from '@/types/reseauteurs-domain'
+import type { Reseauteur, Reseau, Media } from '@/types/reseauteurs-domain'
 import { Network } from 'lucide-react'
+import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
 
 const BADGE_OPTIONS = [
   { value: 0, label: '0–1 événement/mois (Bronze)' },
@@ -34,9 +36,27 @@ interface ProfilFormProps {
 }
 
 export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  // Photo actuelle (populée par la page — depth 1)
+  const photoMedia = (typeof reseauteur.photo === 'object' ? reseauteur.photo : null) as Media | null
+  const photoUrl = photoMedia?.sizes?.thumbnail?.url ?? photoMedia?.url ?? null
+
+  // Persistance immédiate de la photo (indépendante du bouton « Enregistrer ») :
+  // l'access `update` de la collection scope déjà au propriétaire (user = req.user).
+  const handlePhotoUploaded = async ({ id }: { id: number | string }) => {
+    const res = await fetch(`/api/reseauteurs/${reseauteur.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ photo: id }),
+    })
+    if (!res.ok) return "Erreur lors de l'enregistrement de la photo."
+    router.refresh()
+  }
 
   // IDs des réseaux fréquentés actuels
   const currentReseauxIds = new Set(
@@ -91,6 +111,14 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
       {/* Identité */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-[#18181b] mb-3">Identité</legend>
+        <ImageUploadField
+          label="Photo de profil"
+          hint="Portrait carré recommandé."
+          alt={`Photo de ${reseauteur.prenom} ${reseauteur.nom}`.trim()}
+          currentUrl={photoUrl}
+          shape="round"
+          onUploaded={handlePhotoUploaded}
+        />
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="prenom" className={labelClass}>Prénom *</label>

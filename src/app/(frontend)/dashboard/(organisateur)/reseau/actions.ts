@@ -103,6 +103,8 @@ const enumOrNull = (v: string | undefined, allowed: readonly string[]): string |
 
 const EvenementSchema = z.object({
   titre: z.string().min(1, 'Le titre est requis').max(300),
+  // Catégorie (types-evenement) — requise par la collection (type_id NOT NULL)
+  type: z.number({ message: 'La catégorie est requise' }).int().positive('La catégorie est requise'),
   descriptionCourte: z.string().max(500).optional(),
   description: z.string().max(5000).optional(),
   intervenants: z.string().max(1000).optional(),
@@ -130,6 +132,9 @@ const EvenementSchema = z.object({
   parking: z.boolean().optional(),
   accesPmr: z.boolean().optional(),
   infosPratiques: z.string().max(1000).optional(),
+  // Visuel : id d'un media déjà uploadé par le client (POST /api/media, auth requise).
+  // undefined = ne pas toucher au visuel existant.
+  imageId: z.number().int().positive().optional(),
   // Récurrence (création uniquement — ignorée à la mise à jour) : un événement
   // DISTINCT est créé par date, modifiable/supprimable individuellement.
   // Pas de série ni de serieId (modèle « occurrences » retiré — ADR-0011 §12).
@@ -291,7 +296,7 @@ export async function createEvenement(
     return { error: parsed.error.issues[0]?.message ?? 'Données invalides' }
   }
 
-  const { lienInscription, dateFin, recurrence, recurrenceFin, ...rest } = parsed.data
+  const { lienInscription, dateFin, recurrence, recurrenceFin, imageId, ...rest } = parsed.data
 
   const premiereDate = new Date(parsed.data.dateDebut)
   if (Number.isNaN(premiereDate.getTime())) {
@@ -329,6 +334,7 @@ export async function createEvenement(
             ? decale(extras.dateLimiteInscription as string, occ)
             : null,
           lienInscription: lienInscription || null,
+          image: imageId ?? null,
           reseau: auth.reseau.id,
           statut: 'publie',
         } as unknown as RequiredDataFromCollectionSlug<'evenements'>,
@@ -389,7 +395,7 @@ export async function updateEvenement(
   }
 
   // recurrence/recurrenceFin : création uniquement — jamais réappliqués à un événement existant
-  const { lienInscription, dateFin, recurrence: _r, recurrenceFin: _rf, ...rest } = parsed.data
+  const { lienInscription, dateFin, imageId, recurrence: _r, recurrenceFin: _rf, ...rest } = parsed.data
 
   try {
     await payload.update({
@@ -400,6 +406,8 @@ export async function updateEvenement(
         ...evenementExtras(parsed.data),
         dateFin: dateFin || null,
         lienInscription: lienInscription || null,
+        // imageId absent = visuel inchangé (jamais effacé implicitement)
+        ...(imageId !== undefined ? { image: imageId } : {}),
       } as Record<string, unknown>,
       overrideAccess: true,
     })

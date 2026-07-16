@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { CalendarDays, MapPin, Pencil, Trash2, Plus, Loader2, ExternalLink, Users, ChevronDown } from 'lucide-react'
 import { createMonEvenement, updateMonEvenement, deleteMonEvenement, type EvenementFormData } from './actions'
+import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
 
 export interface TypeEvLite {
   id: number
@@ -63,6 +64,8 @@ export interface MonEvenement {
   accesPmr: boolean
   infosPratiques: string | null
   statut: string
+  /** URL d'aperçu du visuel (thumbnail — calculée côté serveur). */
+  imageUrl: string | null
   /** Inscrits en ligne (ADR-0013 §3bis). */
   inscrits: InscritLite[]
 }
@@ -94,6 +97,14 @@ export function MesEvenementsClient({
   const [editing, setEditing] = useState<MonEvenement | 'new' | null>(null)
   const [expandedInscrits, setExpandedInscrits] = useState<number | null>(null)
   const [pending, startTransition] = useTransition()
+  // Visuel uploadé (id media) — appliqué à la soumission ; null = visuel inchangé
+  const [imageId, setImageId] = useState<number | null>(null)
+
+  // Ouverture/fermeture du formulaire = visuel en attente réinitialisé
+  const changeEditing = (v: MonEvenement | 'new' | null) => {
+    setEditing(v)
+    setImageId(null)
+  }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -131,6 +142,7 @@ export function MesEvenementsClient({
       parking: fd.get('parking') === 'on',
       accesPmr: fd.get('accesPmr') === 'on',
       infosPratiques: s('infosPratiques'),
+      imageId: imageId ?? undefined,
     }
     startTransition(async () => {
       const res =
@@ -139,7 +151,7 @@ export function MesEvenementsClient({
           : await updateMonEvenement(editing.id, data)
       if (res.ok) {
         toast.success(editing === 'new' ? 'Événement publié.' : 'Événement mis à jour.')
-        setEditing(null)
+        changeEditing(null)
         router.refresh()
       } else {
         toast.error(res.error)
@@ -236,6 +248,16 @@ export function MesEvenementsClient({
             <label htmlFor="intervenants" className={labelClass}>Intervenant(s)</label>
             <textarea id="intervenants" name="intervenants" rows={2} maxLength={1000} defaultValue={current?.intervenants ?? ''} className={`${inputClass} resize-none`} />
           </div>
+
+          <ImageUploadField
+            label="Visuel / affiche"
+            hint="Format paysage recommandé."
+            alt={current ? `Visuel — ${current.titre}` : "Visuel de l'événement"}
+            currentUrl={current?.imageUrl ?? null}
+            onUploaded={({ id }) => {
+              setImageId(Number(id))
+            }}
+          />
 
           <fieldset className="space-y-3">
             <legend className="text-xs font-semibold text-[#52525b]">Lieu</legend>
@@ -365,7 +387,7 @@ export function MesEvenementsClient({
             </button>
             <button
               type="button"
-              onClick={() => setEditing(null)}
+              onClick={() => changeEditing(null)}
               disabled={pending}
               className="text-sm text-[#71717a] hover:text-[#18181b] transition-colors"
             >
@@ -376,7 +398,7 @@ export function MesEvenementsClient({
       ) : (
         <button
           type="button"
-          onClick={() => setEditing('new')}
+          onClick={() => changeEditing('new')}
           className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm"
         >
           <Plus size={15} aria-hidden />
@@ -420,7 +442,7 @@ export function MesEvenementsClient({
                       <ExternalLink size={15} />
                     </Link>
                   )}
-                  <button type="button" onClick={() => setEditing(ev)} className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Modifier ${ev.titre}`}>
+                  <button type="button" onClick={() => changeEditing(ev)} className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Modifier ${ev.titre}`}>
                     <Pencil size={15} />
                   </button>
                   <button type="button" onClick={() => onDelete(ev)} disabled={pending} className="text-[#a1a1aa] hover:text-red-600 transition-colors disabled:opacity-50" aria-label={`Supprimer ${ev.titre}`}>

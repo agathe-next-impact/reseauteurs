@@ -51,6 +51,7 @@ export default async function MesEvenementsPage() {
 
   // Ses événements : en son nom (organisateurReseauteur) ET ceux qu'il a créés pour
   // un groupe local dont il est admin déclaré (creeParUser — décision 2026-07-16).
+  // depth 1 : popule `image` (aperçu du visuel dans le formulaire d'édition).
   const { docs: evDocs } = await payload.find({
     collection: 'evenements',
     where: {
@@ -59,7 +60,7 @@ export default async function MesEvenementsPage() {
         { creeParUser: { equals: user.id } },
       ],
     },
-    depth: 0,
+    depth: 1,
     limit: 100,
     sort: '-dateDebut',
     overrideAccess: true,
@@ -144,6 +145,12 @@ export default async function MesEvenementsPage() {
     accesPmr: (e.accesPmr as boolean | null) ?? false,
     infosPratiques: (e.infosPratiques as string | null) ?? null,
     statut: (e.statut as string) ?? 'publie',
+    imageUrl: (() => {
+      const img = e.image as { sizes?: { thumbnail?: { url?: string | null } }; url?: string | null } | number | null | undefined
+      return typeof img === 'object' && img !== null
+        ? (img.sizes?.thumbnail?.url ?? img.url ?? null)
+        : null
+    })(),
     // Inscrits en ligne (ADR-0013 §3bis) — la gestion se fait ici.
     inscrits: (inscritsParEv.get(e.id as number) ?? []).map((i) => ({
       reseauteurId: i.reseauteurId,

@@ -50,6 +50,14 @@ export interface EvenementFormData {
   parking?: boolean
   accesPmr?: boolean
   infosPratiques?: string
+  /** Visuel : id d'un media déjà uploadé (POST /api/media, auth). undefined = inchangé. */
+  imageId?: number
+}
+
+/** Id media validé (entier > 0) ou undefined — jamais confiance au client. */
+function imagePatch(imageId: unknown): { image: number } | Record<string, never> {
+  const n = Number(imageId)
+  return Number.isInteger(n) && n > 0 ? { image: n } : {}
 }
 
 type ActionResult = { ok: true; id?: number | string } | { ok: false; error: string }
@@ -139,6 +147,7 @@ export async function createMonEvenement(data: EvenementFormData): Promise<Actio
       collection: 'evenements',
       data: {
         ...sanitize(data),
+        ...imagePatch(data.imageId),
         ...(organisateurReseau
           ? { reseau: organisateurReseau }
           : { organisateurReseauteur: Number(ctx.profil.id) }),
@@ -166,7 +175,8 @@ export async function updateMonEvenement(
     const doc = await ctx.payload.update({
       collection: 'evenements',
       id,
-      data: sanitize(data) as Record<string, unknown>,
+      // imageId absent = visuel inchangé (jamais effacé implicitement)
+      data: { ...sanitize(data), ...imagePatch(data.imageId) } as Record<string, unknown>,
       user: ctx.user,
       overrideAccess: false,
     })

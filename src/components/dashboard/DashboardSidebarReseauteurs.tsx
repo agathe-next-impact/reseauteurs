@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Loader2, LogOut, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar } from 'lucide-react'
 
 interface DashboardSidebarReseauteursProps {
-  role: 'reseauteur' | 'organisateur' | 'admin'
+  role: 'reseauteur' | 'organisateur' | 'partenaire' | 'admin'
   displayName: string
   /** ADR-0012 : vrai si l'utilisateur possède un réseau national (dérivé côté serveur, jamais côté client) */
   isNational?: boolean
@@ -16,7 +16,7 @@ type NavItem = {
   href: string
   label: string
   icon: React.ElementType
-  roles: Array<'reseauteur' | 'organisateur' | 'admin'>
+  roles: Array<'reseauteur' | 'organisateur' | 'partenaire' | 'admin'>
   /** Affiché uniquement si isNational est vrai (pour les organisateurs nationaux) */
   nationalOnly?: boolean
 }
@@ -26,13 +26,19 @@ const NAV_ITEMS: NavItem[] = [
     href: '/dashboard',
     label: 'Tableau de bord',
     icon: LayoutDashboard,
-    roles: ['reseauteur', 'organisateur', 'admin'],
+    roles: ['reseauteur', 'organisateur', 'partenaire', 'admin'],
   },
   {
     href: '/dashboard/profil',
     label: 'Mon profil',
     icon: User,
     roles: ['reseauteur'],
+  },
+  {
+    href: '/dashboard/partenaire',
+    label: 'Ma fiche partenaire',
+    icon: Building2,
+    roles: ['partenaire'],
   },
   {
     href: '/dashboard/reseau',
@@ -63,19 +69,20 @@ const NAV_ITEMS: NavItem[] = [
     href: '/dashboard/factures',
     label: 'Factures',
     icon: Receipt,
-    roles: ['organisateur'],
+    roles: ['organisateur', 'partenaire'],
   },
   {
     href: '/dashboard/compte',
     label: 'Mon compte',
     icon: Settings,
-    roles: ['reseauteur', 'organisateur', 'admin'],
+    roles: ['reseauteur', 'organisateur', 'partenaire', 'admin'],
   },
 ]
 
 const roleLabels: Record<DashboardSidebarReseauteursProps['role'], string> = {
   reseauteur: 'Réseauteur',
   organisateur: 'Organisateur',
+  partenaire: 'Partenaire',
   admin: 'Administrateur',
 }
 

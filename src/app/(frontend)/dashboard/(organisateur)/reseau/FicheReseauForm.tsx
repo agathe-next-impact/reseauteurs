@@ -1,16 +1,36 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateFicheReseau } from './actions'
+import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
+import type { Media } from '@/types/reseauteurs-domain'
 
 interface FicheReseauFormProps {
   reseau: Record<string, unknown>
 }
 
 export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  // Logo actuel (populé par la page — depth 1)
+  const logoMedia = (typeof reseau.logo === 'object' ? reseau.logo : null) as Media | null
+  const logoUrl = logoMedia?.sizes?.thumbnail?.url ?? logoMedia?.url ?? null
+
+  // Persistance immédiate du logo — l'access `update` de la collection scope au propriétaire.
+  const handleLogoUploaded = async ({ id }: { id: number | string }) => {
+    const res = await fetch(`/api/reseaux/${reseau.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ logo: id }),
+    })
+    if (!res.ok) return "Erreur lors de l'enregistrement du logo."
+    router.refresh()
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -61,6 +81,14 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <ImageUploadField
+        label="Logo"
+        hint="Carré recommandé (400×400)."
+        alt={`Logo ${(reseau.nom as string) ?? 'du réseau'}`}
+        currentUrl={logoUrl}
+        onUploaded={handleLogoUploaded}
+      />
+
       <div>
         <label htmlFor="nom" className={labelClass}>Nom du réseau *</label>
         <input

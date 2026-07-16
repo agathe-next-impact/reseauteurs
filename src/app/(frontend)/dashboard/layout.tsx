@@ -23,9 +23,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     overrideAccess: true,
   })
 
-  const role: 'reseauteur' | 'organisateur' | 'admin' =
+  // 4 rôles (ADR-0013) : le partenaire a son propre menu (fiche partenaire, factures) —
+  // le rabattre sur « réseauteur » masquait sa fiche dans l'espace perso (bug 2026-07-16).
+  const role: 'reseauteur' | 'organisateur' | 'partenaire' | 'admin' =
     (freshUser.role as string) === 'organisateur' ? 'organisateur'
     : (freshUser.role as string) === 'admin' ? 'admin'
+    : (freshUser.role as string) === 'partenaire' ? 'partenaire'
     : 'reseauteur'
 
   const displayName: string =

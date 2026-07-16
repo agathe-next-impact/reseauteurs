@@ -4,21 +4,34 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Calendar, Pencil, Trash2, X } from 'lucide-react'
 import { createEvenement, updateEvenement, deleteEvenement } from './actions'
+import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
+import type { Media } from '@/types/reseauteurs-domain'
 
 interface EvenementsManagerProps {
   /** Le réseau cible est résolu côté serveur (Server Action) — jamais transmis par le client. */
   evenements: Record<string, unknown>[]
+  /** Catégories d'événement (select requis — type_id NOT NULL en base). */
+  types: Array<{ id: number; label: string }>
 }
 
 type FormMode = 'idle' | 'create' | { edit: Record<string, unknown> }
 
-export function EvenementsManager({ evenements }: EvenementsManagerProps) {
+export function EvenementsManager({ evenements, types }: EvenementsManagerProps) {
   const [mode, setMode] = useState<FormMode>('idle')
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [localEvenements, setLocalEvenements] = useState(evenements)
   // Récurrence (création uniquement) — pilote l'affichage du champ « jusqu'au »
   const [recurrence, setRecurrence] = useState('aucune')
+  // Visuel uploadé (id media) — appliqué à la soumission ; null = visuel inchangé
+  const [imageId, setImageId] = useState<number | null>(null)
+
+  // Changement de mode = formulaire réinitialisé (erreur + visuel en attente)
+  const changeMode = (m: FormMode) => {
+    setMode(m)
+    setErrorMsg(null)
+    setImageId(null)
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -28,6 +41,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
     const gs = (k: string) => (fd.get(k) as string | null) ?? undefined
     const data = {
       titre: fd.get('titre') as string,
+      type: Number(fd.get('type')),
       descriptionCourte: gs('descriptionCourte'),
       description: gs('description'),
       intervenants: gs('intervenants'),
@@ -57,6 +71,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
       // Le select n'émet que des valeurs de l'enum ; Zod revalide côté serveur.
       recurrence: gs('recurrence') as 'aucune' | 'hebdomadaire' | 'quinzaine' | 'mensuelle' | undefined,
       recurrenceFin: gs('recurrenceFin'),
+      imageId: imageId ?? undefined,
     }
 
     startTransition(async () => {
@@ -80,7 +95,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
                 : ev
             )
           )
-          setMode('idle')
+          changeMode('idle')
         }
       }
     })
@@ -114,7 +129,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
           <p className="text-sm text-[#71717a] mb-4">Aucun événement publié.</p>
           <button
             type="button"
-            onClick={() => setMode('create')}
+            onClick={() => changeMode('create')}
             className="text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] transition-colors"
           >
             Créer le premier événement →
@@ -164,10 +179,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
               <div className="shrink-0 flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode({ edit: ev })
-                    setErrorMsg(null)
-                  }}
+                  onClick={() => changeMode({ edit: ev })}
                   className="p-1.5 rounded-lg text-[#71717a] hover:text-[#2563EB] hover:bg-[#eff6ff] transition-colors"
                   aria-label={`Modifier ${ev.titre as string}`}
                 >
@@ -197,7 +209,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
             </h3>
             <button
               type="button"
-              onClick={() => { setMode('idle'); setErrorMsg(null) }}
+              onClick={() => changeMode('idle')}
               className="p-1 rounded-lg text-[#71717a] hover:text-[#18181b] hover:bg-[#f4f4f5] transition-colors"
               aria-label="Fermer le formulaire"
             >
@@ -221,6 +233,26 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
             </div>
 
             <div>
+              <label htmlFor="type" className={labelClass}>Catégorie *</label>
+              <select
+                id="type"
+                name="type"
+                required
+                defaultValue={(() => {
+                  const t = editingEvenement?.type
+                  if (typeof t === 'object' && t !== null) return String((t as { id: number }).id)
+                  return t ? String(t) : ''
+                })()}
+                className={inputClass}
+              >
+                <option value="" disabled>Choisir…</option>
+                {types.map((t) => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label htmlFor="descriptionCourte" className={labelClass}>Description courte (2 à 3 lignes)</label>
               <textarea id="descriptionCourte" name="descriptionCourte" maxLength={500} rows={2} defaultValue={editingEvenement?.descriptionCourte as string ?? ''} className={`${inputClass} resize-none`} />
             </div>
@@ -239,6 +271,25 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
               <label htmlFor="intervenants" className={labelClass}>Intervenant(s)</label>
               <textarea id="intervenants" name="intervenants" maxLength={1000} rows={2} defaultValue={editingEvenement?.intervenants as string ?? ''} className={`${inputClass} resize-none`} />
             </div>
+
+            <ImageUploadField
+              label="Visuel / affiche"
+              hint="Format paysage recommandé."
+              alt={
+                (editingEvenement?.titre as string | undefined)
+                  ? `Visuel — ${editingEvenement?.titre as string}`
+                  : "Visuel de l'événement"
+              }
+              currentUrl={(() => {
+                const img = editingEvenement?.image as Media | null | undefined
+                return typeof img === 'object' && img !== null
+                  ? (img.sizes?.thumbnail?.url ?? img.url ?? null)
+                  : null
+              })()}
+              onUploaded={({ id }) => {
+                setImageId(Number(id))
+              }}
+            />
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -473,7 +524,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
               </button>
               <button
                 type="button"
-                onClick={() => { setMode('idle'); setErrorMsg(null) }}
+                onClick={() => changeMode('idle')}
                 className="px-4 py-2.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:bg-[#f4f4f5] transition-colors"
               >
                 Annuler
@@ -487,7 +538,7 @@ export function EvenementsManager({ evenements }: EvenementsManagerProps) {
       {mode === 'idle' && localEvenements.length > 0 && (
         <button
           type="button"
-          onClick={() => { setMode('create'); setErrorMsg(null) }}
+          onClick={() => changeMode('create')}
           className="text-xs text-[#2563EB] hover:text-[#1d4ed8] font-medium transition-colors mt-1"
         >
           + Ajouter un événement

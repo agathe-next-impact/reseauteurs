@@ -67,14 +67,28 @@ export default async function DashboardEvenementsPage() {
     reseauIds = [...reseauIds, ...locauxDocs.map((l) => l.id)]
   }
 
+  // depth 1 : popule `image` (aperçu du visuel dans le formulaire d'édition)
   const { docs: evenements, totalDocs: totalEvenements } = await payload.find({
     collection: 'evenements',
     where: { reseau: { in: reseauIds } },
     limit: 100,
     sort: '-dateDebut',
+    depth: 1,
+    overrideAccess: true,
+  })
+
+  // Catégories (select requis du formulaire — type_id NOT NULL)
+  const { docs: typesDocs } = await payload.find({
+    collection: 'types-evenement',
+    limit: 50,
+    sort: 'ordre',
     depth: 0,
     overrideAccess: true,
   })
+  const types = typesDocs.map((t) => ({
+    id: t.id as number,
+    label: ((t as { label?: string }).label as string) ?? String(t.id),
+  }))
 
   // Gate serveur : le national effectif doit être partenaire (ADR-0012)
   const peutPublier = peutPublierEvenement(reseau as unknown as ReseauForHierarchy)
@@ -151,7 +165,7 @@ export default async function DashboardEvenementsPage() {
               </p>
             </div>
           ) : (
-            <EvenementsManager evenements={evenements as unknown as Record<string, unknown>[]} />
+            <EvenementsManager evenements={evenements as unknown as Record<string, unknown>[]} types={types} />
           )}
         </div>
       </div>
