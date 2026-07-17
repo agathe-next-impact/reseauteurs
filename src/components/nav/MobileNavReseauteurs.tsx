@@ -54,7 +54,7 @@ export default function MobileNavReseauteurs() {
 
   return (
     <>
-      <div className="sm:hidden flex items-center gap-1 -mr-1">
+      <div className="lg:hidden flex items-center gap-1 -mr-1">
         {user ? (
           <Link
             href="/dashboard"
@@ -82,7 +82,7 @@ export default function MobileNavReseauteurs() {
       </div>
 
       {open && (
-        <div className="sm:hidden fixed inset-0 z-[9990]">
+        <div className="lg:hidden fixed inset-0 z-[9990]">
           <div className="absolute inset-0 bg-black/40" onClick={close} aria-hidden />
           <nav
             className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#e4e4e7] flex flex-col"

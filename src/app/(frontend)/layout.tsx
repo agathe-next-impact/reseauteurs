@@ -74,38 +74,40 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             <span className="text-xl font-extrabold tracking-tight">
               {SITE_NAME.toUpperCase()}
             </span>
-            <span className="hidden sm:inline text-xs font-medium border-l pl-2 ml-1">
+            <span className="hidden xl:inline whitespace-nowrap text-xs font-medium border-l pl-2 ml-1">
               {SITE_TAGLINE}
             </span>
           </Link>
 
-          <nav className="flex items-center gap-1 sm:gap-5" aria-label="Navigation principale">
+          {/* Nav desktop dès lg (1024px) : en dessous, logo+liens+auth ne tiennent pas
+              dans la largeur (débordement 640–900px constaté) → hamburger jusqu'à lg. */}
+          <nav className="flex items-center gap-1 lg:gap-5" aria-label="Navigation principale">
             <Link
               href="/reseauteurs"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden sm:inline font-medium"
+              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
             >
               Réseauteurs
             </Link>
             <Link
               href="/evenements"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden sm:inline font-medium"
+              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
             >
               Événements
             </Link>
             <Link
               href="/reseaux"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden sm:inline font-medium"
+              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
             >
               Réseaux
             </Link>
             <Link
               href="/partenaires"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden sm:inline font-medium"
+              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
             >
               Entreprises
             </Link>
             <ThemeToggle />
-            <div className="hidden sm:flex">
+            <div className="hidden lg:flex">
               <AuthNav />
             </div>
             <MobileNavReseauteurs />

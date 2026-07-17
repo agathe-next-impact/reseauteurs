@@ -347,7 +347,7 @@ export default function MapEvenementsReseauteurs({
         <div className="rsn-map-topbar-end">
           <button
             type="button"
-            className={`rsn-map-topbar-btn hidden lg:inline-flex${listOpen ? ' is-active' : ''}`}
+            className={`rsn-map-topbar-btn rsn-map-panel-toggle${listOpen ? ' is-active' : ''}`}
             onClick={() => setListOpen((v) => !v)}
             aria-pressed={listOpen}
             aria-label={listOpen ? 'Masquer le panneau' : 'Afficher le panneau'}

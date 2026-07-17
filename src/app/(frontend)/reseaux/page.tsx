@@ -225,7 +225,7 @@ export default async function ReseauxPage({
           </h1>
           <p className="text-sm text-[#71717a]">
             {totalDocs > 0
-              ? `${totalDocs.toLocaleString('fr-FR')} réseau${totalDocs > 1 ? 'x' : ''} national${totalDocs > 1 ? 'aux' : ''} référencé${totalDocs > 1 ? 's' : ''}`
+              ? `${totalDocs.toLocaleString('fr-FR')} réseau${totalDocs > 1 ? 'x' : ''} ${totalDocs > 1 ? 'nationaux' : 'national'} référencé${totalDocs > 1 ? 's' : ''}`
               : 'Aucun réseau pour l\'instant'}
           </p>
         </Reveal>

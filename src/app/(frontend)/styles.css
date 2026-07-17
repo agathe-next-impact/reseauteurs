@@ -1289,6 +1289,14 @@ p {
   border-color: rgba(var(--ir-accent-rgb), 0.4);
   background: rgba(var(--ir-accent-rgb), 0.06);
 }
+/* Bascule du panneau latéral : desktop uniquement — en dessous de lg, la liste
+   passe par l'onglet Annuaire/Agenda. (L'utilitaire Tailwind `hidden` était
+   écrasé par le display de .rsn-map-topbar-btn, d'où cette classe dédiée.) */
+@media (max-width: 1023.98px) {
+  .rsn-map-panel-toggle {
+    display: none;
+  }
+}
 .rsn-map-topbar-btn-badge {
   display: inline-flex;
   align-items: center;
