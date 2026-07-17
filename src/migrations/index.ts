@@ -87,6 +87,8 @@ import * as migration_20260714_100000_perf_indexes from './20260714_100000_perf_
 import * as migration_20260716_100000_evenements_cree_par_user from './20260716_100000_evenements_cree_par_user';
 // ── ADR-0014 : trace des invitations de réseaux nationaux (audit-logs)
 import * as migration_20260717_100000_audit_logs_add_national_invited from './20260717_100000_audit_logs_add_national_invited';
+// ── Annuaire réseaux nationaux « nom seul » : ville facultative (2026-07-17)
+import * as migration_20260717_110000_reseaux_ville_nullable from './20260717_110000_reseaux_ville_nullable';
 
 export const migrations = [
   {
@@ -456,5 +458,10 @@ export const migrations = [
     up: migration_20260717_100000_audit_logs_add_national_invited.up,
     down: migration_20260717_100000_audit_logs_add_national_invited.down,
     name: '20260717_100000_audit_logs_add_national_invited',
+  },
+  {
+    up: migration_20260717_110000_reseaux_ville_nullable.up,
+    down: migration_20260717_110000_reseaux_ville_nullable.down,
+    name: '20260717_110000_reseaux_ville_nullable',
   },
 ];

@@ -87,7 +87,7 @@ export async function updateProfilReseauteur(
         region: profileData.region || null,
         // noindex : opt-out d'indexation décidé par le réseauteur
         seo: noindex !== undefined ? { noindex } : undefined,
-        // Affiliation réseaux locaux (ADR-0012 : validée côté collection, locaux uniquement)
+        // Affiliation réseaux (têtes ou groupes locaux — décision 2026-07-17)
         reseauxFrequentes: reseauxFrequentes ?? [],
       } as Record<string, unknown>,
       // Pas de overrideAccess : on laisse Payload vérifier l'ownership

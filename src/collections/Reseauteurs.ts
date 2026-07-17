@@ -15,12 +15,10 @@
  *   - noindex forcé jusqu'à validation (RGPD opt-out personnes physiques)
  *   - 1 user `reseauteur` = 1 reseauteur (auto-créé au signup — Users.ts hook)
  *
- * ADR-0012 E1.4 :
- *   - Validation serveur : `reseauxFrequentes` refuse tout réseau `niveau === 'national'`.
- *     Message FR explicite.
- *   - Dérivation du national : les nationaux d'un réseauteur sont les `parent` distincts
- *     de ses locaux fréquentés. Cette dérivation est faite À LA LECTURE (SSR/API), non stockée.
- *     Voir `lib/reseau-hierarchie.ts` — nationalDe(reseau) — et la fiche réseauteur SSR.
+ * Affiliation (décision 2026-07-17 — amende ADR-0012 E1.4) :
+ *   - `reseauxFrequentes` accepte les TÊTES de réseau (annuaire national) comme les
+ *     groupes locaux. Pour un local, le national reste dérivé à la lecture
+ *     (lib/reseau-hierarchie.ts — nationalDe) ; une tête est sa propre tête.
  */
 
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
@@ -246,38 +244,10 @@ export const Reseauteurs: CollectionConfig = {
         }
         return data
       },
-      // ── Validation M2M locaux-only (ADR-0012 E1.4)
-      //    Un réseauteur ne peut s'affilier qu'à des réseaux de niveau 'local'.
-      //    Le national est DÉRIVÉ à la lecture (parent des locaux fréquentés) — non stocké.
-      async ({ data, req }) => {
-        if (!Array.isArray(data.reseauxFrequentes) || data.reseauxFrequentes.length === 0) {
-          return data
-        }
-        const ids: Array<string | number> = data.reseauxFrequentes.map(
-          (r: unknown) => (typeof r === 'object' && r !== null ? (r as { id?: unknown }).id ?? r : r),
-        )
-        // Cherche parmi ces réseaux ceux qui seraient une TÊTE (non-local)
-        const { docs: nationaux } = await req.payload.find({
-          collection: 'reseaux',
-          where: {
-            and: [
-              { id: { in: ids } },
-              { niveau: { not_equals: 'local' } },
-            ],
-          },
-          limit: 10,
-          overrideAccess: true,
-        })
-        if (nationaux.length > 0) {
-          const noms = nationaux.map((r: { nom?: string }) => r.nom ?? r.id).join(', ')
-          throw new Error(
-            `Affiliation refusée : les réseaux suivants sont des têtes de réseau : ${noms}. ` +
-            'Vous pouvez uniquement vous affilier à des réseaux locaux (groupes/sections). ' +
-            'La tête de réseau est déduite automatiquement de vos affiliations locales.',
-          )
-        }
-        return data
-      },
+      // ── Affiliation (reseauxFrequentes) — décision 2026-07-17 : ouverte aux TÊTES
+      //    de réseau comme aux groupes locaux (l'annuaire des 200 nationaux « nom seul »
+      //    doit être sélectionnable). L'ancien refus des têtes (ADR-0012 E1.4) est caduc ;
+      //    le national d'un local reste dérivé à la lecture (nationalDe).
       // ── Participation aux événements : scope serveur (jamais confiance au client).
       //    On ne garde que les événements PUBLIÉS dont le réseau organisateur fait
       //    partie des réseaux fréquentés du réseauteur. Les entrées hors-scope sont
@@ -572,11 +542,10 @@ export const Reseauteurs: CollectionConfig = {
       ],
     },
     // ============================================================
-    // RÉSEAUX FRÉQUENTÉS (M2M vers reseaux — LOCAUX UNIQUEMENT, ADR-0012 E1.4)
-    // Validation serveur : refuse les réseaux niveau='national' (beforeChange hook).
-    // Le/les national(aux) d'un réseauteur sont DÉRIVÉS à la lecture :
-    //   nationaux = distinct(parent des locaux fréquentés)
-    // Cette dérivation est exposée dans la fiche SSR et les filtres (non stockée).
+    // RÉSEAUX FRÉQUENTÉS (M2M vers reseaux — têtes OU groupes locaux)
+    // Décision 2026-07-17 (amende ADR-0012 E1.4) : les têtes de réseau de
+    // l'annuaire national sont sélectionnables directement. Pour un local,
+    // le national reste dérivé à la lecture (nationalDe) — non stocké.
     // ============================================================
     {
       name: 'reseauxFrequentes',
@@ -585,15 +554,10 @@ export const Reseauteurs: CollectionConfig = {
       hasMany: true,
       label: 'Réseaux fréquentés',
       index: true,
-      filterOptions: {
-        // Filtre côté admin UI : ne proposer que les réseaux locaux dans le sélecteur.
-        // La validation serveur est le garde définitif (ce filtre est UI-only).
-        niveau: { equals: 'local' },
-      },
       admin: {
         description:
-          'Groupes/sections de réseaux d\'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). ' +
-          'Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.',
+          'Réseaux d\'affaires que vous fréquentez — réseau national (ex : BNI France) ' +
+          'ou groupe local (ex : DCF Lyon). Multi-sélection.',
       },
     },
     // ============================================================

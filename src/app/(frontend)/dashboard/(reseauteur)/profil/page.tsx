@@ -51,12 +51,13 @@ export default async function DashboardProfilPage() {
   const photoMedia = reseauteur?.photo as Media | null | undefined
   const photoUrl = photoMedia?.sizes?.thumbnail?.url ?? photoMedia?.url
 
-  // ADR-0012 : affiliation uniquement aux réseaux LOCAUX
+  // Affiliation ouverte aux têtes de réseau ET aux groupes locaux publiés
+  // (décision 2026-07-17 — annuaire des réseaux nationaux sélectionnable).
   const { docs: reseauxLocauxDocs } = await payload.find({
     collection: 'reseaux',
-    where: { niveau: { equals: 'local' } },
+    where: { statut: { equals: 'publiee' } },
     select: { id: true, nom: true, ville: true } as Record<string, boolean>,
-    limit: 500,
+    limit: 1000,
     sort: 'nom',
     depth: 0,
     overrideAccess: true,

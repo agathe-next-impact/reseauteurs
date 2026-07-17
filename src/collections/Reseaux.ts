@@ -462,7 +462,10 @@ export const Reseaux: CollectionConfig = {
     {
       name: 'ville',
       type: 'text',
-      required: true,
+      // Facultatif depuis le 2026-07-17 : l'annuaire des réseaux nationaux est seedé
+      // « nom seul ». Les formulaires self-service (création de local par le national
+      // ou par un réseauteur Plus, signup organisateur) l'exigent toujours via Zod —
+      // un LOCAL sans ville n'est pas géocodé et n'a donc pas de marqueur carte.
       label: 'Ville du siège',
     },
     {

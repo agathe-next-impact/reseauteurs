@@ -284,7 +284,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
         </div>
       </fieldset>
 
-      {/* Réseaux fréquentés — locaux uniquement (ADR-0012) */}
+      {/* Réseaux fréquentés — têtes de réseau ou groupes locaux (décision 2026-07-17) */}
       {reseauxLocaux.length > 0 && (
         <fieldset>
           <legend className="text-sm font-semibold text-[#18181b] mb-1 flex items-center gap-1.5">
@@ -292,7 +292,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
             Réseaux fréquentés
           </legend>
           <p className="text-xs text-[#71717a] mb-3">
-            Cochez les groupes locaux que vous fréquentez. Seuls les groupes locaux sont disponibles.
+            Cochez les réseaux que vous fréquentez — réseau national ou groupe local.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-[#e4e4e7] rounded-xl p-3">
             {reseauxLocaux.map((r) => (

@@ -518,7 +518,7 @@ export interface Reseauteur {
       }[]
     | null;
   /**
-   * Groupes/sections de réseaux d'affaires que vous fréquentez (ex : BNI Clermont, DCF Lyon…). Multi-sélection — locaux uniquement. Le réseau national est déduit automatiquement.
+   * Réseaux d'affaires que vous fréquentez — réseau national (ex : BNI France) ou groupe local (ex : DCF Lyon). Multi-sélection.
    */
   reseauxFrequentes?: (number | Reseau)[] | null;
   /**
@@ -632,7 +632,7 @@ export interface Reseau {
    */
   slug?: string | null;
   nom: string;
-  ville: string;
+  ville?: string | null;
   adresse?: string | null;
   codePostal?: string | null;
   /**
