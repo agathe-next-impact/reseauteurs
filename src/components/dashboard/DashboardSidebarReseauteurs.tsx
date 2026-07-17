@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Loader2, LogOut, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar } from 'lucide-react'
+import { Loader2, LogOut, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar, CalendarCheck, CalendarDays } from 'lucide-react'
 
 interface DashboardSidebarReseauteursProps {
   role: 'reseauteur' | 'organisateur' | 'partenaire' | 'admin'
@@ -32,6 +32,20 @@ const NAV_ITEMS: NavItem[] = [
     href: '/dashboard/profil',
     label: 'Mon profil',
     icon: User,
+    roles: ['reseauteur'],
+  },
+  {
+    href: '/dashboard/participations',
+    label: 'Participations',
+    icon: CalendarCheck,
+    roles: ['reseauteur'],
+  },
+  {
+    // Création/gestion d'événements (Réseauteur Plus) — la page gère le gate :
+    // un réseauteur gratuit atterrit sur /dashboard/plus (présentation de l'offre).
+    href: '/dashboard/mes-evenements',
+    label: 'Mes événements',
+    icon: CalendarDays,
     roles: ['reseauteur'],
   },
   {
