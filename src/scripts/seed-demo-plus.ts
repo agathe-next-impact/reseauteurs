@@ -1,16 +1,16 @@
 /**
  * seed-demo-plus.ts — Seed de démonstration des fonctionnalités ADR-0013
- * (Réseauteur Plus, packs de licences + code promo, événements « Organisé par »,
- * partenaires self-service + offres réservées aux réseauteurs, participations).
+ * (Réseauteur Plus, événements « Organisé par », partenaires self-service +
+ * offres réservées aux réseauteurs, participations).
+ * ADR-0015 : les packs de licences + codes promo sont SUPPRIMÉS du seed.
  *
  * IDEMPOTENT + ADDITIF (clés : emails des comptes, noms des fiches, titres des
  * événements). N'écrit qu'avec --confirm (ou SEED_DEMO=1) ; sinon dry-run.
  *
- * Crée 4 COMPTES CONNECTABLES (mot de passe commun affiché en fin de run) :
+ * Crée 3 COMPTES CONNECTABLES (mot de passe commun affiché en fin de run) :
  *   demo-reseauteur@demo.reseauteurs.fr   réseauteur GRATUIT (profil complet, participations)
  *   demo-plus@demo.reseauteurs.fr         réseauteur PLUS (abonnement) + 2 événements organisés
- *   demo-licencie@demo.reseauteurs.fr     réseauteur PLUS via LICENCE (code activé réellement)
- *   demo-partenaire@demo.reseauteurs.fr   PARTENAIRE (fiche active + offre + pack de licences)
+ *   demo-partenaire@demo.reseauteurs.fr   PARTENAIRE (fiche active + offre)
  *
  * Usage :  pnpm seed:demo-plus            (aperçu)
  *          pnpm seed:demo-plus --confirm  (exécution)
@@ -28,7 +28,6 @@ const DEMO_TAG = '[démo]'
 const COMPTES = [
   { email: 'demo-reseauteur@demo.reseauteurs.fr', role: 'reseauteur', nomSociete: 'Claire Fontaine', ville: 'Paris' },
   { email: 'demo-plus@demo.reseauteurs.fr', role: 'reseauteur', nomSociete: 'Marc Olivier', ville: 'Lyon' },
-  { email: 'demo-licencie@demo.reseauteurs.fr', role: 'reseauteur', nomSociete: 'Sofia Benali', ville: 'Bordeaux' },
   { email: 'demo-partenaire@demo.reseauteurs.fr', role: 'partenaire', nomSociete: 'CoWork Central', ville: 'Paris' },
 ] as const
 
@@ -46,10 +45,10 @@ async function main() {
   const confirm = process.argv.includes('--confirm') || process.env.SEED_DEMO === '1'
 
   console.log('')
-  console.log('=== SEED DÉMO ADR-0013 (Réseauteur Plus + licences + partenaires) ===')
+  console.log('=== SEED DÉMO ADR-0013 (Réseauteur Plus + partenaires) ===')
   console.log(`  Base cible : ${dbHost()}`)
-  console.log('  Contenu    : 4 comptes connectables · 3 partenaires actifs avec offres ·')
-  console.log('               1 pack de 10 licences (+1 activée) · 2 événements « Organisé par » · participations')
+  console.log('  Contenu    : 3 comptes connectables · 3 partenaires actifs avec offres ·')
+  console.log('               2 événements « Organisé par » · participations')
   console.log('')
 
   if (!confirm) {
@@ -61,7 +60,6 @@ async function main() {
 
   const { getPayload } = await import('payload')
   const config = (await import('../payload.config')).default
-  const { activerLicence } = await import('../lib/licences')
   const { inscrire } = await import('../lib/inscriptions')
   const { sql } = await import('@payloadcms/db-postgres')
   const payload = await getPayload({ config })
@@ -188,12 +186,6 @@ async function main() {
         latitude: 45.764, longitude: 4.8357, evenementsParMois: 8,
         description: `Coach et organisateur d'afterworks — abonné Réseauteur Plus. ${DEMO_TAG}`,
       },
-      'demo-licencie@demo.reseauteurs.fr': {
-        prenom: 'Sofia', nom: 'Benali', fonction: 'Développeuse web', entreprise: 'Benali Studio',
-        ville: 'Bordeaux', departement: 'Gironde', region: 'Nouvelle-Aquitaine',
-        latitude: 44.8378, longitude: -0.5792, evenementsParMois: 2,
-        description: `Freelance web — Plus offert par un partenaire (licence). ${DEMO_TAG}`,
-      },
     }
     const profilByEmail: Record<string, { id: number }> = {}
     for (const [email, data] of Object.entries(PROFILS)) {
@@ -287,33 +279,7 @@ async function main() {
       log(`partenaire actif créé : ${p.nom}`)
     }
 
-    // ── 5. Pack de 10 licences (code réel) + activation réelle par demo-licencie
-    let pack: { id: number; code?: string | null }
-    const { docs: packs } = await payload.find({
-      collection: 'licences-packs',
-      where: { partenaire: { equals: fichePartenaireId } },
-      limit: 1,
-      depth: 0,
-      overrideAccess: true,
-    })
-    if (packs[0]) {
-      pack = packs[0] as { id: number; code?: string | null }
-      log(`pack existant : ${pack.code}`)
-    } else {
-      pack = (await payload.create({
-        collection: 'licences-packs',
-        data: { partenaire: fichePartenaireId, quota: 10, expireAt: plusExpire } as never,
-        overrideAccess: true,
-      })) as { id: number; code?: string | null }
-      log(`pack de 10 licences créé — code : ${pack.code}`)
-    }
-    const licencieId = usersByEmail['demo-licencie@demo.reseauteurs.fr'].id
-    const activation = await activerLicence(payload, licencieId, pack.code ?? '')
-    log(
-      activation.ok
-        ? 'licence activée réellement par demo-licencie (flux complet)'
-        : `activation demo-licencie : ${activation.raison} (probablement déjà activée)`,
-    )
+    // ── 5. (ADR-0015) Les packs de licences sont supprimés — plus rien à seeder ici.
 
     // ── 6. Événements organisés par le réseauteur Plus (fiche « Organisé par »)
     const EVENEMENTS_PLUS = [
@@ -404,15 +370,13 @@ async function main() {
       })
       const evIds = evsReseaux.map((e) => e.id as number)
       if (evIds.length > 0) {
-        for (const email of ['demo-reseauteur@demo.reseauteurs.fr', 'demo-licencie@demo.reseauteurs.fr']) {
-          await payload.update({
-            collection: 'reseauteurs',
-            id: profilByEmail[email].id,
-            data: { evenementsParticipes: evIds } as never,
-            overrideAccess: true,
-          })
-        }
-        log(`participations signalées : ${evIds.length} événement(s) pour Claire et Sofia`)
+        await payload.update({
+          collection: 'reseauteurs',
+          id: profilByEmail['demo-reseauteur@demo.reseauteurs.fr'].id,
+          data: { evenementsParticipes: evIds } as never,
+          overrideAccess: true,
+        })
+        log(`participations signalées : ${evIds.length} événement(s) pour Claire`)
       } else {
         log('aucun événement à venir des réseaux fréquentés — participations sautées')
       }
@@ -439,12 +403,10 @@ async function main() {
     console.log('OK — seed démo ADR-0013 terminé. À VISITER :')
     console.log('  ────────────────────────────────────────────────────────────')
     console.log(`  Mot de passe commun : ${DEMO_PASSWORD}`)
-    console.log(`  CODE DE LICENCE (pack CoWork Central, 10 licences) : ${pack.code}`)
     console.log('  ────────────────────────────────────────────────────────────')
     console.log('  demo-plus@demo.reseauteurs.fr       → /dashboard/plus (Plus actif) · /dashboard/mes-evenements (2 événements)')
-    console.log('  demo-licencie@demo.reseauteurs.fr   → /dashboard/plus (Plus via licence)')
-    console.log('  demo-reseauteur@demo.reseauteurs.fr → /dashboard/offres (3 offres) · /dashboard/participations · saisir le code ci-dessus refusera (1 seule activation testée : utilisez un nouveau compte)')
-    console.log('  demo-partenaire@demo.reseauteurs.fr → /dashboard/partenaire (fiche active + offre + pack 10 licences, quota 1/10)')
+    console.log('  demo-reseauteur@demo.reseauteurs.fr → /dashboard/offres (3 offres) · /dashboard/participations')
+    console.log('  demo-partenaire@demo.reseauteurs.fr → /dashboard/partenaire (fiche active + offre)')
     console.log('  Public : /partenaires · /partenaire/cowork-central · /evenements (2 événements « Organisé par Marc Olivier », carte Lyon)')
     console.log('')
   } finally {

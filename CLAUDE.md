@@ -11,12 +11,14 @@
 > `docs/evolution/Reseauteurs - Document de cadrage.md`, `docs/evolution/ROADMAP-V1.md`,
 > `docs/evolution/AUDIT-DELTA-RESEAUTEURS.md` (+ son amendement 3-entités).
 >
-> **Évolution monétisation actée le 2026-07-12** (à mettre en œuvre — détail en §4). Elle **lève deux
-> invariants** du modèle 2026-06-28 : (1) le **réseauteur** a désormais **2 niveaux** — *Gratuit* (actuel)
-> et ***Plus*** (abonnement) qui ouvre la **création d'événements** ; (2) le **partenaire** peut **acheter
-> des packs de licences « Réseauteur Plus »** (10 / 50 / 100+) et les distribuer via **code promo** à ses
-> réseauteurs. Les **réseaux restent inchangés**. Partout ci-dessous, les mentions « réseauteurs strictement
-> gratuits » / « pas de palier payant côté réseauteur » sont **remplacées** par ce cap.
+> **Évolution monétisation actée le 2026-07-12** (détail en §4) : le **réseauteur** a désormais
+> **2 niveaux** — *Gratuit* (actuel) et ***Plus*** (abonnement) qui ouvre la **création d'événements**.
+> Partout ci-dessous, les mentions « réseauteurs strictement gratuits » / « pas de palier payant côté
+> réseauteur » sont **remplacées** par ce cap.
+> ⚠️ **ADR-0015 (2026-07-17)** : les **packs de licences « Réseauteur Plus »** vendus aux partenaires
+> (10/50/100 + code promo) sont **SUPPRIMÉS**. Le partenaire ne conserve que l'**abonnement de
+> visibilité** avec son **offre réservée aux réseauteurs** ; le Plus s'obtient **uniquement par
+> abonnement individuel**.
 
 ## 1. Produit
 
@@ -71,10 +73,14 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
    > permanentes, événements gérés séparément). **`niveau` = un seul champ à 4 valeurs** (réconciliation
    > 2026-07-13 : « portée » et « niveau » = la même caractéristique). La **hiérarchie umbrella reste à
    > 2 étages** : une **tête de réseau** = *régional / national / international* (parent null, porte
-   > l'abonnement, peut avoir des groupes) ; un **groupe** = *local* (rattaché à une tête ; terme UI
-   > tranché 2026-07-16 — l'ancien mot « chapitre » est banni de toute copie visible). Les gates
-   > (facturation, publication d'événements, unicité « 1 tête par compte ») raisonnent **« tête (non-local)
-   > vs local »** — cf. `estTete()` dans `lib/reseau-hierarchie.ts`.
+   > l'abonnement, peut avoir des groupes) ; un **groupe** = *local*, **rattaché à une tête OU indépendant**
+   > (parent optionnel — ADR-0014 ; terme UI tranché 2026-07-16 — l'ancien mot « chapitre » est banni de
+   > toute copie visible). Les gates (facturation, publication d'événements, unicité « 1 tête par compte »)
+   > raisonnent **« tête (non-local) vs local »** — cf. `estTete()` dans `lib/reseau-hierarchie.ts`.
+   > **ADR-0014 (2026-07-17)** : la **fiche d'une tête revendiquée naît suspendue** et n'est publiée que
+   > par l'abonnement (webhook) ; un **réseauteur Plus possède jusqu'à 3 réseaux locaux** (affiliés ou
+   > indépendants) créés depuis son espace « Mes réseaux », et crée les événements de SES locaux (gate =
+   > propriété + Plus, l'« admin déclaré » adminReseaux est déposé/dormant).
 
 **Relations :** réseauteur **↔** réseaux = many-to-many (réseaux fréquentés) · événement **→** réseau = N-1
 (réseau organisateur) · réseau **→** réseauteurs/événements = dérivés (compteurs).
@@ -85,24 +91,25 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
   événement / réseau, recherche. **Zéro friction.** Compte/email uniquement pour devenir réseauteur ou
   recevoir des alertes.
 - **Réseauteur** (`role: reseauteur`) — **2 niveaux (évolution §4)** : **Gratuit** (actuel : profil, carte,
-  participation aux événements, offres partenaires) et **Plus** (abonnement individuel **ou** licence activée
-  par un **code promo** de partenaire) qui ouvre le **droit de créer des événements**. L'inscription reste
-  **gratuite et sans friction** — la gratuité fait la densité ; le Plus est optionnel.
+  participation aux événements, offres partenaires) et **Plus** (**abonnement individuel** — ADR-0015 :
+  la licence par code promo partenaire est supprimée) qui ouvre le **droit de créer des événements**.
+  L'inscription reste **gratuite et sans friction** — la gratuité fait la densité ; le Plus est optionnel.
 - **Organisateur** (`role: organisateur`) : gère **uniquement** la fiche **de son réseau** et **ses
   événements** (1 compte ↔ 1 réseau). C'est le compte d'un **réseau partenaire** (§4).
 - **Partenaire** (`role: partenaire`) : entreprise **annonceuse** (1 compte ↔ 1 fiche partenaire). Gère sa
-  fiche perso + son **offre réservée aux réseauteurs**, souscrit l'**abonnement annonceur**, et achète les
-  **packs de licences Réseauteur Plus** qu'il distribue par code promo (§4.3).
+  fiche perso + son **offre réservée aux réseauteurs** et souscrit l'**abonnement annonceur** (§4.3).
+  *(Les packs de licences sont supprimés — ADR-0015.)*
 - **Administrateur** (`role: admin`) : back-office complet — créer / modifier / supprimer **réseauteurs,
   événements, réseaux, partenaires, abonnements, tarifs, badges, catégories, utilisateurs**.
 
 ## 4. Monétisation (Stripe)
 
-> **Évolution 2026-07-12 (à mettre en œuvre).** Le modèle passe d'un revenu **100 % B2B** à un **mix
-> B2C (réseauteur Plus) + B2B (réseaux, partenaires + licences)**. Cela **lève** l'invariant historique
-> « les réseauteurs sont et restent gratuits / pas de palier payant côté réseauteur ». La plomberie Stripe
-> existante (checkout, Customer Portal, webhooks idempotents signés, factures PDF, crons d'expiration) est
-> **réutilisée**. Le statut payant est **toujours** posé côté serveur (webhook), jamais par le client (§11).
+> **Évolution 2026-07-12.** Le modèle passe d'un revenu **100 % B2B** à un **mix B2C (réseauteur Plus)
+> + B2B (réseaux, partenaires)**. Cela **lève** l'invariant historique « les réseauteurs sont et restent
+> gratuits / pas de palier payant côté réseauteur ». La plomberie Stripe existante (checkout, Customer
+> Portal, webhooks idempotents signés, factures PDF, crons d'expiration) est **réutilisée**. Le statut
+> payant est **toujours** posé côté serveur (webhook), jamais par le client (§11).
+> **ADR-0015 (2026-07-17)** : les packs de licences partenaires sont **supprimés** du mix.
 
 ### 4.1 Réseauteur — 2 niveaux d'accès (Plus **= 39 € HT/an** — décision 2026-07-16)
 | Niveau | Type | Accès |
@@ -114,26 +121,29 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
 > **Pas de « profil vérifié » en V1** (reste une évolution future — §12).
 
 Le niveau est porté par le **compte réseauteur** (statut d'abonnement posé par le webhook Stripe). Un
-réseauteur passe **Plus** de **deux façons** : (a) **abonnement individuel**, ou (b) **licence** activée en
-saisissant un **code promo** fourni par un partenaire (§4.3).
+réseauteur passe **Plus** d'une **seule façon** : l'**abonnement individuel** (ADR-0015 — l'activation
+par licence/code promo partenaire est supprimée ; les licences déjà activées s'éteignent à échéance).
 
-### 4.2 Réseau — inchangé
-**Réseau partenaire** : abonnement **annuel** porté par le réseau **national**. Inclut logo page d'accueil,
-badge partenaire, fiche réseau enrichie, **droit de publier des événements** (via le compte organisateur),
-lien vers le site. *(Aucun changement vs le modèle actuel.)*
+### 4.2 Réseau — abonnement par paliers (ADR-0014, 2026-07-17)
+**Réseau partenaire** : abonnement **annuel** porté par la **tête de réseau**, en **4 paliers** —
+**`fiche`** (publication de la fiche, 0 groupe local) / `starter` / `growth` / `enterprise` (prix Stripe :
+`STRIPE_PRICE_NATIONAL_*`, TODO PO). **La fiche d'une tête revendiquée naît `suspendue` et n'est publiée
+que par un abonnement actif** (posé par webhook ; expiration → re-suspendue, fiches importées épargnées).
+Tout palier inclut logo page d'accueil, badge partenaire, fiche enrichie, lien site ; les paliers ≥ starter
+débloquent les groupes locaux (quota = locaux **possédés** par le national) et la publication d'événements.
+**Réseauteur Plus ↔ réseaux locaux** : un Plus crée jusqu'à **3 réseaux locaux** (affiliés à une tête ou
+**indépendants**) et publie leurs événements (couverts par l'abonnement Plus, pas par celui du national) ;
+s'il ne trouve pas le national, il peut l'**inviter par email** à créer son compte organisateur.
 
-### 4.3 Partenaire (annonceur) — abonnement + packs de licences
+### 4.3 Partenaire (annonceur) — abonnement de visibilité uniquement (ADR-0015)
 | Produit | Type | Inclus |
 |---|---|---|
 | **Partenaire annonceur** | Abonnement | **Espace publicitaire** : logo page d'accueil + page Partenaires + **fiche perso** (`/partenaire/<slug>`) + **offre réservée aux réseauteurs** (visible dans leur espace « Offres partenaires »). *(= fonctionnalité déjà livrée.)* |
-| **Packs de licences « Réseauteur Plus »** | Achat par paliers : **10 / 50 / 100+** licences | Le partenaire achète un **lot** de licences Plus et **diffuse un code promo** à ses réseauteurs ; chacun active sa licence en saisissant le code, **dans la limite du quota** du pack. |
 
-**Mécanique licences & codes (à concevoir proprement, extensible).** Un pack = un **quota** de licences Plus
-+ un ou plusieurs **codes promo** rattachés au partenaire. À la saisie d'un code par un réseauteur :
-décrément du quota, **passage du réseauteur en Plus**, traçabilité (qui a activé quel code, quand),
-expiration alignée sur l'abonnement/pack du partenaire. **Autorisation stricte, jamais confiance au client** :
-quota disponible, **une seule activation par réseauteur**, appartenance du code au partenaire — **vérifiés
-serveur** (§11).
+> **Packs de licences « Réseauteur Plus » : SUPPRIMÉS (ADR-0015, 2026-07-17).** Checkout, activation par
+> code promo, UI et sections publiques d'affiliation retirés. Les collections `licences-packs` /
+> `licences-activations` restent **dormantes** en DB (traçabilité legacy, extinction par le cron
+> `expiration-plus` — les Plus « licence » existants gardent leur accès jusqu'à échéance).
 
 > **Toujours caduc :** l'« Événement Premium » ponctuel (ADR-0012) reste **supprimé** ; le « freemium membre
 > 39 €/an » et les 3 paliers 90/130/190 € historiques restent **supprimés**. Le **Réseauteur Plus** est un
@@ -258,13 +268,12 @@ cette contrainte : un parcours évident, pas de fonctionnalité « parce qu'on p
   partenaire + événement Premium + partenaire annonceur) ; **page Partenaires** ; validation des
   inscriptions + modération ; SEO `Person`/`Event`/`Organization` + RGPD proportionné ; responsive
   (desktop / tablette / mobile).
-- **Évolution monétisation (2026-07-12, à mettre en œuvre — voir §4) :** palier **Réseauteur Plus**
-  (abonnement débloquant la **création d'événements**) + **packs de licences Plus** vendus aux partenaires
-  (**10 / 50 / 100+**), activés par **code promo**. Cela **remplace** l'invariant « pas de palier payant
-  réseauteur » ; les **réseaux restent inchangés** ; la création d'événements devient ouverte aux
-  **réseauteurs Plus** (en plus des organisateurs). *(Le rôle `partenaire`, l'espace partenaire, la fiche
-  perso et les offres réservées aux réseauteurs sont **déjà livrés** ; restent à faire : Réseauteur Plus,
-  ouverture de la création d'événements, packs de licences + codes promo.)*
+- **Évolution monétisation (2026-07-12, livrée — voir §4) :** palier **Réseauteur Plus** (abonnement
+  débloquant la **création d'événements**). Cela **remplace** l'invariant « pas de palier payant
+  réseauteur » ; la création d'événements est ouverte aux **réseauteurs Plus** (en plus des
+  organisateurs). *(Le rôle `partenaire`, l'espace partenaire, la fiche perso et les offres réservées
+  aux réseauteurs sont **déjà livrés**. Les packs de licences + codes promo de la décision 2026-07-12
+  ont été livrés puis **SUPPRIMÉS le 2026-07-17 — ADR-0015**.)*
 - **Conçu dès le départ dans le modèle de données, mais NON développé en V1 (évolutions futures) :**
   application mobile · messagerie entre réseauteurs · agenda personnel · import automatique d'événements
   (CSV / iCal / API) · check-in aux événements · badge vérifié · statistiques · association RÉSEAUTEURS ·

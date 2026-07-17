@@ -36,8 +36,7 @@ export type EmailKind =
   | 'admin-alert'
   | 'plus-active'
   | 'plus-expire'
-  | 'pack-achete'
-  | 'licence-activee'
+  | 'invitation-national'
 
 export interface SendEmailInput {
   payload: Payload

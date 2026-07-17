@@ -183,10 +183,15 @@ export function peutGererEvenement(
 /**
  * Configuration des paliers d'abonnement national.
  * Indexés sur le nombre maximum de réseaux locaux autorisés.
+ * L'ordre des clés pilote l'affichage du sélecteur de paliers (PalierSelector).
+ *
+ * `fiche` (2026-07-17) : palier d'entrée — publie la fiche du réseau, aucun groupe local.
+ * N'importe quel palier actif publie la fiche (statut posé par le webhook Stripe).
  *
  * TODO (avant E2.A) : remplacer par les valeurs définitives approuvées par le product owner.
  */
 export const PALIERS_CONFIG: Record<string, { maxLocaux: number; label: string }> = {
+  fiche:      { maxLocaux: 0,   label: 'Fiche — publication de la fiche réseau, sans groupes locaux (TODO prix réel)' },
   starter:    { maxLocaux: 5,   label: 'Starter — jusqu\'à 5 locaux (TODO prix réel)' },
   growth:     { maxLocaux: 25,  label: 'Growth — jusqu\'à 25 locaux (TODO prix réel)' },
   enterprise: { maxLocaux: 999, label: 'Enterprise — locaux illimités (TODO prix réel)' },
@@ -261,13 +266,18 @@ export async function peutCreerLocalAsync(
     }
   }
 
-  // 2. Compte les locaux existants rattachés à ce national
+  // 2. Compte les locaux POSSÉDÉS par le national rattachés à cette tête.
+  //    Les locaux affiliés par des réseauteurs Plus (user = le Plus) ne consomment
+  //    pas le quota du palier — ils ne sont ni créés ni gérés par le national.
+  //    (Effet de bord assumé : un local délégué par l'admin à un autre compte
+  //    sort aussi du décompte — documenté ADR-0014.)
   const { totalDocs: nbLocaux } = await payload.count({
     collection: 'reseaux',
     where: {
       and: [
         { parent: { equals: national.id } },
         { niveau: { equals: 'local' } },
+        { user: { equals: userId } },
       ],
     },
     overrideAccess: true,
@@ -283,5 +293,43 @@ export async function peutCreerLocalAsync(
     }
   }
 
+  return { autorise: true }
+}
+
+// ─────────────────────────────────────────────
+// RÉSEAUX LOCAUX DES RÉSEAUTEURS PLUS (2026-07-17)
+// ─────────────────────────────────────────────
+
+/**
+ * Nombre maximum de réseaux locaux qu'un réseauteur Plus peut posséder
+ * (même esprit que MAX_ADMIN_RESEAUX qu'il remplace — borne serveur anti-abus).
+ */
+export const MAX_LOCAUX_PLUS = 3
+
+/**
+ * Vérifie si un réseauteur Plus peut créer un réseau local supplémentaire.
+ * Le gate Plus (estPlus sur user frais) est vérifié par l'appelant — ici on ne
+ * borne que le NOMBRE de locaux possédés (affiliés ou indépendants confondus).
+ */
+export async function peutCreerLocalPlusAsync(
+  userId: string | number,
+  payload: PayloadMinimal,
+): Promise<{ autorise: boolean; raison?: string }> {
+  const { totalDocs: nbLocaux } = await payload.count({
+    collection: 'reseaux',
+    where: {
+      and: [
+        { user: { equals: userId } },
+        { niveau: { equals: 'local' } },
+      ],
+    },
+    overrideAccess: true,
+  })
+  if (nbLocaux >= MAX_LOCAUX_PLUS) {
+    return {
+      autorise: false,
+      raison: `Vous possédez déjà ${nbLocaux} réseau(x) local/locaux (maximum ${MAX_LOCAUX_PLUS}).`,
+    }
+  }
   return { autorise: true }
 }

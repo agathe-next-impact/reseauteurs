@@ -441,6 +441,8 @@ export const Users: CollectionConfig = {
               if (!claimed) {
                 // Cas 1 : Organisateur auto-inscrit → crée un réseau NATIONAL (ADR-0012 E1.5).
                 // niveau='national' est requis pour que canCreateNational / peutCreerLocal fonctionnent.
+                // ADR-0014 : la fiche naît SUSPENDUE — elle n'est publiée que par le webhook
+                // Stripe à la souscription d'un palier (fiche/starter/growth/enterprise).
                 // Le cast `as any` sur data est transitoire : résolu après `payload generate:types` (E1 livrable).
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await (req.payload.create as any)({
@@ -450,7 +452,7 @@ export const Users: CollectionConfig = {
                     nom: doc.nomSociete,
                     ville: doc.ville,
                     niveau: 'national', // ADR-0012 E1.5
-                    statut: 'publiee',
+                    statut: 'suspendue', // ADR-0014 : publiée par le webhook Stripe uniquement
                     source: 'revendique',
                   },
                   req,
@@ -565,7 +567,9 @@ export const Users: CollectionConfig = {
       access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
-        description: '[ADR-0013] Origine du Plus : "abonnement" (Stripe individuel) ou "licence" (code partenaire).',
+        description:
+          '[ADR-0013] Origine du Plus : "abonnement" (Stripe individuel). ' +
+          '"licence" = legacy (packs partenaires supprimés — ADR-0015).',
       },
     },
     {
@@ -575,7 +579,7 @@ export const Users: CollectionConfig = {
       access: { create: isAdmin, update: isAdmin },
       admin: {
         position: 'sidebar',
-        description: '[ADR-0013] Pack de licences dont provient le Plus (si plusSource = licence).',
+        description: '[Dormant — ADR-0015] Pack de licences legacy dont provient le Plus (si plusSource = licence).',
       },
     },
     {

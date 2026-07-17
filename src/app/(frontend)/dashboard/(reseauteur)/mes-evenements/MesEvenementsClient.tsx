@@ -90,7 +90,7 @@ export function MesEvenementsClient({
 }: {
   evenements: MonEvenement[]
   types: TypeEvLite[]
-  /** Groupes locaux dont le réseauteur est admin déclaré (choix d'organisateur à la création). */
+  /** Réseaux locaux POSSÉDÉS par le réseauteur Plus (choix d'organisateur à la création — ADR-0014). */
   groupesAdmin?: GroupeAdminLite[]
 }) {
   const router = useRouter()
@@ -113,7 +113,7 @@ export function MesEvenementsClient({
     const data: EvenementFormData = {
       titre: s('titre'),
       type: Number(fd.get('type')),
-      // Organisateur (création uniquement) : '' = en mon nom, sinon id du groupe admin
+      // Organisateur (création uniquement) : '' = en mon nom, sinon id d'un réseau local possédé
       organisateurReseau:
         editing === 'new' && fd.get('organisateurReseau') ? Number(fd.get('organisateurReseau')) : null,
       descriptionCourte: s('descriptionCourte'),

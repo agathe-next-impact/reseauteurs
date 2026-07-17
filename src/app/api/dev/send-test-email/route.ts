@@ -37,8 +37,7 @@ import {
   stripeMisconfigAlertEmail,
   plusActiveEmail,
   plusExpireEmail,
-  packAcheteEmail,
-  licenceActiveeEmail,
+  invitationNationalEmail,
 } from '@/lib/emails'
 import { sendEmail, type EmailKind } from '@/lib/email-sender'
 import { SITE_URL } from '@/lib/site'
@@ -221,7 +220,7 @@ const TEMPLATES: Record<EmailKind, { subject: string; html: string }> = {
       priceId: 'price_demo',
     }),
   },
-  // ── ADR-0013 : Réseauteur Plus + packs de licences
+  // ── ADR-0013 : Réseauteur Plus
   'plus-active': {
     subject: 'RÉSEAUTEURS — Bienvenue en Réseauteur Plus',
     html: plusActiveEmail(FIXTURE_NOM),
@@ -230,13 +229,9 @@ const TEMPLATES: Record<EmailKind, { subject: string; html: string }> = {
     subject: 'RÉSEAUTEURS — Votre accès Réseauteur Plus a pris fin',
     html: plusExpireEmail(FIXTURE_NOM),
   },
-  'pack-achete': {
-    subject: 'RÉSEAUTEURS — Votre pack de licences Plus est actif',
-    html: packAcheteEmail(FIXTURE_NOM, 'RSN-DEMO2345', 10),
-  },
-  'licence-activee': {
-    subject: 'RÉSEAUTEURS — Votre licence Réseauteur Plus est activée',
-    html: licenceActiveeEmail(FIXTURE_NOM, 'Acme SARL', '2027-07-12T00:00:00.000Z'),
+  'invitation-national': {
+    subject: 'RÉSEAUTEURS — BNI est invité à créer la fiche de son réseau',
+    html: invitationNationalEmail('BNI', FIXTURE_NOM),
   },
 }
 

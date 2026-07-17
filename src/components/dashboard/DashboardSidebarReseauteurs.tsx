@@ -41,6 +41,13 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['reseauteur'],
   },
   {
+    // Réseaux locaux possédés (ADR-0014) — la page gère le gate Plus
+    href: '/dashboard/mes-reseaux',
+    label: 'Mes réseaux',
+    icon: Network,
+    roles: ['reseauteur'],
+  },
+  {
     // Création/gestion d'événements (Réseauteur Plus) — la page gère le gate :
     // un réseauteur gratuit atterrit sur /dashboard/plus (présentation de l'offre).
     href: '/dashboard/mes-evenements',

@@ -138,6 +138,20 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
     overrideAccess: true,
   })
 
+  // Jauge d'abonnement : seuls les locaux POSSÉDÉS par le national consomment le
+  // quota du palier (ADR-0014 — les locaux affiliés par des réseauteurs Plus, non).
+  const nationalUserId =
+    typeof national.user === 'object' && national.user !== null
+      ? (national.user as { id: number | string }).id
+      : (national.user as number | string | null)
+  const nbLocauxPossedes = nationalUserId
+    ? locauxDocs.filter((l) => {
+        const u = (l as unknown as Record<string, unknown>).user
+        const uid = typeof u === 'object' && u !== null ? (u as { id: number | string }).id : u
+        return uid != null && String(uid) === String(nationalUserId)
+      }).length
+    : 0
+
   // Événements du national ET de ses locaux (compteur — gestion sur /dashboard/evenements)
   const localIds = locauxDocs.map((l) => l.id)
   const reseauIds = [national.id as string | number, ...localIds]
@@ -221,7 +235,7 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
       {/* Statut abonnement national (E2.A — accounts-and-billing) */}
       <AbonnementNationalStatus
         national={national}
-        nbLocaux={totalLocaux}
+        nbLocaux={nbLocauxPossedes}
       />
 
       {/* Édition fiche nationale */}

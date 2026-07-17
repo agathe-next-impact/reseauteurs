@@ -52,10 +52,17 @@ export async function GET(request: Request) {
 
     for (const reseau of expiredReseaux) {
       try {
+        // ADR-0014 : la publication de la fiche est portée par l'abonnement —
+        // une tête REVENDIQUÉE expirée est dépubliée (les fiches importées, jamais).
+        const r = reseau as unknown as { niveau?: string | null; source?: string | null }
+        const depublier = r.niveau !== 'local' && r.source === 'revendique'
         await payload.update({
           collection: 'reseaux',
           id: reseau.id,
-          data: { partenaire: false },
+          data: {
+            partenaire: false,
+            ...(depublier ? { statut: 'suspendue' } : {}),
+          },
           overrideAccess: true,
           context: { webhookTrusted: true },
         })

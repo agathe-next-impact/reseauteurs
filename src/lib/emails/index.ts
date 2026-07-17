@@ -9,6 +9,7 @@ export {
   verifyEmailTemplate,
   forgotPasswordEmail,
   csvInvitationEmail,
+  invitationNationalEmail,
   completionReminderEmail,
   upgradeNudgeEmail,
   groupLeverageEmail,
@@ -57,6 +58,4 @@ export { stripeMisconfigAlertEmail, userRegisteredAdminEmail } from './templates
 export {
   plusActiveEmail,
   plusExpireEmail,
-  packAcheteEmail,
-  licenceActiveeEmail,
 } from './templates/plus'

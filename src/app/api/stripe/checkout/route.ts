@@ -19,7 +19,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { z } from 'zod/v4'
-import { stripe, PALIERS_NATIONAL, PACKS_LICENCES, PRODUITS } from '@/lib/stripe'
+import { stripe, PALIERS_NATIONAL, PRODUITS } from '@/lib/stripe'
 import { SITE_URL } from '@/lib/site'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -40,12 +40,7 @@ const bodySchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('reseauteur_plus'),
   }),
-  // ADR-0013 : pack de licences Plus (Checkout one-shot — gate P0 D3).
-  z.object({
-    type: z.literal('licences_pack'),
-    partenaireId: z.string().min(1),
-    taille: z.enum(['10', '50', '100']),
-  }),
+  // ADR-0015 : le type 'licences_pack' (packs de licences partenaires) est SUPPRIMÉ.
 ])
 
 export async function POST(request: Request) {
@@ -370,76 +365,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ url: session.url })
       }
 
-      // ──────────────────────────────────────────────────────────────────────
-      // 4. PACK DE LICENCES PLUS — Checkout one-shot (ADR-0013, gate P0 D3)
-      // ──────────────────────────────────────────────────────────────────────
-      case 'licences_pack': {
-        const { partenaireId, taille } = parsed.data
-
-        const partenaire = await payload.findByID({
-          collection: 'partenaires',
-          id: partenaireId,
-          depth: 0,
-          overrideAccess: true,
-        })
-        if (!partenaire) {
-          return NextResponse.json({ error: 'Partenaire introuvable' }, { status: 404 })
-        }
-
-        // Autorisation : admin OU propriétaire de la fiche partenaire.
-        const packOwnerId =
-          typeof partenaire.user === 'object' && partenaire.user !== null
-            ? (partenaire.user as { id: number | string }).id
-            : (partenaire.user as number | string | null | undefined)
-        if (freshUser.role !== 'admin' && Number(packOwnerId) !== Number(freshUser.id)) {
-          return NextResponse.json(
-            { error: 'Vous ne pouvez acheter des licences que pour votre propre fiche partenaire.' },
-            { status: 403 },
-          )
-        }
-
-        const packCfg = PACKS_LICENCES[taille]
-        const priceId = packCfg?.priceId
-        if (!priceId) {
-          console.error(`[stripe/checkout] STRIPE_PACK_${taille}_PRICE_ID non configuré`)
-          return NextResponse.json({ error: 'Configuration Stripe incomplète pour ce pack.' }, { status: 500 })
-        }
-
-        let customerId = (partenaire as unknown as Record<string, unknown>).stripeCustomerId as string | undefined
-        if (!customerId) {
-          const customer = await stripe.customers.create({
-            email: freshUser.email,
-            name: (partenaire.nom as string) || undefined,
-            metadata: { partenaireId: String(partenaireId), userId: String(freshUser.id) },
-          })
-          customerId = customer.id
-          await payload.update({
-            collection: 'partenaires',
-            id: partenaireId,
-            data: { stripeCustomerId: customerId },
-            overrideAccess: true,
-          })
-        }
-
-        const session = await stripe.checkout.sessions.create({
-          customer: customerId,
-          mode: 'payment',
-          line_items: [{ price: priceId, quantity: 1 }],
-          automatic_tax: { enabled: true },
-          billing_address_collection: 'required',
-          customer_update: { address: 'auto', name: 'auto' },
-          metadata: {
-            type: 'licences_pack',
-            partenaireId: String(partenaireId),
-            taille,
-            quota: String(packCfg.quota),
-          },
-          success_url: `${SITE_URL}/dashboard/partenaire?pack=success`,
-          cancel_url: `${SITE_URL}/dashboard/partenaire?pack=cancel`,
-        })
-
-        return NextResponse.json({ url: session.url })
-      }
+      // ADR-0015 : le checkout 'licences_pack' (packs de licences partenaires) est supprimé.
     }
   } catch (err) {
     console.error('[stripe/checkout] Erreur:', err)

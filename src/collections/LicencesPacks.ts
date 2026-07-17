@@ -1,13 +1,10 @@
 /**
- * LicencesPacks.ts — Packs de licences « Réseauteur Plus » achetés par un partenaire (ADR-0013 §3).
+ * LicencesPacks.ts — [DORMANT depuis ADR-0015 (2026-07-17)]
  *
- * Un pack = un quota de licences Plus (10 / 50 / 100 — gate P0 D2 : 300/600/1 000 €)
- * + UN code promo unique que le partenaire diffuse à ses réseauteurs.
- * Paiement : Checkout one-shot (gate P0 D3) — le webhook crée/active le pack.
- * Expiration alignée sur le pack ; reconduction au rachat (gate P0 D4).
- *
- * Le quota est décrémenté TRANSACTIONNELLEMENT par la route d'activation (P2.A) —
- * jamais par le client. Les activations sont tracées dans `licences-activations`.
+ * La fonctionnalité d'achat de packs de licences par les partenaires est SUPPRIMÉE
+ * (checkout, webhook, activation par code, UI). La collection reste enregistrée pour
+ * les données legacy (packs déjà achetés) : le cron expiration-plus les fait expirer
+ * et désactive les Plus associés. Pas de migration destructive.
  *
  * Table DB : `licences_packs` (migration 20260712_100000).
  */
@@ -33,7 +30,8 @@ export const LicencesPacks: CollectionConfig = {
     useAsTitle: 'code',
     defaultColumns: ['code', 'partenaire', 'quota', 'quotaUtilise', 'statut', 'expireAt'],
     group: 'Monétisation',
-    description: 'Packs de licences Réseauteur Plus achetés par les partenaires (ADR-0013).',
+    hidden: true,
+    description: '[Dormant — ADR-0015] Packs de licences legacy (fonctionnalité supprimée, extinction par cron).',
   },
   access: {
     // Lecture : admin ; le partenaire voit SES packs (code à diffuser, quota restant).

@@ -6,15 +6,15 @@
  * ADR-0012 §3 : l'événement Premium ponctuel est SUPPRIMÉ.
  * PremiumCheckoutButton retiré — plus aucune référence à evenement_premium.
  *
- * CheckoutPartenaireButton : accepte un prop `palier` optionnel ('starter' | 'growth' | 'enterprise').
+ * CheckoutPartenaireButton : accepte un prop `palier` optionnel ('fiche' | 'starter' | 'growth' | 'enterprise').
  * PortalButton             : ouvre le portail Stripe Billing (factures + gestion).
  */
 import { useState } from 'react'
 
 interface CheckoutButtonProps {
   reseauId: string | number
-  /** Palier d'abonnement national. Défaut : 'starter'. */
-  palier?: 'starter' | 'growth' | 'enterprise'
+  /** Palier d'abonnement national (clé de PALIERS_CONFIG — validé serveur). Défaut : 'starter'. */
+  palier?: string
   className?: string
   children: React.ReactNode
 }

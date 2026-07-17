@@ -1,10 +1,9 @@
 /**
- * LicencesActivations.ts — Traçabilité des activations de licences Plus (ADR-0013 §3).
+ * LicencesActivations.ts — [DORMANT depuis ADR-0015 (2026-07-17)]
  *
- * Une ligne = un réseauteur qui a activé une licence via le code promo d'un pack.
- * Invariants (garantis par la route d'activation P2.A + contraintes DB) :
- *   - UNE SEULE activation par utilisateur (index unique sur user) ;
- *   - le quota du pack est décrémenté dans la même transaction que la création.
+ * La fonctionnalité de licences par code promo est SUPPRIMÉE (route d'activation en
+ * 410). La collection reste enregistrée pour la traçabilité des activations legacy
+ * (RGPD : purgées avec le compte via /api/account/delete). Pas de migration destructive.
  *
  * Table DB : `licences_activations` (migration 20260712_100000).
  */
@@ -20,7 +19,8 @@ export const LicencesActivations: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: ['pack', 'user', 'activeAt'],
     group: 'Monétisation',
-    description: 'Activations de licences Réseauteur Plus (qui a activé quel code, quand).',
+    hidden: true,
+    description: '[Dormant — ADR-0015] Traçabilité legacy des activations (fonctionnalité supprimée).',
   },
   access: {
     // Lecture : admin ; le partenaire voit les activations de SES packs ;

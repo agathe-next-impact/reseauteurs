@@ -85,6 +85,8 @@ import * as migration_20260713_140000_evenements_departement from './20260713_14
 import * as migration_20260714_100000_perf_indexes from './20260714_100000_perf_indexes';
 // ── Admin de groupe (réseauteur Plus) : ownership créateur des événements (2026-07-16)
 import * as migration_20260716_100000_evenements_cree_par_user from './20260716_100000_evenements_cree_par_user';
+// ── ADR-0014 : trace des invitations de réseaux nationaux (audit-logs)
+import * as migration_20260717_100000_audit_logs_add_national_invited from './20260717_100000_audit_logs_add_national_invited';
 
 export const migrations = [
   {
@@ -449,5 +451,10 @@ export const migrations = [
     up: migration_20260716_100000_evenements_cree_par_user.up,
     down: migration_20260716_100000_evenements_cree_par_user.down,
     name: '20260716_100000_evenements_cree_par_user',
+  },
+  {
+    up: migration_20260717_100000_audit_logs_add_national_invited.up,
+    down: migration_20260717_100000_audit_logs_add_national_invited.down,
+    name: '20260717_100000_audit_logs_add_national_invited',
   },
 ];

@@ -16,7 +16,6 @@
     "seed:demo": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-demo.ts",
     "seed:demo-plus": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-demo-plus.ts",
     "seed:comptes-demo": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-comptes-demo.ts",
-    "seed:reseauteurs-plus": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-reseauteurs-plus.ts",
     "seed:evenements-plus": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-evenements-plus.ts",
     "seed:reseau-fiche": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-reseau-fiche.ts",
     "seed:types-evenement": "cross-env NODE_OPTIONS=\"--no-deprecation\" node --import=tsx/esm src/scripts/seed-types-evenement.ts",

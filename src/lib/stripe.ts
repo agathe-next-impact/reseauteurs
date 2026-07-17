@@ -58,6 +58,7 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
  *
  * TODO : remplacer les variables d'env par les IDs de produits réels
  * fournis par le product owner (Dashboard Stripe > Produits > Copier l'ID de prix).
+ * - STRIPE_PRICE_NATIONAL_FICHE      : abonnement Fiche (publication de la fiche, 0 groupe)
  * - STRIPE_PRICE_NATIONAL_STARTER    : abonnement Starter (jusqu'à 5 locaux)
  * - STRIPE_PRICE_NATIONAL_GROWTH     : abonnement Growth (jusqu'à 25 locaux)
  * - STRIPE_PRICE_NATIONAL_ENTERPRISE : abonnement Enterprise (locaux illimités)
@@ -66,6 +67,12 @@ export const PALIERS_NATIONAL: Record<
   string,
   { label: string; get priceId(): string | undefined }
 > = {
+  fiche: {
+    label: 'Fiche',
+    get priceId() {
+      return process.env.STRIPE_PRICE_NATIONAL_FICHE
+    },
+  },
   starter: {
     label: 'Starter',
     get priceId() {
@@ -125,8 +132,8 @@ export const PRODUITS = {
     },
     mode: 'subscription' as const,
   },
-  // ── ADR-0013 (gate P0 D2/D3) : Réseauteur Plus 39 € HT/an (Subscription) ;
-  //    packs de licences 10/50/100 à 300/600/1 000 € (Checkout one-shot).
+  // ── ADR-0013 (gate P0 D2) : Réseauteur Plus 39 € HT/an (Subscription).
+  //    Les packs de licences partenaires sont SUPPRIMÉS (ADR-0015).
   reseauteurPlus: {
     label: 'Réseauteur Plus',
     get priceId() {
@@ -134,44 +141,9 @@ export const PRODUITS = {
     },
     mode: 'subscription' as const,
   },
-  licencesPack: {
-    label: 'Pack de licences Réseauteur Plus',
-    mode: 'payment' as const,
-  },
 } as const
 
 export type ProduitB2B = keyof typeof PRODUITS
-
-/**
- * Packs de licences Plus (ADR-0013 §3 — tailles/prix actés au gate P0 D2).
- * priceId lus depuis l'env — JAMAIS en dur. Quota réconcilié serveur depuis la taille.
- */
-export const PACKS_LICENCES: Record<
-  string,
-  { quota: number; label: string; get priceId(): string | undefined }
-> = {
-  '10': {
-    quota: 10,
-    label: 'Pack 10 licences — 300 €',
-    get priceId() {
-      return process.env.STRIPE_PACK_10_PRICE_ID
-    },
-  },
-  '50': {
-    quota: 50,
-    label: 'Pack 50 licences — 600 €',
-    get priceId() {
-      return process.env.STRIPE_PACK_50_PRICE_ID
-    },
-  },
-  '100': {
-    quota: 100,
-    label: 'Pack 100 licences — 1 000 €',
-    get priceId() {
-      return process.env.STRIPE_PACK_100_PRICE_ID
-    },
-  },
-}
 
 // ─────────────────────────────────────────────────────────────────
 // HELPERS DE RECONCILIATION STRIPE
@@ -205,7 +177,7 @@ export function getSubscriptionPeriodEnd(
  * Résout le type de produit B2B depuis les metadata de la session ou subscription Stripe.
  * Retourne null si le type n'est pas reconnu (event inconnu ou test).
  *
- * Note : 'evenement_premium' retiré (ADR-0012 §3 — Premium supprimé).
+ * Note : 'evenement_premium' retiré (ADR-0012 §3) ; 'licences_pack' retiré (ADR-0015).
  */
 export function resolveProduitFromMetadata(
   metadata: Record<string, string | null | undefined> | null | undefined,
@@ -214,6 +186,5 @@ export function resolveProduitFromMetadata(
   if (t === 'reseau_partenaire') return 'reseauPartenaire'
   if (t === 'partenaire_annonceur') return 'partenaireAnnonceur'
   if (t === 'reseauteur_plus') return 'reseauteurPlus'
-  if (t === 'licences_pack') return 'licencesPack'
   return null
 }

@@ -9,10 +9,9 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, ExternalLink, Users, ArrowRight } from 'lucide-react'
+import { Building2, ExternalLink } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
 import { SITE_NAME } from '@/lib/site'
-import { getReseauteursAffilies } from '@/lib/affiliation'
 import OffreReservee from '@/components/partenaire/OffreReservee'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
@@ -67,10 +66,6 @@ export default async function FichePartenairePage({ params }: { params: Promise<
   // ISR/statique : PAS de headers()/auth() ici. L'offre réservée aux réseauteurs est
   // hydratée côté client (composant OffreReservee + API) → son contenu n'entre pas
   // dans le HTML statique et la visibilité per-user ne casse pas le cache.
-  const payload = await getPayload({ config })
-
-  // Réseauteurs affiliés = ceux qui ont activé une licence Plus de ce partenaire (ADR-0013).
-  const affilies = await getReseauteursAffilies(payload, p.id)
 
   const logoMedia = p.logo as Media | null | undefined
   const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url ?? null
@@ -141,52 +136,7 @@ export default async function FichePartenairePage({ params }: { params: Promise<
               </Reveal>
             )}
 
-            {/* Réseauteurs affiliés (ont activé une licence Plus de ce partenaire) */}
-            {affilies.length > 0 && (
-              <Reveal>
-                <section aria-labelledby="affilies-titre">
-                  <h2 id="affilies-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
-                    <Users size={14} className="text-[#f5851f]" aria-hidden />
-                    Réseauteurs affiliés
-                    <span className="text-xs font-normal text-[#a1a1aa]">({affilies.length})</span>
-                  </h2>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="list">
-                    {affilies.map((a) => (
-                      <li key={a.id}>
-                        <Link
-                          href={a.slug ? `/reseauteur/${a.slug}` : '#'}
-                          className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 no-underline transition-colors group"
-                        >
-                          {a.photoUrl ? (
-                            <Image
-                              src={a.photoUrl}
-                              alt=""
-                              width={36}
-                              height={36}
-                              className="w-9 h-9 rounded-full object-cover border border-[#e4e4e7] shrink-0"
-                              aria-hidden
-                            />
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] font-bold text-xs shrink-0" aria-hidden>
-                              {a.prenom.charAt(0)}{a.nom.charAt(0)}
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-[#18181b] truncate group-hover:text-[#2563EB] transition-colors">
-                              {a.prenom} {a.nom}
-                            </p>
-                            <p className="text-xs text-[#71717a] truncate">
-                              {a.fonction}{a.fonction && a.ville ? ' · ' : ''}{a.ville}
-                            </p>
-                          </div>
-                          <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              </Reveal>
-            )}
+            {/* ADR-0015 : la section « Réseauteurs affiliés » (licences) est supprimée. */}
           </div>
 
           <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5]">

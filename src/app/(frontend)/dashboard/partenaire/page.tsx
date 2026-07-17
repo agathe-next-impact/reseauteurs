@@ -11,7 +11,6 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { PartenaireForm } from './PartenaireForm'
-import { LicencesSection, type PackLite } from './LicencesSection'
 import type { Partenaire, Media } from '@/types/reseauteurs-domain'
 
 export const metadata = {
@@ -58,34 +57,7 @@ export default async function PartenaireDashboardPage() {
     offreLien: offre?.lien ?? '',
   }
 
-  // Packs de licences Plus du partenaire (ADR-0013 P2.B)
-  const { docs: packDocs } = await payload.find({
-    collection: 'licences-packs',
-    where: { partenaire: { equals: partenaire.id } },
-    sort: '-createdAt',
-    limit: 50,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const packs: PackLite[] = packDocs.map((p) => ({
-    id: p.id as number,
-    code: (p.code as string | null) ?? null,
-    quota: Number(p.quota ?? 0),
-    quotaUtilise: Number(p.quotaUtilise ?? 0),
-    statut: (p.statut as PackLite['statut']) ?? 'actif',
-    expireAt: (p.expireAt as string | null) ?? null,
-  }))
-
-  return (
-    <>
-      <PartenaireForm partenaire={serialized} />
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 pb-10 -mt-2">
-        <LicencesSection
-          partenaireId={partenaire.id as number}
-          packs={packs}
-          abonnementActif={serialized.statut === 'actif'}
-        />
-      </div>
-    </>
-  )
+  // ADR-0015 : les packs de licences Plus sont supprimés — l'espace partenaire ne
+  // gère plus que la fiche de visibilité et l'offre réservée aux réseauteurs.
+  return <PartenaireForm partenaire={serialized} />
 }

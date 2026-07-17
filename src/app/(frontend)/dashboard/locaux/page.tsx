@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import type { Media } from '@/types/reseauteurs-domain'
 import { CreerLocalButton } from '@/components/billing/CreerLocalButton'
+import { maxLocaux } from '@/lib/reseau-hierarchie'
 import Reveal from '@/components/home/Reveal'
 
 export const metadata = {
@@ -159,7 +160,13 @@ export default async function DashboardLocauxPage() {
             <span className="text-[#a1a1aa] font-normal">({totalLocaux})</span>
           </h2>
           {/* E2.A — accounts-and-billing : CreerLocalButton avec gate palier serveur */}
-          {estPartenaire ? (
+          {estPartenaire && maxLocaux(national.palier as string | null) === 0 ? (
+            // ADR-0014 : palier « fiche » — publication de la fiche seulement
+            <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+              <Lock size={13} aria-hidden />
+              Palier fiche — montez de palier pour créer des groupes
+            </span>
+          ) : estPartenaire ? (
             <CreerLocalButton reseauNationalId={national.id as string | number} />
           ) : (
             <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">

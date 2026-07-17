@@ -167,11 +167,14 @@ export const Reseaux: CollectionConfig = {
         }
         return data
       },
-      // ── Validation de la hiérarchie nationale/locale (ADR-0012 E1.1)
-      // Règles : national → pas de parent ; local → parent requis et de niveau 'national'.
-      // 2 niveaux max (un local ne peut pas être parent — refus si parent.niveau !== 'national').
-      async ({ data, req }) => {
-        const niveau = (data.niveau ?? 'national') as string
+      // ── Validation de la hiérarchie tête/locale (ADR-0012 E1.1 ; ADR-0014)
+      // Règles : tête → jamais de parent ; local → parent FACULTATIF (vide = réseau
+      // local indépendant) ; s'il est fourni, le parent doit être une tête (2 étages max).
+      async ({ data, req, operation, originalDoc }) => {
+        // Niveau effectif : un update partiel (édition de fiche) ne transmet ni niveau
+        // ni parent — on retombe sur le document existant, sinon un local tombait à
+        // tort dans la branche « tête » et son parent était effacé silencieusement.
+        const niveau = (data.niveau ?? originalDoc?.niveau ?? 'national') as string
 
         // TÊTE de réseau (régional/national/international) → jamais de parent.
         if (niveau !== 'local') {
@@ -181,17 +184,16 @@ export const Reseaux: CollectionConfig = {
               'Retirez le champ parent ou passez le niveau à "local".',
             )
           }
-          data.parent = null
+          // Ne forcer parent=null qu'à la création ou quand la hiérarchie est
+          // explicitement transmise — un update partiel ne doit pas y toucher.
+          if (operation === 'create' || data.niveau !== undefined || data.parent !== undefined) {
+            data.parent = null
+          }
         }
 
-        // GROUPE local → parent requis, et le parent doit être une tête.
-        if (niveau === 'local') {
-          if (!data.parent) {
-            throw new Error(
-              'Un réseau local doit être rattaché à une tête de réseau parent. ' +
-              'Renseignez le champ "Réseau parent".',
-            )
-          }
+        // GROUPE local → parent facultatif (ADR-0014 : réseau local indépendant).
+        // S'il est fourni, il doit exister et être une tête.
+        if (niveau === 'local' && data.parent != null && data.parent !== '') {
           const parentId = typeof data.parent === 'object' ? (data.parent as { id?: unknown }).id : data.parent
           const parent = await req.payload.findByID({
             collection: 'reseaux',
@@ -409,11 +411,11 @@ export const Reseaux: CollectionConfig = {
       type: 'relationship',
       relationTo: 'reseaux',
       index: true,
-      // Requis si niveau = 'local', null si niveau = 'national' — validé par hook beforeChange.
-      // Pas de required: true ici car Payload l'imposerait sans distinction de niveau.
+      // Facultatif pour un local (ADR-0014 : vide = réseau local indépendant),
+      // interdit pour une tête — validé par hook beforeChange.
       admin: {
         position: 'sidebar',
-        description: 'Réseau national parent (obligatoire pour un local). Laissez vide pour un national.',
+        description: 'Tête de réseau parente (facultatif — laissez vide pour un réseau local indépendant).',
         condition: (data) => data?.niveau === 'local',
       },
     },

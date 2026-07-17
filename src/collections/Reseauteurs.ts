@@ -31,9 +31,8 @@ import { cleanupOrphanedMediaOnChange, cleanupMediaOnDelete } from '../lib/media
 import { stripEmojis } from '../lib/sanitize'
 import { seoField } from './fields/seoField'
 import { deriverBadge } from '../lib/badge'
-import { estPlus } from '../lib/acces-plus'
 
-/** Nombre maximum de groupes locaux qu'un réseauteur Plus peut administrer (décision 2026-07-16). */
+/** [Dormant — ADR-0014] Borne du champ adminReseaux conservé en DB (ancien « admin déclaré »). */
 export const MAX_ADMIN_RESEAUX = 3
 
 // Champs texte sur lesquels les emojis sont interdits
@@ -276,55 +275,6 @@ export const Reseauteurs: CollectionConfig = {
             'Vous pouvez uniquement vous affilier à des réseaux locaux (groupes/sections). ' +
             'La tête de réseau est déduite automatiquement de vos affiliations locales.',
           )
-        }
-        return data
-      },
-      // ── Groupes administrés (adminReseaux) — décision 2026-07-16.
-      //    Déclaration LIBRE mais bornée serveur : réservée aux réseauteurs PLUS actifs
-      //    (statut lu FRAIS, jamais le JWT), MAX_ADMIN_RESEAUX groupes, LOCAUX uniquement.
-      //    Effets : nom affiché sur la fiche du groupe + droit de créer ses événements
-      //    (gate re-vérifié dans Evenements.beforeValidate). Admin plateforme non restreint.
-      async ({ data, originalDoc, req }) => {
-        if (!data || !Object.prototype.hasOwnProperty.call(data, 'adminReseaux')) return data
-        const toIds = (rels: unknown): Array<string | number> =>
-          Array.isArray(rels)
-            ? (rels
-                .map((r) => (typeof r === 'object' && r !== null ? ((r as { id?: unknown }).id ?? null) : r))
-                .filter((v) => v != null) as Array<string | number>)
-            : []
-        const ids = toIds(data.adminReseaux)
-        if (ids.length === 0) return data
-
-        if (ids.length > MAX_ADMIN_RESEAUX) {
-          throw new Error(
-            `Vous pouvez vous déclarer admin de ${MAX_ADMIN_RESEAUX} groupes locaux maximum.`,
-          )
-        }
-        const { totalDocs: nonLocaux } = await req.payload.count({
-          collection: 'reseaux',
-          where: { and: [{ id: { in: ids } }, { niveau: { not_equals: 'local' } }] },
-          overrideAccess: true,
-          req,
-        })
-        if (nonLocaux > 0) {
-          throw new Error('Vous ne pouvez vous déclarer admin que de groupes locaux.')
-        }
-        if (req.user && req.user.role !== 'admin') {
-          const prev = new Set(toIds(originalDoc?.adminReseaux).map(String))
-          const ajouts = ids.filter((id) => !prev.has(String(id)))
-          if (ajouts.length > 0) {
-            const freshUser = await req.payload.findByID({
-              collection: 'users',
-              id: req.user.id,
-              depth: 0,
-              overrideAccess: true,
-            })
-            if (!estPlus(freshUser as { id: number | string; plusActif?: boolean | null; plusExpireAt?: string | null })) {
-              throw new Error(
-                'La déclaration comme admin d\'un groupe local est réservée aux réseauteurs Plus.',
-              )
-            }
-          }
         }
         return data
       },
@@ -647,10 +597,10 @@ export const Reseauteurs: CollectionConfig = {
       },
     },
     // ============================================================
-    // GROUPES ADMINISTRÉS (décision 2026-07-16 — réservé aux réseauteurs PLUS)
-    // Déclaration libre, max 3 groupes LOCAUX. Effets : nom affiché sur la fiche
-    // du groupe comme admin + droit de créer des événements pour ce groupe.
-    // Règles vérifiées serveur (hook beforeValidate) — jamais confiance au client.
+    // GROUPES ADMINISTRÉS — [DORMANT depuis ADR-0014 (2026-07-17)]
+    // L'« admin déclaré » est remplacé par la PROPRIÉTÉ des réseaux locaux
+    // (reseaux.user — espace « Mes réseaux » du réseauteur Plus). Champ conservé
+    // en DB (pas de migration destructive), plus lu par aucun gate ni aucune UI.
     // ============================================================
     {
       name: 'adminReseaux',
@@ -658,16 +608,12 @@ export const Reseauteurs: CollectionConfig = {
       relationTo: 'reseaux',
       hasMany: true,
       maxRows: MAX_ADMIN_RESEAUX,
-      label: 'Groupes administrés (Réseauteur Plus)',
+      label: 'Groupes administrés [dormant]',
       index: true,
-      filterOptions: {
-        // Filtre UI admin : locaux uniquement (la validation serveur est le garde définitif).
-        niveau: { equals: 'local' },
-      },
       admin: {
+        hidden: true,
         description:
-          'Groupes locaux dont ce réseauteur se déclare admin (3 max — réservé aux réseauteurs Plus). ' +
-          'Son nom apparaît sur la fiche du groupe et il peut créer des événements pour ce groupe.',
+          '[Dormant — ADR-0014] Ancien mécanisme « admin déclaré », remplacé par la propriété des réseaux locaux (reseaux.user).',
       },
     },
     // ============================================================

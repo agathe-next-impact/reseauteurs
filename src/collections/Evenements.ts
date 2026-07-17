@@ -265,7 +265,7 @@ export const Evenements: CollectionConfig = {
             if (!estPlus(freshUser as { id: number | string; plusActif?: boolean | null; plusExpireAt?: string | null })) {
               throw new Error(
                 'La création d\'événements est réservée aux réseauteurs Plus. ' +
-                'Passez Plus depuis votre tableau de bord (abonnement ou code partenaire).',
+                'Passez Plus depuis votre tableau de bord.',
               )
             }
           }
@@ -305,13 +305,15 @@ export const Evenements: CollectionConfig = {
               overrideAccess: true,
             })
 
-            // ── Branche réseauteur PLUS admin déclaré d'un groupe local (décision 2026-07-16).
-            //    Le Plus actif + la déclaration adminReseaux remplacent le gate d'abonnement
-            //    du national : c'est l'abonnement Plus qui ouvre la publication.
+            // ── Branche réseauteur PLUS propriétaire d'un réseau local (ADR-0014 —
+            //    remplace l'« admin déclaré » adminReseaux de la décision 2026-07-16).
+            //    Le Plus actif + la PROPRIÉTÉ du local remplacent le gate d'abonnement
+            //    du national (même pour un local affilié) : c'est l'abonnement Plus
+            //    qui ouvre la publication.
             if (req.user.role === 'reseauteur') {
               if ((reseau as { niveau?: string }).niveau !== 'local') {
                 throw new Error(
-                  'Vous ne pouvez créer un événement que pour un groupe local dont vous êtes admin.',
+                  'Vous ne pouvez créer un événement que pour un réseau local dont vous êtes propriétaire.',
                 )
               }
               const freshUser = await req.payload.findByID({
@@ -323,23 +325,18 @@ export const Evenements: CollectionConfig = {
               if (!estPlus(freshUser as { id: number | string; plusActif?: boolean | null; plusExpireAt?: string | null })) {
                 throw new Error(
                   'La création d\'événements est réservée aux réseauteurs Plus. ' +
-                  'Passez Plus depuis votre tableau de bord (abonnement ou code partenaire).',
+                  'Passez Plus depuis votre tableau de bord.',
                 )
               }
-              const { totalDocs: estAdminDuGroupe } = await req.payload.count({
-                collection: 'reseauteurs',
-                where: {
-                  and: [
-                    { user: { equals: req.user.id } },
-                    { adminReseaux: { contains: reseauId } },
-                  ],
-                },
-                overrideAccess: true,
-              })
-              if (estAdminDuGroupe === 0) {
+              const reseauUser = (reseau as { user?: unknown }).user
+              const reseauUserId =
+                typeof reseauUser === 'object' && reseauUser !== null
+                  ? (reseauUser as { id?: number | string }).id
+                  : (reseauUser as number | string | null | undefined)
+              if (reseauUserId == null || String(reseauUserId) !== String(req.user.id)) {
                 throw new Error(
-                  'Déclarez-vous d\'abord admin de ce groupe local (3 max) depuis votre espace ' +
-                  'Réseauteur Plus pour pouvoir créer ses événements.',
+                  'Vous ne pouvez créer un événement que pour un réseau local dont vous êtes propriétaire. ' +
+                  'Créez votre réseau depuis votre espace « Mes réseaux ».',
                 )
               }
               return data

@@ -10,7 +10,7 @@
  *   - reseau_partenaire    : Subscription nationale → national.partenaire / national.palier / partenaireExpireAt
  *   - partenaire_annonceur : Subscription → partenaire.statut / abonnementExpireAt
  *   - reseauteur_plus      : Subscription → users.plusActif / plusExpireAt (ADR-0013)
- *   - licences_pack        : Checkout one-shot → création licences-packs + code (ADR-0013)
+ *   (licences_pack supprimé — ADR-0015)
  *
  * Events traités :
  *   - checkout.session.completed
@@ -37,9 +37,7 @@ import {
   paymentFailedEmail,
   plusActiveEmail,
   plusExpireEmail,
-  packAcheteEmail,
 } from '@/lib/emails'
-import { PACKS_LICENCES } from '@/lib/stripe'
 import type Stripe from 'stripe'
 
 // ─────────────────────────────────────────────────────────────────
@@ -189,6 +187,9 @@ async function activerReseauPartenaire(
       ...(expiresAt ? { partenaireExpireAt: expiresAt } : {}),
       // palier dérivé du priceId — peut être absent si les env vars ne sont pas configurées
       ...(palier ? { palier } : {}),
+      // ADR-0014 : l'abonnement (n'importe quel palier) publie la fiche du réseau.
+      // Statut posé serveur (webhook) uniquement — jamais par le client.
+      statut: 'publiee',
     },
     overrideAccess: true,
     context: { webhookTrusted: true },
@@ -197,15 +198,29 @@ async function activerReseauPartenaire(
 
 /**
  * Désactive le statut partenaire d'un réseau national (expiration ou annulation).
+ * ADR-0014 : une tête REVENDIQUÉE (fiche créée par son organisateur) est en plus
+ * dépubliée — la publication de la fiche est portée par l'abonnement. Les fiches
+ * importées (annuaire, user null) ne sont jamais dépubliées ici.
  */
 async function desactiverReseauPartenaire(
   payload: Payload,
   reseauId: string | number,
 ): Promise<void> {
+  const reseau = (await payload.findByID({
+    collection: 'reseaux',
+    id: reseauId,
+    depth: 0,
+    overrideAccess: true,
+  })) as unknown as { niveau?: string | null; source?: string | null }
+  const depublier = reseau.niveau !== 'local' && reseau.source === 'revendique'
   await payload.update({
     collection: 'reseaux',
     id: reseauId,
-    data: { partenaire: false },
+    data: {
+      partenaire: false,
+      // La transition vers 'suspendue' déclenche l'email notifyOnSuspension (hook Reseaux)
+      ...(depublier ? { statut: 'suspendue' } : {}),
+    },
     overrideAccess: true,
     context: { webhookTrusted: true },
   })
@@ -250,7 +265,7 @@ async function desactiverPartenaireAnnonceur(
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Réseauteur Plus + packs de licences (ADR-0013 P2.A)
+// Réseauteur Plus (ADR-0013 P2.A — packs de licences supprimés, ADR-0015)
 // ─────────────────────────────────────────────────────────────────
 
 /**
@@ -307,69 +322,7 @@ async function findUserByCustomerId(
   return (docs[0] as { id: number | string; email?: string; nomSociete?: string | null } | undefined) ?? null
 }
 
-/**
- * Crée le pack de licences après paiement (Checkout one-shot — gate P0 D3).
- * IDEMPOTENT : clé sur stripeCheckoutSessionId (retry webhook → pas de doublon).
- * Quota réconcilié SERVEUR depuis la taille (jamais confiance à la metadata seule).
- * Expiration alignée sur l'abonnement annonceur du partenaire (gate P0 D4) — sinon +1 an.
- */
-async function creerPackLicences(
-  payload: Payload,
-  session: Stripe.Checkout.Session,
-): Promise<{ id: number | string; code?: string | null } | null> {
-  const partenaireId = session.metadata?.partenaireId
-  const taille = session.metadata?.taille
-  if (!partenaireId || !taille) {
-    console.error('[stripe-webhook] licences_pack: metadata incomplète', session.metadata)
-    return null
-  }
-
-  const packCfg = PACKS_LICENCES[taille]
-  if (!packCfg) {
-    console.error(`[stripe-webhook] licences_pack: taille inconnue "${taille}"`)
-    return null
-  }
-
-  // Idempotence : un pack par session de paiement.
-  const { docs: existing } = await payload.find({
-    collection: 'licences-packs',
-    where: { stripeCheckoutSessionId: { equals: session.id } },
-    limit: 1,
-    overrideAccess: true,
-    depth: 0,
-  })
-  if (existing.length > 0) {
-    return existing[0] as { id: number | string; code?: string | null }
-  }
-
-  // Expiration alignée sur l'abonnement annonceur (D4) ; défaut +1 an.
-  const partenaire = await payload.findByID({
-    collection: 'partenaires',
-    id: partenaireId,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const abonnementExpireAt = (partenaire as unknown as { abonnementExpireAt?: string | null })
-    ?.abonnementExpireAt
-  const expireAt =
-    abonnementExpireAt && new Date(abonnementExpireAt).getTime() > Date.now()
-      ? abonnementExpireAt
-      : new Date(Date.now() + 365 * 86400e3).toISOString()
-
-  const pack = await payload.create({
-    collection: 'licences-packs',
-    data: {
-      partenaire: Number(partenaireId),
-      quota: packCfg.quota,
-      quotaUtilise: 0,
-      statut: 'actif',
-      expireAt,
-      stripeCheckoutSessionId: session.id,
-    },
-    overrideAccess: true,
-  })
-  return pack as { id: number | string; code?: string | null }
-}
+// ADR-0015 : creerPackLicences (packs de licences partenaires) supprimé.
 
 // ─────────────────────────────────────────────────────────────────
 // Recherche d'entité depuis subscriptionId
@@ -610,44 +563,7 @@ export async function POST(request: Request) {
         } catch { /* audit non bloquant */ }
       }
 
-      // ── 4. Pack de licences Plus (ADR-0013 — Checkout one-shot)
-      else if (produit === 'licencesPack') {
-        const pack = await creerPackLicences(payload, session)
-        if (pack) {
-          // Email au partenaire : code à diffuser — non bloquant.
-          try {
-            const partenaireId = session.metadata?.partenaireId
-            const partenaire = partenaireId
-              ? await payload.findByID({
-                  collection: 'partenaires',
-                  id: partenaireId,
-                  depth: 1,
-                  overrideAccess: true,
-                })
-              : null
-            const ownerRel = (partenaire as unknown as { user?: { id?: number | string; email?: string; nomSociete?: string | null } | number | null })?.user
-            const owner = ownerRel && typeof ownerRel === 'object' ? ownerRel : null
-            if (owner?.email) {
-              const quota = Number(session.metadata?.quota ?? 0)
-              await sendEmail({
-                payload,
-                kind: 'pack-achete',
-                to: owner.email,
-                subject: 'RÉSEAUTEURS — Votre pack de licences Plus est actif',
-                html: packAcheteEmail(
-                  (partenaire?.nom as string) ?? '',
-                  pack.code ?? '',
-                  quota,
-                ),
-                userId: owner.id,
-                skipBlacklistCheck: true,
-              })
-            }
-          } catch (err) {
-            console.error('[stripe-webhook] Email pack-achete failed:', err)
-          }
-        }
-      }
+      // ADR-0015 : le produit 'licencesPack' (packs de licences partenaires) est supprimé.
 
       break
     }

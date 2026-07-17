@@ -37,6 +37,7 @@ export const AuditLogs: CollectionConfig = {
         { label: 'Groupe quitte', value: 'groupe_left' },
         { label: 'Groupe ownership transfere', value: 'groupe_ownership_transferred' },
         { label: 'Email blackliste', value: 'email_blacklisted' },
+        { label: 'Invitation réseau national', value: 'national_invited' },
       ],
     },
     {

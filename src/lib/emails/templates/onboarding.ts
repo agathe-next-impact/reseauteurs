@@ -88,6 +88,34 @@ export function csvInvitationEmail(nomSociete: string, email: string, tempPasswo
 }
 
 /**
+ * Invitation d'un réseau national à créer son compte organisateur, envoyée à la
+ * demande d'un réseauteur Plus qui crée un réseau local (ADR-0014). Le nom du
+ * réseauteur invitant est cité (transparence anti-abus, précédent csv-invitation).
+ */
+export function invitationNationalEmail(nomReseau: string, inviteurNom: string): string {
+  const inscriptionUrl = `${SITE_URL}/inscription?type=organisateur`
+  const content = `
+    ${paragraph(`Bonjour,`)}
+    ${paragraph(`${esc(inviteurNom)}, réseauteur sur RÉSEAUTEURS — la plateforme nationale du networking —, souhaite rattacher son groupe local au réseau <strong>${esc(nomReseau)}</strong>.`)}
+    ${card({
+      variant: 'highlight',
+      title: 'Votre réseau n\'a pas encore sa fiche',
+      body: `<p style="margin:0">Créez votre compte organisateur pour publier la fiche de ${esc(nomReseau)}, fédérer vos groupes locaux et publier vos événements sur la carte nationale.</p>`,
+    })}
+    ${button({ href: inscriptionUrl, label: 'Créer le compte de mon réseau', variant: 'primary' })}
+    ${fallbackUrl(inscriptionUrl)}
+    ${paragraph(`<span style="color:#6b7280">Vous recevez cet email car un réseauteur a indiqué votre adresse comme contact du réseau ${esc(nomReseau)}. Si vous n'êtes pas concerné, ignorez simplement ce message.</span>`)}
+  `
+  return renderEmail({
+    preheader: `${nomReseau} est attendu sur RÉSEAUTEURS — créez la fiche de votre réseau.`,
+    heading: `${nomReseau} sur RÉSEAUTEURS`,
+    content,
+    footer: 'transactional',
+    accent: 'primary',
+  })
+}
+
+/**
  * Sent ~3 days after signup. Reminds the user to complète the fiche if still sparse.
  * Gated by optInMarketing. Includes unsubscribe footer.
  */

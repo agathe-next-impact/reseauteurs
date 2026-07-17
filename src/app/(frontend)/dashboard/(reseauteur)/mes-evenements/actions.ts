@@ -16,9 +16,9 @@ export interface EvenementFormData {
   titre: string
   type: number | string
   /**
-   * Organisateur (création uniquement — décision 2026-07-16) : null/absent = en mon nom
-   * (organisateurReseauteur) ; id d'un groupe local = pour ce groupe (reseau). Le hook
-   * serveur vérifie que le réseauteur Plus s'est déclaré admin du groupe.
+   * Organisateur (création uniquement — ADR-0014) : null/absent = en mon nom
+   * (organisateurReseauteur) ; id d'un réseau local = pour ce réseau (reseau). Le hook
+   * serveur vérifie que le réseauteur Plus est PROPRIÉTAIRE du réseau local.
    */
   organisateurReseau?: number | null
   descriptionCourte?: string
@@ -135,8 +135,8 @@ export async function createMonEvenement(data: EvenementFormData): Promise<Actio
   if (!ctx) return { ok: false, error: 'Non authentifié.' }
   if (!ctx.profil) return { ok: false, error: 'Profil réseauteur introuvable.' }
 
-  // XOR organisateur : en mon nom (défaut) OU pour un groupe local dont je me suis
-  // déclaré admin (décision 2026-07-16 — gate Plus + adminReseaux vérifié par les hooks).
+  // XOR organisateur : en mon nom (défaut) OU pour un réseau local dont je suis
+  // PROPRIÉTAIRE (ADR-0014 — gate Plus + ownership vérifiés par les hooks).
   const organisateurReseau =
     data.organisateurReseau != null && Number(data.organisateurReseau) > 0
       ? Number(data.organisateurReseau)

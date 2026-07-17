@@ -165,11 +165,11 @@ export interface User {
    */
   plusExpireAt?: string | null;
   /**
-   * [ADR-0013] Origine du Plus : "abonnement" (Stripe individuel) ou "licence" (code partenaire).
+   * [ADR-0013] Origine du Plus : "abonnement" (Stripe individuel). "licence" = legacy (packs partenaires supprimés — ADR-0015).
    */
   plusSource?: string | null;
   /**
-   * [ADR-0013] Pack de licences dont provient le Plus (si plusSource = licence).
+   * [Dormant — ADR-0015] Pack de licences legacy dont provient le Plus (si plusSource = licence).
    */
   plusLicencePack?: (number | null) | LicencesPack;
   /**
@@ -291,7 +291,7 @@ export interface User {
   collection: 'users';
 }
 /**
- * Packs de licences Réseauteur Plus achetés par les partenaires (ADR-0013).
+ * [Dormant — ADR-0015] Packs de licences legacy (fonctionnalité supprimée, extinction par cron).
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "licences-packs".
@@ -522,7 +522,7 @@ export interface Reseauteur {
    */
   reseauxFrequentes?: (number | Reseau)[] | null;
   /**
-   * Groupes locaux dont ce réseauteur se déclare admin (3 max — réservé aux réseauteurs Plus). Son nom apparaît sur la fiche du groupe et il peut créer des événements pour ce groupe.
+   * [Dormant — ADR-0014] Ancien mécanisme « admin déclaré », remplacé par la propriété des réseaux locaux (reseaux.user).
    */
   adminReseaux?: (number | Reseau)[] | null;
   /**
@@ -620,13 +620,13 @@ export interface Reseau {
    */
   niveau: 'local' | 'regional' | 'national' | 'international';
   /**
-   * Réseau national parent (obligatoire pour un local). Laissez vide pour un national.
+   * Tête de réseau parente (facultatif — laissez vide pour un réseau local indépendant).
    */
   parent?: (number | null) | Reseau;
   /**
    * [Significatif sur une tête de réseau uniquement] Palier d'abonnement déterminant le nombre max de locaux. Posé par le webhook Stripe après souscription. ⚠️ Valeurs placeholder — seuils/prix réels à configurer avant E2.A.
    */
-  palier?: ('starter' | 'growth' | 'enterprise') | null;
+  palier?: ('fiche' | 'starter' | 'growth' | 'enterprise') | null;
   /**
    * Généré depuis le nom à la création ; figé ensuite (contrat SEO).
    */
@@ -966,7 +966,7 @@ export interface Inscription {
   createdAt: string;
 }
 /**
- * Activations de licences Réseauteur Plus (qui a activé quel code, quand).
+ * [Dormant — ADR-0015] Traçabilité legacy des activations (fonctionnalité supprimée).
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "licences-activations".
@@ -1064,7 +1064,8 @@ export interface AuditLog {
     | 'groupe_joined'
     | 'groupe_left'
     | 'groupe_ownership_transferred'
-    | 'email_blacklisted';
+    | 'email_blacklisted'
+    | 'national_invited';
   /**
    * SHA-256(userId + PAYLOAD_SECRET) — anonymise.
    */

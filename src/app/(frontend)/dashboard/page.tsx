@@ -164,7 +164,7 @@ export default async function DashboardPage() {
                       <Sparkles size={13} aria-hidden />
                       Réseauteur Plus
                     </h3>
-                    <p className="text-sm text-[#52525b]">Créez vos propres événements (abonnement ou code partenaire).</p>
+                    <p className="text-sm text-[#52525b]">Créez vos propres événements avec l&apos;abonnement Réseauteur Plus.</p>
                     <div className="mt-4">
                       <span className="text-sm text-[#f5851f] font-medium flex items-center gap-1">
                         Mes événements Plus <ArrowRight size={12} aria-hidden className="rsn-arrow" />

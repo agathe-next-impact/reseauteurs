@@ -85,15 +85,17 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   const payload = await getPayload({ config })
 
   // ADR-0012 — parent populé à depth 1 dans getReseau (pour parentOrganization JSON-LD)
-  const parentDoc =
+  const parentBrut =
     typeof reseau.parent === 'object' && reseau.parent !== null
       ? (reseau.parent as Reseau)
       : null
+  // ADR-0014 : liens (fil d'Ariane, en-tête, maillage) uniquement vers une tête
+  // PUBLIÉE — une tête suspendue (abonnement expiré) renverrait un 404 public.
+  const parentDoc = parentBrut && parentBrut.statut === 'publiee' ? parentBrut : null
 
   // Réseauteurs et événements liés (affichage limité à 12/6 en fiche)
   // + locaux du national (pour subOrganization JSON-LD — ADR-0012)
-  // + admins déclarés du groupe local (réseauteurs Plus — décision 2026-07-16)
-  const [{ docs: reseauteurs }, { docs: evenements }, locauxRes, adminsRes] = await Promise.all([
+  const [{ docs: reseauteurs }, { docs: evenements }, locauxRes] = await Promise.all([
     withDbRetry(
       () => payload.find({
         collection: 'reseauteurs',
@@ -152,27 +154,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
           { label: `reseau:find locaux ${slug}` },
         )
       : Promise.resolve(null),
-    // Admins déclarés du groupe (réseauteurs Plus — décision 2026-07-16) : locaux uniquement.
-    reseau.niveau === 'local'
-      ? withDbRetry(
-          () =>
-            payload.find({
-              collection: 'reseauteurs',
-              where: {
-                and: [
-                  { adminReseaux: { contains: reseau.id } },
-                  { statut: { equals: 'valide' } },
-                ],
-              },
-              depth: 0,
-              sort: 'nom',
-              limit: 12,
-              overrideAccess: true,
-              select: { slug: true, prenom: true, nom: true, fonction: true } as Record<string, boolean>,
-            }),
-          { label: `reseau:find admins ${slug}` },
-        )
-      : Promise.resolve(null),
   ])
 
   const logoMedia = reseau.logo as Media | null | undefined
@@ -204,6 +185,10 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
     reseau.publicConcerne ? { label: 'Public concerné', value: reseau.publicConcerne } : null,
     reseau.typeJuridique ? { label: 'Type de structure', value: TYPE_JURIDIQUE_LABEL[reseau.typeJuridique] ?? reseau.typeJuridique } : null,
     reseau.niveau ? { label: 'Échelle', value: NIVEAU_LABEL[reseau.niveau] ?? reseau.niveau } : null,
+    // ADR-0014 : un local est affilié à une tête ou indépendant
+    reseau.niveau === 'local'
+      ? { label: 'Rattachement', value: parentBrut ? parentBrut.nom : 'Réseau indépendant' }
+      : null,
     ouiNon(reseau.ouvertATous) ? { label: 'Ouvert à tous', value: ouiNon(reseau.ouvertATous)! } : null,
     ouiNon(reseau.participationInvite) ? { label: 'Participation en invité', value: ouiNon(reseau.participationInvite)! } : null,
     ouiNon(reseau.adhesionObligatoire) ? { label: 'Adhésion obligatoire', value: ouiNon(reseau.adhesionObligatoire)! } : null,
@@ -229,14 +214,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   const reseauteursDocs = reseauteurs as Reseauteur[]
   const evenementsDocs = evenements as Evenement[]
   const locauxDocs = locauxRes?.docs as ReseauLocalLite[] | undefined
-  // Admins déclarés du groupe (réseauteurs Plus) — fiche d'un réseau LOCAL uniquement
-  const adminsDocs = (adminsRes?.docs ?? []) as Array<{
-    id: number
-    slug?: string | null
-    prenom?: string | null
-    nom?: string | null
-    fonction?: string | null
-  }>
 
   // Compteurs agrégés SSR pour un national (Q7 ADR-0012)
   const isNational = reseau.niveau !== 'local'
@@ -653,40 +630,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                       et {locauxDocs.length - 8} autre{locauxDocs.length - 8 > 1 ? 's' : ''} groupe{locauxDocs.length - 8 > 1 ? 's' : ''}
                     </p>
                   )}
-                </section>
-              </Reveal>
-            )}
-
-          {/* Admins du groupe — réseauteurs Plus déclarés (décision 2026-07-16) */}
-            {adminsDocs.length > 0 && (
-              <Reveal>
-                <section aria-labelledby="admins-groupe-titre">
-                  <h2 id="admins-groupe-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
-                    <Users size={14} aria-hidden />
-                    Admins du groupe
-                  </h2>
-                  <div className="space-y-2">
-                    {adminsDocs.map((a) => (
-                      <Link
-                        key={a.id}
-                        href={`/reseauteur/${a.slug ?? ''}`}
-                        className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#f5851f]/50 transition-colors no-underline group"
-                      >
-                        <div className="w-9 h-9 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#c2410c] font-bold text-xs shrink-0" aria-hidden>
-                          {a.prenom?.charAt(0)}{a.nom?.charAt(0)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-[#18181b] truncate group-hover:text-[#c2410c] transition-colors">
-                            {a.prenom} {a.nom}
-                          </p>
-                          <p className="text-[11px] text-[#a1a1aa] truncate">
-                            Admin du groupe{a.fonction ? ` · ${a.fonction}` : ''}
-                          </p>
-                        </div>
-                        <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#c2410c] transition-colors shrink-0 rsn-arrow" aria-hidden />
-                      </Link>
-                    ))}
-                  </div>
                 </section>
               </Reveal>
             )}

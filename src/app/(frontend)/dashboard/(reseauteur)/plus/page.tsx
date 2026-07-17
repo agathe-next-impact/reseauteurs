@@ -1,6 +1,6 @@
 /**
  * Espace réseauteur — Réseauteur Plus (/dashboard/plus) — ADR-0013 P2.B.
- * Deux chemins d'activation : abonnement Stripe (39 € HT/an) OU code promo partenaire.
+ * Activation par abonnement Stripe (39 € HT/an). ADR-0015 : le code promo partenaire est supprimé.
  * Le statut est lu FRAIS côté serveur (jamais le JWT).
  */
 import { headers } from 'next/headers'
@@ -8,11 +8,10 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Sparkles, Network } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
 import { PlusClient } from './PlusClient'
-import { AdminGroupesClient, type GroupeLite } from './AdminGroupesClient'
 
 export const metadata = {
   title: 'Réseauteur Plus — Tableau de bord | RÉSEAUTEURS',
@@ -41,39 +40,6 @@ export default async function PlusPage() {
   }
   const actif = estPlus({ id: freshUser.id, plusActif: u.plusActif, plusExpireAt: u.plusExpireAt })
 
-  // Déclaration des groupes administrés (décision 2026-07-16) — Plus actif uniquement.
-  let groupes: GroupeLite[] = []
-  let adminActuels: number[] = []
-  if (actif) {
-    const [{ docs: locaux }, { docs: profs }] = await Promise.all([
-      payload.find({
-        collection: 'reseaux',
-        where: { and: [{ niveau: { equals: 'local' } }, { statut: { equals: 'publiee' } }] },
-        depth: 0,
-        limit: 500,
-        sort: 'nom',
-        overrideAccess: true,
-        select: { nom: true, ville: true } as Record<string, boolean>,
-      }),
-      payload.find({
-        collection: 'reseauteurs',
-        where: { user: { equals: user.id } },
-        depth: 0,
-        limit: 1,
-        overrideAccess: true,
-      }),
-    ])
-    groupes = locaux.map((l) => ({
-      id: l.id as number,
-      nom: ((l as { nom?: string }).nom as string) ?? String(l.id),
-      ville: ((l as { ville?: string | null }).ville as string | null) ?? null,
-    }))
-    const rels = (profs[0] as { adminReseaux?: unknown } | undefined)?.adminReseaux
-    adminActuels = (Array.isArray(rels) ? rels : [])
-      .map((r) => Number(typeof r === 'object' && r !== null ? (r as { id?: unknown }).id : r))
-      .filter(Number.isFinite)
-  }
-
   return (
     <div className="rsn-page">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
@@ -100,10 +66,23 @@ export default async function PlusPage() {
           source={(u.plusSource as 'abonnement' | 'licence' | null) ?? null}
         />
 
-        {/* Groupes administrés (décision 2026-07-16) — Plus actif uniquement */}
+        {/* Réseaux locaux possédés (ADR-0014 — remplace la déclaration de groupes administrés) */}
         {actif && (
-          <div className="mt-6">
-            <AdminGroupesClient groupes={groupes} initialSelected={adminActuels} />
+          <div className="mt-6 rsn-card rounded-2xl p-5">
+            <h2 className="text-sm font-semibold text-[#18181b] mb-1 flex items-center gap-1.5">
+              <Network size={14} className="text-[#a855f7]" aria-hidden />
+              Mes réseaux locaux
+            </h2>
+            <p className="text-xs text-[#71717a] mb-3">
+              Créez vos fiches de réseaux locaux (affiliées à un réseau national ou indépendantes)
+              et publiez leurs événements.
+            </p>
+            <Link
+              href="/dashboard/mes-reseaux"
+              className="inline-flex items-center gap-1.5 text-xs bg-[#a855f7] text-white hover:bg-[#9333ea] px-4 py-2 rounded-xl font-semibold transition-colors no-underline"
+            >
+              Gérer mes réseaux →
+            </Link>
           </div>
         )}
       </div>

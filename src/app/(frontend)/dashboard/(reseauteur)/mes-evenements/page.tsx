@@ -49,8 +49,8 @@ export default async function MesEvenementsPage() {
   const profil = profs[0]
   if (!profil) redirect('/dashboard/profil')
 
-  // Ses événements : en son nom (organisateurReseauteur) ET ceux qu'il a créés pour
-  // un groupe local dont il est admin déclaré (creeParUser — décision 2026-07-16).
+  // Ses événements : en son nom (organisateurReseauteur), ceux qu'il a créés pour un
+  // réseau local (creeParUser) ET ceux des réseaux locaux qu'il POSSÈDE (ADR-0014).
   // depth 1 : popule `image` (aperçu du visuel dans le formulaire d'édition).
   const { docs: evDocs } = await payload.find({
     collection: 'evenements',
@@ -58,6 +58,7 @@ export default async function MesEvenementsPage() {
       or: [
         { organisateurReseauteur: { equals: profil.id } },
         { creeParUser: { equals: user.id } },
+        { 'reseau.user': { equals: user.id } },
       ],
     },
     depth: 1,
@@ -66,18 +67,24 @@ export default async function MesEvenementsPage() {
     overrideAccess: true,
   })
 
-  // Groupes locaux qu'il administre (sélecteur d'organisateur du formulaire)
-  const adminReseauxIds = (Array.isArray(profil.adminReseaux) ? profil.adminReseaux : [])
-    .map((r) => Number(typeof r === 'object' && r !== null ? (r as { id?: unknown }).id : r))
-    .filter(Number.isFinite)
-  // Noms des groupes référencés (sélecteur + étiquette « Pour <groupe> » de la liste)
+  // Réseaux locaux POSSÉDÉS (ADR-0014 — remplace les groupes « admin déclaré ») :
+  // sélecteur d'organisateur du formulaire de création.
+  const { docs: locauxPossedes } = await payload.find({
+    collection: 'reseaux',
+    where: { and: [{ user: { equals: user.id } }, { niveau: { equals: 'local' } }] },
+    depth: 0,
+    limit: 50,
+    sort: 'nom',
+    overrideAccess: true,
+    select: { nom: true } as Record<string, boolean>,
+  })
+  // Noms des réseaux référencés (étiquette « Pour <groupe> » de la liste)
   const reseauIdsAffiches = [
-    ...new Set([
-      ...adminReseauxIds,
-      ...evDocs
+    ...new Set(
+      evDocs
         .map((e) => Number(typeof e.reseau === 'object' && e.reseau !== null ? (e.reseau as { id?: unknown }).id : e.reseau))
         .filter(Number.isFinite),
-    ]),
+    ),
   ]
   const { docs: reseauxDocs } = reseauIdsAffiches.length
     ? await payload.find({
@@ -90,8 +97,8 @@ export default async function MesEvenementsPage() {
       })
     : { docs: [] as Array<{ id: unknown; nom?: string }> }
   const nomParReseau = new Map(reseauxDocs.map((r) => [Number(r.id), ((r as { nom?: string }).nom as string) ?? String(r.id)]))
-  const groupesAdmin = adminReseauxIds
-    .map((id) => ({ id, nom: nomParReseau.get(id) ?? String(id) }))
+  const groupesAdmin = locauxPossedes
+    .map((r) => ({ id: Number(r.id), nom: ((r as { nom?: string }).nom as string) ?? String(r.id) }))
     .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
 
   // Borne « aujourd'hui » calculée via lib (règle de pureté — pas de Date.now() en rendu)
