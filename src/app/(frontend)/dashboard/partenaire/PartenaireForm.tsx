@@ -13,6 +13,8 @@ interface SerializedPartenaire {
   slug: string | null
   nom: string
   lien: string
+  emailContact: string
+  telephone: string
   description: string
   logoUrl: string | null
   statut: 'actif' | 'expire'
@@ -72,6 +74,8 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
       const res = await updatePartenaire({
         nom: String(fd.get('nom') ?? ''),
         lien: String(fd.get('lien') ?? ''),
+        emailContact: String(fd.get('emailContact') ?? ''),
+        telephone: String(fd.get('telephone') ?? ''),
         description: String(fd.get('description') ?? ''),
         offreTitre: String(fd.get('offreTitre') ?? ''),
         offreDescription: String(fd.get('offreDescription') ?? ''),
@@ -214,6 +218,16 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
               <div>
                 <label htmlFor="lien" className={labelClass}>Site web</label>
                 <input id="lien" name="lien" type="url" maxLength={500} placeholder="https://…" defaultValue={partenaire.lien} className={inputClass} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="emailContact" className={labelClass}>Email de contact</label>
+                  <input id="emailContact" name="emailContact" type="email" maxLength={200} placeholder="contact@entreprise.fr" defaultValue={partenaire.emailContact} className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="telephone" className={labelClass}>Téléphone</label>
+                  <input id="telephone" name="telephone" type="tel" maxLength={30} placeholder="01 23 45 67 89" defaultValue={partenaire.telephone} className={inputClass} />
+                </div>
               </div>
               <div>
                 <label htmlFor="description" className={labelClass}>Description courte</label>

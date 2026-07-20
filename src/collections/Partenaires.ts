@@ -151,6 +151,23 @@ export const Partenaires: CollectionConfig = {
         description: 'Lien vers votre site (s\'ouvre dans un nouvel onglet).',
       },
     },
+    // ── Contacts publics (CTA « Prendre contact » sur la fiche publique) ──
+    {
+      name: 'emailContact',
+      type: 'email',
+      label: 'Email de contact',
+      admin: {
+        description: 'Affiché sur votre fiche publique (bouton « Envoyer un email »). Facultatif.',
+      },
+    },
+    {
+      name: 'telephone',
+      type: 'text',
+      label: 'Téléphone',
+      admin: {
+        description: 'Affiché sur votre fiche publique (bouton « Appeler »). Facultatif.',
+      },
+    },
     {
       name: 'description',
       type: 'textarea',

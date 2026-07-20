@@ -10,7 +10,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Globe, Phone, Mail, Users, ArrowRight, Building2, ExternalLink, CalendarDays } from 'lucide-react'
+import { MapPin, Users, ArrowRight, Building2, ExternalLink, CalendarDays } from 'lucide-react'
+import { ContactCTA } from '@/components/fiche/ContactCTA'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildPersonJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -190,42 +191,9 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
               </div>
             </div>
 
-            {/* Liens externes */}
+            {/* Liens externes — le contact (email/tél/site) est regroupé dans le CTA
+                « Prendre contact » du corps ; le héros ne garde que le profil social. */}
             <div className="flex flex-wrap gap-2 mt-6">
-              {/* RGPD : téléphone uniquement si renseigné (contrôle de confidentialité du réseauteur) */}
-              {r.telephone && (
-                <a
-                  href={`tel:${r.telephone}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
-                  aria-label={`Appeler ${r.prenom} ${r.nom}`}
-                >
-                  <Phone size={13} aria-hidden />
-                  {r.telephone}
-                </a>
-              )}
-              {/* RGPD : email uniquement si renseigné */}
-              {r.emailContact && (
-                <a
-                  href={`mailto:${r.emailContact}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
-                  aria-label={`Écrire à ${r.prenom} ${r.nom}`}
-                >
-                  <Mail size={13} aria-hidden />
-                  {r.emailContact}
-                </a>
-              )}
-              {r.site && (
-                <a
-                  href={r.site}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
-                  aria-label={`Site web de ${r.prenom} ${r.nom}`}
-                >
-                  <Globe size={13} aria-hidden />
-                  {r.site.replace(/^https?:\/\//, '')}
-                </a>
-              )}
               {r.linkedin && (
                 <a
                   href={r.linkedin}
@@ -383,6 +351,16 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                 </section>
               </Reveal>
             )}
+
+            {/* CTA prendre contact — email + téléphone + site web (RGPD : canaux facultatifs) */}
+            <Reveal>
+              <ContactCTA
+                email={r.emailContact}
+                telephone={r.telephone}
+                site={r.site}
+                entityName={`${r.prenom} ${r.nom}`}
+              />
+            </Reveal>
           </div>
 
           {/* Maillage interne : proximité + même secteur (seo-engineer) */}

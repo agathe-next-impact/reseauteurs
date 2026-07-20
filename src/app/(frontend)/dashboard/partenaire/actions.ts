@@ -13,6 +13,8 @@ import { revalidatePath } from 'next/cache'
 export interface PartenaireFormData {
   nom: string
   lien?: string
+  emailContact?: string
+  telephone?: string
   description?: string
   offreTitre?: string
   offreDescription?: string
@@ -40,6 +42,11 @@ export async function updatePartenaire(
   const nom = (data.nom ?? '').trim()
   if (!nom) return { ok: false, error: 'Le nom de l\'entreprise est obligatoire.' }
 
+  const emailContact = (data.emailContact ?? '').trim()
+  if (emailContact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailContact)) {
+    return { ok: false, error: 'Email de contact invalide.' }
+  }
+
   try {
     const updated = await payload.update({
       collection: 'partenaires',
@@ -47,6 +54,8 @@ export async function updatePartenaire(
       data: {
         nom,
         lien: (data.lien ?? '').trim() || null,
+        emailContact: emailContact || null,
+        telephone: (data.telephone ?? '').trim() || null,
         description: (data.description ?? '').trim() || null,
         offre: {
           titre: (data.offreTitre ?? '').trim() || null,

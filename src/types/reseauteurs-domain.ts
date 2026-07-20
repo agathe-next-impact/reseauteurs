@@ -208,6 +208,8 @@ export interface Partenaire {
   nom: string
   logo?: (number | null) | PayloadMedia
   lien?: string | null
+  emailContact?: string | null
+  telephone?: string | null
   description?: string | null
   offre?: { titre?: string | null; description?: string | null; lien?: string | null } | null
   statut: 'actif' | 'expire'

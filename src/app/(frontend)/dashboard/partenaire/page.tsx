@@ -48,6 +48,8 @@ export default async function PartenaireDashboardPage() {
     slug: partenaire.slug ?? null,
     nom: partenaire.nom ?? '',
     lien: partenaire.lien ?? '',
+    emailContact: partenaire.emailContact ?? '',
+    telephone: partenaire.telephone ?? '',
     description: partenaire.description ?? '',
     logoUrl,
     statut: (partenaire.statut as 'actif' | 'expire') ?? 'expire',

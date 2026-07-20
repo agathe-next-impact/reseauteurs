@@ -9,10 +9,11 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, ExternalLink } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
 import { SITE_NAME } from '@/lib/site'
 import OffreReservee from '@/components/partenaire/OffreReservee'
+import { ContactCTA } from '@/components/fiche/ContactCTA'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { Partenaire, Media } from '@/types/reseauteurs-domain'
@@ -105,14 +106,6 @@ export default async function FichePartenairePage({ params }: { params: Promise<
               )}
               <h1 className="rsn-pagehead-title !mt-0 !text-[28px] sm:!text-[38px]">{p.nom}</h1>
             </div>
-            {lienSafe && (
-              <div className="mt-6">
-                <a href={lienSafe} target="_blank" rel="noopener noreferrer" className="ir-atlas-primary rsn-linkrow rsn-shine" aria-label={`Visiter le site de ${p.nom} (lien externe)`}>
-                  <ExternalLink size={15} aria-hidden />
-                  Visiter le site
-                </a>
-              </div>
-            )}
           </Reveal>
         </div>
       </section>
@@ -137,6 +130,17 @@ export default async function FichePartenairePage({ params }: { params: Promise<
             )}
 
             {/* ADR-0015 : la section « Réseauteurs affiliés » (licences) est supprimée. */}
+
+            {/* CTA prendre contact — email + téléphone + site web */}
+            <Reveal>
+              <ContactCTA
+                email={p.emailContact}
+                telephone={p.telephone}
+                site={lienSafe}
+                entityName={p.nom}
+                siteLabel="Visiter le site"
+              />
+            </Reveal>
           </div>
 
           <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5]">

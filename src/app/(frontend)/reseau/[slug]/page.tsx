@@ -10,7 +10,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Users, Calendar, Globe, ArrowRight, MapPin, Network, Mail, Phone, User, FileText, ExternalLink } from 'lucide-react'
+import { Users, Calendar, ArrowRight, MapPin, Network, User, FileText, ExternalLink } from 'lucide-react'
+import { ContactCTA } from '@/components/fiche/ContactCTA'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildReseauOrganizationJsonLd, buildBreadcrumbListJsonLd, type ReseauLocalLite } from '@/lib/jsonld'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -342,20 +343,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </div>
             </div>
 
-            {/* Lien site web */}
-            {reseau.siteWeb && (
-              <div className="mt-6">
-                <a
-                  href={reseau.siteWeb}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
-                >
-                  <Globe size={14} aria-hidden />
-                  {reseau.siteWeb.replace(/^https?:\/\//, '')}
-                </a>
-              </div>
-            )}
           </Reveal>
         </div>
       </section>
@@ -634,11 +621,21 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </Reveal>
             )}
 
-          {/* Contact & responsable local */}
-            {(reseau.responsableNom || reseau.emailContact || reseau.telephone || socials.length > 0 || plaquetteSafe) && (
+          {/* CTA prendre contact — email + téléphone + site web */}
+            <Reveal>
+              <ContactCTA
+                email={reseau.emailContact}
+                telephone={reseau.telephone}
+                site={reseau.siteWeb}
+                entityName={reseau.nom}
+              />
+            </Reveal>
+
+          {/* Contact & responsable local — détails complémentaires (responsable, plaquette, réseaux sociaux) */}
+            {(reseau.responsableNom || socials.length > 0 || plaquetteSafe) && (
               <Reveal>
                 <section aria-labelledby="contact-titre">
-                  <h2 id="contact-titre" className="text-sm font-semibold text-[#18181b] mb-3">Contact</h2>
+                  <h2 id="contact-titre" className="text-sm font-semibold text-[#18181b] mb-3">Responsable &amp; ressources</h2>
 
                   {reseau.responsableNom && (
                     <div className="flex items-center gap-3 mb-3 p-3 rounded-xl border border-[#e4e4e7]">
@@ -657,23 +654,13 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                     </div>
                   )}
 
-                  <div className="flex flex-wrap gap-2">
-                    {reseau.emailContact && (
-                      <a href={`mailto:${reseau.emailContact}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
-                        <Mail size={13} aria-hidden />{reseau.emailContact}
-                      </a>
-                    )}
-                    {reseau.telephone && (
-                      <a href={`tel:${reseau.telephone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
-                        <Phone size={13} aria-hidden />{reseau.telephone}
-                      </a>
-                    )}
-                    {plaquetteSafe && (
+                  {plaquetteSafe && (
+                    <div className="flex flex-wrap gap-2">
                       <a href={plaquetteSafe} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
                         <FileText size={13} aria-hidden />Plaquette PDF
                       </a>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {socials.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2" aria-label="Réseaux sociaux">
