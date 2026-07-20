@@ -1,36 +1,42 @@
 # `.claude/` — Mode d'emploi (RÉSEAUTEURS)
 
 Ce dossier contient la **configuration Claude Code du projet** : la mémoire produit partagée, l'équipe de
-**8 subagents** qui construisent RÉSEAUTEURS, et le système de design. Ce README explique **à quoi sert chaque
-fichier et comment s'en servir**.
+**subagents** qui construit et fait évoluer RÉSEAUTEURS, et le système de design. Ce README explique **à quoi
+sert chaque fichier et comment s'en servir**.
 
-> **Réaligné le 2026-06-28** sur le **modèle à trois entités** (ADR-0011). L'annuaire mono-entité de
-> l'ADR-0010 (membre seul, sans événements, freemium 39 €) est **caduc** (ADR-0010 **supersédé sur 3
-> points** par 0011 — cf. `ARCHITECTURE.md §7`). Si un texte parle encore de
-> « membre unique », « 3 paliers », « quota d'événements », « projection de confidentialité par champ »,
-> « recherche FTS à facettes » ou « Panorama Pub », c'est un **résidu à corriger**, pas la cible.
+> **État au 2026-07-20.** La V1 à **trois entités** (réseauteurs · événements · réseaux) est **construite**
+> (phases 0→4 livrées). Le pipeline sert désormais à **faire évoluer et vérifier** l'existant. Cap et
+> décisions structurantes : **ADR-0011** (3 entités + monétisation) jusqu'à **ADR-0016** (gestion complète
+> de l'abonnement en libre-service). `CLAUDE.md` (racine) reste la **source de vérité produit** — lu en
+> premier par tous les agents.
+>
+> ⚠️ Résidus à corriger s'ils réapparaissent : « membre unique / annuaire mono-entité » (ADR-0010, caduc),
+> « événement Premium » (ADR-0012, supprimé), « packs de licences / codes promo partenaires » (ADR-0015,
+> supprimés), « 3 rôles » (il y en a **4**), « réseauteurs strictement gratuits » (le palier **Plus** existe),
+> « quota d'événements / 3 paliers 90-130-190 € », « projection de confidentialité par champ », « recherche
+> FTS à facettes », « Info-Réseaux » / « Panorama Pub ».
 
 ---
 
 ## 1. Le projet en une page
 
 **RÉSEAUTEURS** = **« la plateforme nationale du networking »**. Principe : **« le site ne remplace aucun
-réseau, il les rassemble »**. Trois entités reliées : **les réseauteurs** (personnes, gratuit), **les
-événements**, **les réseaux**.
+réseau, il les rassemble »**. Trois entités reliées : **les réseauteurs** (personnes), **les événements**,
+**les réseaux**.
 
-| Avant (caduc) | Maintenant (cible — ADR-0011) |
+| Avant (caduc) | Maintenant (cible livrée — ADR-0011 → 0016) |
 |---|---|
 | 1 entité (membre) ; réseaux = tags ; **pas d'événements** | **3 entités** : réseauteurs · événements · réseaux (reliées) |
 | 1 carte (membres) | **2 cartes** : réseauteurs **+** événements |
-| Réseaux = taxonomie seulement | Réseaux = **fiche-entité** **+** taxonomie M2M |
-| Freemium **membre** 39 €/an | **Réseauteurs gratuits** ; monétisation **B2B** (réseau partenaire + événement Premium + annonceur) |
-| Rôles `admin/membre` | **`reseauteur/organisateur/admin`** |
+| Réseaux = taxonomie seulement | Réseaux = **fiche-entité** **+** taxonomie M2M ; **hiérarchie tête ↔ local** |
+| Réseauteurs 100 % gratuits (B2B pur) | **Gratuit** + palier **Plus** (39 € HT/an) ; monétisation **mixte** (Plus + réseau par paliers + annonceur) |
+| Rôles `admin/membre` | **`reseauteur/organisateur/partenaire/admin`** (4 rôles) |
 | Confidentialité par champ + double geom (lourd) | **Champs facultatifs** + RGPD de base + géoloc ville |
 | Recherche FTS à facettes (pilier) | **Recherche simple** par filtres |
-| — | **Badges** déclaratifs · **priorité absolue : simplicité (< 30 s)** |
+| — | **Badges** déclaratifs · **gestion d'abonnement unifiée** (`/dashboard/abonnement`) · **priorité absolue : simplicité (< 30 s)** |
 
 **Verdict technique :** `REFACTOR_IN_PLACE` sur **Payload CMS + Next.js + PostgreSQL/PostGIS + MapLibre +
-Stripe** (on garde la stack et l'infra ; on construit le domaine 3-entités dedans).
+Stripe** (stack et infra conservées ; le domaine 3-entités est construit dedans).
 
 ---
 
@@ -40,12 +46,13 @@ Stripe** (on garde la stack et l'infra ; on construit le domaine 3-entités deda
 
 | Fichier | Rôle |
 |---|---|
-| `docs/adr/0011-plateforme-trois-entites-monetisation-b2b.md` | **La décision structurante** (supersède 0010 sur 3 points). |
-| `docs/evolution/Reseauteurs - Document de cadrage.md` (v2.0) | **Le pourquoi/quoi** : vision, personas, 3 entités, modèle éco B2B. |
-| `docs/evolution/ROADMAP-V1.md` | **Périmètre V1** actionnable + points à trancher. |
-| `docs/evolution/AUDIT-DELTA-RESEAUTEURS.md` (+ amendement 3-entités) | **État réel du code** : garder/réécrire/supprimer. |
-| `ARCHITECTURE.md` (modèle 3 entités) | **Architecture cible** réalignée. |
+| `docs/adr/0011-*.md` → `0016-*.md` | Les **décisions structurantes**. 0011 (3 entités + monétisation), 0012 (Premium supprimé), 0013 (Réseauteur Plus + inscriptions), 0014 (fiche nationale payante + locaux Plus), 0015 (**packs de licences supprimés**), 0016 (**gestion d'abonnement complète, libre-service, 3 types**). |
+| `docs/evolution/Reseauteurs - Document de cadrage.md` | **Le pourquoi/quoi** : vision, personas, 3 entités, modèle éco. |
+| `docs/evolution/ROADMAP-V1.md` | **Périmètre V1** + points tranchés. |
+| `docs/evolution/AUDIT-DELTA-RESEAUTEURS.md` (+ amendement 3-entités) | **État de reprise du code** : garder/réécrire/supprimer. |
+| `ARCHITECTURE.md` (modèle 3 entités) | **Architecture cible**. |
 | `PLAN.md` | **Séquencement** des jalons + agents responsables. |
+| `MIGRATION.md` | Stratégie et fichiers de re-migration. |
 
 **Fichiers de configuration Claude :**
 
@@ -53,24 +60,35 @@ Stripe** (on garde la stack et l'infra ; on construit le domaine 3-entités deda
 |---|---|
 | `CLAUDE.md` (racine) | **Mémoire produit partagée** — lue en premier par **tous** les agents. |
 | `.claude/AGENTS_PIPELINE.md` | La **chaîne de valeur**, l'ordre des phases, les gates, la parallélisation. |
-| `.claude/agents/*.md` | Les **8 subagents** (rôle, périmètre, méthode, garde-fous, Definition of Done). |
+| `.claude/agents/*.md` | Les **12 subagents** (rôle, périmètre, méthode, garde-fous, Definition of Done). |
 | `.claude/design/DESIGN.md` | **Tokens visuels = source de vérité** ; structure home/cartes = modèle 3 entités. |
-| `.claude/settings.local.json` | Permissions outils locales. |
+| `.claude/settings*.json` | Permissions outils locales. |
 
 ---
 
-## 3. Les 8 agents
+## 3. Les 12 agents
 
-| Agent | Modèle | Rôle (modèle 3 entités) | Livrable |
+**8 agents de construction** (le pipeline principal) :
+
+| Agent | Modèle | Rôle | Livrable |
 |---|---|---|---|
 | `codebase-auditor` | opus | Audit lecture seule, verdict de reprise, inventaire garder/réécrire/supprimer. | `AUDIT.md` / delta |
 | `solution-architect` | opus | Archi 3 entités, ADR, plan reséquencé. Doc seule. | `ARCHITECTURE.md`, `docs/adr/*`, `PLAN.md` |
-| `data-architect` | sonnet | Collections `reseauteurs`/`evenements`/`reseaux`/`partenaires`, badge, M2M, RGPD, index recherche, re-migration. | collections + migrations, `MIGRATION.md` |
+| `data-architect` | sonnet | Collections `reseauteurs`/`evenements`/`reseaux`/`partenaires`, badge, M2M, **4 rôles**, RGPD, index recherche, re-migration. | collections + migrations, `MIGRATION.md` |
 | `frontend-builder` | sonnet | Design system, **home 3 piliers**, **3 fiches SSR**, **recherche par filtres**, page Partenaires, dashboards. | composants + pages |
-| `map-engineer` | sonnet | **Deux cartes** (réseauteurs + événements), clustering, géo, mobile, **marqueur Premium distinct**. | composants cartes + API géo |
-| `accounts-and-billing` | sonnet | Auth + **3 rôles**, dashboards, **monétisation B2B** (réseau partenaire + événement Premium + annonceur). | auth + dashboards + facturation |
+| `map-engineer` | sonnet | **Deux cartes** (réseauteurs + événements), clustering, géo, mobile. | composants cartes + API géo |
+| `accounts-and-billing` | sonnet | Auth + **4 rôles**, dashboards, **monétisation mixte** (Plus + réseau par paliers + annonceur) + **hub `/dashboard/abonnement`**. | auth + dashboards + facturation |
 | `seo-engineer` | sonnet | JSON-LD **`Person`/`Event`/`Organization`**, sitemap, ISR, maillage, **opt-out indexation**. | couche SEO |
-| `qa-reviewer` | sonnet | Gate qualité avant merge (sécurité, RGPD, invariants 3-entités, **simplicité**, perf, a11y). | `docs/qa/REVIEW-<date>.md` |
+| `qa-reviewer` | sonnet | Gate qualité avant merge (sécurité, RGPD, invariants, **simplicité**, perf, a11y). | `docs/qa/REVIEW-<date>.md` |
+
+**4 agents d'audit ciblé** (lecture seule — pour vérifier une évolution) :
+
+| Agent | Modèle | Rôle | Livrable |
+|---|---|---|---|
+| `test-fonctionnel` | sonnet | Exerce **réellement** les parcours métier (scripts tsx éphémères sur l'API Payload) : 4 rôles + gates, XOR organisateur, gate Plus, inscriptions en ligne, hiérarchie réseau, recherche, badges, crons. | rapport pass/fail |
+| `test-securite` | sonnet | Autorisation par rôle & propriété, statut payant/rôle **posés serveur** (webhooks signés+idempotents), routes mutantes (auth+ownership+rate-limit), crons protégés, secrets, RGPD. | rapport priorisé |
+| `test-performance` | sonnet | N+1, requêtes non bornées, `await` séquentiels, ISR cassée par `headers()`/`auth()`, index DB manquants, payloads carte trop lourds. | rapport priorisé |
+| `test-ux` | sonnet | a11y (contrastes/labels/focus/clavier/aria), états (chargement/vide/erreur/succès), mobile-first des cartes, fidélité aux tokens, copie FR, **compris en < 30 s**. | rapport priorisé |
 
 > **Retirés vs ADR-0010 :** `privacy-engineer` (projection par champ + double geom → abandonnés ; RGPD de base
 > repliée dans `data-architect`, opt-out indexation dans `seo-engineer`) et `search-engineer` (FTS à facettes
@@ -81,26 +99,30 @@ Stripe** (on garde la stack et l'infra ; on construit le domaine 3-entités deda
 ## 4. Le workflow — ordre et gates
 
 ```
-Phase 0  codebase-auditor   →  AUDIT + delta (amendement 3-entités)        ✅ FAIT
+Phase 0  codebase-auditor   →  AUDIT + delta (amendement 3-entités)              ✅ FAIT
    │  gate humain : verdict REFACTOR_IN_PLACE ✅
-Phase 1  solution-architect →  ARCHITECTURE.md (3 entités) + ADR-0011 + PLAN.md   ✅ réalignés (à valider)
-   │  gate humain : valider l'archi & le plan
-Phase 2  data-architect     →  4 collections + badge + M2M + RGPD + fichiers de migration   ⏳ PROCHAINE ACTION
-   │  (MIGRATION.md = stratégie déjà écrite ; reste les fichiers de migration + le schéma field-level)
-   │  gate humain : valider le schéma & la re-migration (⚠️ down() 0623 destructif)
-Phase 3  frontend-builder · map-engineer · accounts-and-billing · seo-engineer  (parallélisable)
-Phase 4  qa-reviewer        →  REVIEW-<date>.md (PASS / PASS_WITH_FIXES / BLOCK)
+Phase 1  solution-architect →  ARCHITECTURE.md (3 entités) + ADR-0011→0016 + PLAN.md   ✅ FAIT
+   │  gate humain : archi & plan ✅
+Phase 2  data-architect     →  4 collections + badge + M2M + 4 rôles + migrations  ✅ FAIT
+   │  gate humain : schéma & re-migration ✅
+Phase 3  frontend-builder · map-engineer · accounts-and-billing · seo-engineer     ✅ V1 CONSTRUITE
+Phase 4  qa-reviewer + audits ciblés (test-fonctionnel/securite/performance/ux)    ⏳ EN CONTINU
 ```
 
-**Règle d'or :** aucune implémentation (phase 3+) avant que **`ARCHITECTURE.md` + le schéma** soient validés
-par un humain.
+**La V1 est construite.** Le pipeline tourne désormais **par évolution** : une nouvelle décision (ADR) →
+`data-architect`/`accounts-and-billing`/etc. l'implémentent in place → les agents `test-*` + `qa-reviewer`
+la vérifient avant merge.
 
-### 👉 Démarrer la prochaine phase
+**Règle d'or (toujours valable) :** toute évolution de **schéma** ou d'**invariant de monétisation** passe
+par un ADR + une validation humaine avant implémentation.
+
+### 👉 Faire évoluer / vérifier
 
 ```
-Use the data-architect subagent to create the reseauteurs/evenements/reseaux/partenaires collections,
-the badge field and the réseauteur↔réseaux many-to-many relation, repoint RGPD onto reseauteurs,
-add the simple-search indexes, and write MIGRATION.md (re-migration from the 0623 state).
+Use the accounts-and-billing subagent to <décrire l'évolution de facturation/rôle>.
+Use the test-fonctionnel subagent to exercise the <parcours> end-to-end and report pass/fail.
+Use the test-securite subagent to audit authorization & server-side paid-status on the current branch.
+Use the qa-reviewer subagent to review the current branch before merge (including the simplicity criterion).
 ```
 
 ---
@@ -109,7 +131,7 @@ add the simple-search indexes, and write MIGRATION.md (re-migration from the 062
 
 - **Automatique** : décris la tâche ; le `description` de l'agent route.
 - **Explicite** : *« Use the `<agent>` subagent to … »*.
-- **Non-interactif** : `claude -p "Use the data-architect subagent to create the reseauteurs collection"`.
+- **Non-interactif** : `claude -p "Use the test-fonctionnel subagent to exercise the Plus gate"`.
 - **Vérifier** : commande `/agents`.
 
 ### ⚠️ Recharger après édition
@@ -120,13 +142,15 @@ Si tu **édites un fichier de `.claude/agents/` ou `CLAUDE.md`**, **redémarre C
 
 ## 6. Invariants à ne jamais violer (rappel transverse)
 
-1. **Trois entités reliées** : réseauteurs (personnes) · événements · réseaux (fiche-entité **+** taxonomie).
-2. **Deux cartes** : réseauteurs (marqueur = personne) et événements (marqueur = événement, **Premium
-   distinct**).
-3. **Réseauteurs gratuits.** Monétisation **B2B** (réseau partenaire + événement Premium + annonceur). Un
-   avantage payant n'est accordé que sur **statut serveur** (jamais client).
-4. **Trois rôles & propriété stricte** : réseauteur→son profil ; organisateur→son réseau + ses événements ;
-   admin→tout.
+1. **Trois entités reliées** : réseauteurs (personnes) · événements · réseaux (fiche-entité **+** taxonomie ;
+   hiérarchie tête ↔ local, 2 étages).
+2. **Deux cartes** : réseauteurs (marqueur = personne, position **ville**) et événements (marqueur = événement).
+3. **Monétisation mixte, statut posé côté serveur.** Réseauteur **Gratuit** ou **Plus** (39 € HT/an, crée des
+   événements) ; réseau partenaire par **paliers** (`fiche`/`starter`/`growth`/`enterprise`) ; partenaire
+   annonceur. Tout avantage payant n'est accordé que sur **statut serveur** (webhook Stripe), **jamais client**.
+   Gestion en **libre-service** via le hub **`/dashboard/abonnement`** (ADR-0016).
+4. **Quatre rôles & propriété stricte** : réseauteur→son profil (+ ses événements/réseaux locaux s'il est Plus) ;
+   organisateur→son réseau + ses événements ; partenaire→sa fiche + son offre ; admin→tout.
 5. **Visiteur sans friction** : pas de compte pour parcourir/consulter.
 6. **Recherche simple** par filtres (pas de moteur FTS à facettes, pas de moteur externe).
 7. **Confidentialité proportionnée** : contact = **champs facultatifs** ; **géoloc ville par défaut** ; RGPD

@@ -1,8 +1,16 @@
 # ADR-0013 — Palier « Réseauteur Plus » (création d'événements), rôle partenaire self-service, packs de licences Plus activées par code promo
 
+> **⚠️ Partiellement supersédé (note 2026-07-20).** Le **palier Réseauteur Plus** et le **rôle partenaire
+> self-service** sont **en vigueur**. En revanche : les **packs de licences Plus + activation par code promo**
+> sont **SUPPRIMÉS** (**ADR-0015**, 2026-07-17 — le Plus s'obtient uniquement par abonnement individuel) ; le
+> **tarif Plus est 39 € HT/an** (décision 2026-07-16, remplace le 59 € du gate P0 D2) ; la gestion de
+> l'abonnement passe par le **hub unifié `/dashboard/abonnement`** (**ADR-0016**). Lire cet ADR comme un
+> historique ; l'état en vigueur est dans `CLAUDE.md` §4, `ARCHITECTURE.md` et les ADR-0015/0016.
+
 - **Statut :** Accepté (décision produit **tranchée par l'humain** le 2026-07-12 ; **gate P0 tranché le
   2026-07-12** — D1 organisateur=réseauteur, D2 tarifs 59 €/300/600/1 000 €, D3 checkout one-shot,
-  D4 expiration alignée + reconduction) — **à mettre en œuvre** (plan : `PLAN.md` Partie D)
+  D4 expiration alignée + reconduction) ; **packs de licences + tarif 59 € supersédés (ADR-0015/décision
+  2026-07-16)** — voir l'encart ci-dessus.
 - **Date :** 2026-07-12
 - **Décideurs :** Humain (product owner) + analyse Claude
 - **Portée :** monétisation (B2C + B2B), comptes & rôles, gate de création d'événements, espace partenaire, espace réseauteur, modèle de données (users, partenaires, licences), Stripe

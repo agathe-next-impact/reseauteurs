@@ -4,14 +4,65 @@
 > puis **amendée le 2026-06-30** par l'**ADR-0012** (hiérarchie réseaux national↔local, abonnement national,
 > locaux délégables, suppression de l'événement Premium, deux pages à bascules),
 > puis **amendée le 2026-07-12** par l'**ADR-0013** (palier **Réseauteur Plus**, rôle **`partenaire`**,
-> **packs de licences Plus** activés par code promo).
+> **packs de licences Plus** activés par code promo),
+> puis **amendée le 2026-07-17 / 2026-07-20** par les **ADR-0014 → 0016** (abonnement réseau national en
+> **4 paliers** + fiche de tête revendiquée suspendue, **suppression des packs de licences**, **hub
+> d'abonnement unifié `/dashboard/abonnement`**). **Voir l'encart consolidé ADR-0014 → 0016 ci-dessous.**
 > Entrées : `docs/adr/0011-...md`, `docs/adr/0012-hierarchie-reseaux-national-local-abonnement-national.md`,
 > `docs/adr/0013-reseauteur-plus-licences-partenaires.md`,
+> `docs/adr/0014-...md`, `docs/adr/0015-...md`, `docs/adr/0016-...md`,
 > `AUDIT.md` (verdict **REFACTOR_IN_PLACE**) + `AUDIT-DELTA-RESEAUTEURS.md`, `CLAUDE.md`. Séquencement : `PLAN.md`.
 > **Aucune implémentation ne commence avant validation humaine de ce document + du schéma** (règle d'or,
 > CLAUDE.md §13).
 
 ---
+
+## ⚠️ Encart d'amendement consolidé — ADR-0014 → 0016 (2026-07-17 / 2026-07-20) — EN VIGUEUR
+
+> Ces trois ADR **supersèdent** les passages correspondants des encarts ADR-0012/0013 et du corps ci-dessous.
+> En cas de contradiction, **cet encart fait foi**. Ils réaffirment tous les autres invariants (SSR/ISR,
+> SEO 3 types, géoloc ville, RGPD proportionné, statut payant posé serveur, simplicité).
+
+**a) ADR-0014 — Abonnement réseau national en 4 paliers · fiche de tête suspendue · locaux des réseauteurs Plus par propriété.**
+L'« un seul produit d'abonnement réseau » de l'ADR-0012 est **levé** : l'abonnement porté par la **tête de
+réseau** (`niveau` non-local — cf. `estTete()`) a **4 paliers** — **`fiche`** (publie la fiche seule, **0**
+groupe local) / `starter` (**5**) / `growth` (**25**) / `enterprise` (**illimité, 999**). Capacités dans
+`PALIERS_CONFIG` de `src/lib/reseau-hierarchie.ts` ; prix Stripe `STRIPE_PRICE_NATIONAL_FICHE/_STARTER/_GROWTH/_ENTERPRISE`
+(placeholders, TODO PO). **La fiche d'une tête revendiquée (`source='revendique'`) naît `statut='suspendue'`**
+et n'est **publiée que par un abonnement actif** (webhook pose `statut='publiee'` ; expiration → re-`suspendue`) ;
+les fiches **importées** (`source='importe'`) ne sont pas suspendues. **Locaux des réseauteurs Plus (par
+propriété)** : un réseauteur Plus **possède** (`reseaux.user`) jusqu'à **`MAX_LOCAUX_PLUS = 3`** réseaux
+**locaux** (affiliés à une tête **ou** indépendants, `parent` optionnel) créés depuis « Mes réseaux »
+(`/dashboard/mes-reseaux`) ; il publie les événements de **ses** locaux — **gate = `niveau='local'` + Plus
+actif + `reseau.user === req.user.id`**, couvert par l'**abonnement Plus** (pas celui de la tête). Le **quota
+palier** ne consomme que les locaux **possédés par la tête** (`peutCreerLocalAsync` filtre `user=owner`).
+**L'« admin déclaré » (`reseauteurs.adminReseaux`) est déposé/dormant**, remplacé par la propriété `reseaux.user`.
+Invitation de la tête absente : server action `inviterReseauNational` (rate-limit 3/jour, audit `national_invited`).
+
+**b) ADR-0015 — Suppression des packs de licences « Réseauteur Plus ».** Le point 4 de l'encart ADR-0013
+(**packs 10 / 50 / 100+ activés par code promo**) est **SUPPRIMÉ** : checkout, activation, UI et sections
+publiques d'affiliation retirés. Route **`/api/licences/activer` → 410 Gone** ; `activerLicence` supprimée ;
+produit `licences_pack` retiré du checkout/webhook. Les collections `licences-packs` / `licences-activations`
+restent **dormantes** (`admin.hidden`, traçabilité legacy) ; le cron `expiration-plus` éteint les Plus
+« licence » existants à échéance. **Le Réseauteur Plus s'obtient désormais uniquement par abonnement
+individuel** : `users.plusSource ∈ {'abonnement' (nominal), 'licence' (legacy, extinction, lecture seule)}`,
+`users.plusLicencePack` dormant. Le **partenaire annonceur** ne conserve que son **abonnement de visibilité**
++ son **offre réservée aux réseauteurs**.
+
+**c) ADR-0016 — Hub d'abonnement unifié en libre-service, pour tous les rôles souscripteurs.** Un **hub unique
+`/dashboard/abonnement`** est ouvert au **réseauteur Plus, à l'organisateur et au partenaire**. Résolveur
+commun **`src/lib/abonnement.ts`** : `resolveAbonnement(freshUser, payload)` → descripteur `AbonnementContext`
+unifiant les **3 porteurs** Stripe (`users` pour Plus, `reseaux` de tête pour le national, `partenaires`) ;
+`fetchLiveStripeState` enrichit avec l'état live Stripe (status, `current_period_end`, `cancel_at_period_end`,
+palier) — **tolérant aux pannes** (retombe sur la DB). Brique UI partagée **`src/components/billing/AbonnementManager.tsx`**
+(souscrire / changer de palier / annuler / réactiver / moyen de paiement / factures). **`cancel` / `reactivate`
+généralisées aux 3 produits** (ownership **garanti par construction** : `resolveAbonnement` ne résout que le
+porteur du caller). Nouvelle route **`POST /api/stripe/change-palier`** (organisateur : swap de price +
+proration + **garde anti-downgrade** si `maxLocaux(nouveauPalier) < locaux possédés`). **`change-plan` /
+`preview-change-plan` restent 410 Gone.** Factures (`/dashboard/factures`) accessibles à tout rôle souscripteur
+ayant un `stripeCustomerId` (réseauteur Plus inclus). Invariant §11 conservé : le statut/accès est posé
+**serveur** (webhooks) ; les actions in-app **pilotent Stripe** (`cancel_at_period_end`, swap de price), la DB
+n'est jamais mutée par le client.
 
 ## ⚠️ Encart d'amendement — ADR-0013 (2026-07-12) — À METTRE EN ŒUVRE (PLAN.md Partie D)
 
@@ -27,9 +78,10 @@ L'ADR-0013 fait passer le revenu en **mix B2C + B2B** et **lève deux invariants
    « exactement un organisateur » (réseau XOR réseauteur). → §2, §4.4.
 3. **Rôle `partenaire` acté** (« pas de 4ᵉ rôle » levé) : 1 compte ↔ 1 fiche `partenaires` self-service,
    fiche publique `/partenaire/<slug>`, **offre réservée aux réseauteurs** — **déjà livrés** (2026-07-10).
-4. **Packs de licences Plus** vendus aux partenaires (**10 / 50 / 100+**), activés par **code promo** avec
-   quota transactionnel, une activation par réseauteur, traçabilité (`licences_packs` +
-   `licences_activations` — nouvelles collections ; groupes ADR-0009 **restent dormants**). → §4.6.
+4. ~~**Packs de licences Plus** vendus aux partenaires (**10 / 50 / 100+**), activés par **code promo**…~~
+   **⚠️ CADUC — SUPPRIMÉ par l'ADR-0015 (2026-07-17).** Voir l'encart consolidé ci-dessus (b) : le Plus
+   s'obtient **uniquement par abonnement individuel** ; collections `licences-packs`/`licences-activations`
+   **dormantes**, route `/api/licences/activer` → **410**.
 
 **Les réseaux sont inchangés** (hiérarchie, abonnement national, délégation — ADR-0012 intégralement
 réaffirmé). Sections ci-dessous : les mentions « réseauteurs gratuits / pas de palier payant » se lisent
@@ -69,8 +121,10 @@ lieu d'introduire une seconde collection.
 
 Deux contraintes gouvernent toutes les décisions :
 1. **La simplicité d'abord** (CLAUDE.md §10) — site compris en < 30 s ; pas de complexité non nécessaire.
-   L'ADR-0012 borne la hiérarchie à **2 niveaux**, garde **un seul produit d'abonnement réseau** (le national)
-   et **n'ajoute aucun rôle**.
+   L'ADR-0012 borne la hiérarchie à **2 niveaux** et garde **un seul produit d'abonnement réseau** (la tête).
+   *(ADR-0014 : ce produit unique a désormais **4 paliers** `fiche`/`starter`/`growth`/`enterprise` — même
+   produit, capacités graduées ; et les **locaux d'un réseauteur Plus** sont couverts par l'abonnement Plus,
+   pas par un nouveau produit réseau. ADR-0013 ajoute le rôle `partenaire`.)*
 2. **Un modèle de données extensible** — conçu dès le départ pour les évolutions futures (CLAUDE.md §12),
    sans les développer.
 
@@ -107,7 +161,7 @@ Deux contraintes gouvernent toutes les décisions :
         │  audit_logs   groupes (DORMANT, ADR-0009)   migrations                                    │
         └──────────────────────────────────────────────────────────────────────────────────────────┘
 
-   Intégrations : Stripe (Subscription réseau national + Subscription annonceur + portal + webhooks)
+   Intégrations : Stripe (3 Subscriptions : réseau tête 4 paliers + annonceur + Réseauteur Plus ; portal + webhooks)
                   · Resend (emails) · Vercel Blob (média) · API Adresse data.gouv (géocodage) · tuiles OSM
    Crons Vercel : downgrade/expiration abonnements · alertes · onboarding · purge RGPD
                   · retry-groupe-sync (dormant — ADR-0009)
@@ -193,6 +247,16 @@ peutGererReseau(user, r)    = admin || r.user===user.id
 peutGererEvenement(user, e) = peutGererReseau(user, e.reseau)
 ```
 
+> **⚠️ Révision ADR-0014 (voir encart consolidé).** La propriété des **locaux** n'est plus seulement
+> « tête auto-gérée / organisateur délégué » : un **réseauteur Plus possède** (`reseaux.user`) jusqu'à
+> **`MAX_LOCAUX_PLUS = 3`** locaux (affiliés **ou** indépendants). Les gates deviennent :
+> `peutCreerLocalReseauteurPlus(user) = user.plusActif && (# locaux possédés) < 3` ;
+> `peutPublierEvenement(local) = local.user===user.id && user.plusActif` (**par propriété + Plus**, couvert
+> par l'abonnement Plus) **OU** `abonnementActif(nationalDe(local))` (couverture par la tête). Le **quota de
+> palier** de la tête ne compte que les locaux **possédés par la tête** (`peutCreerLocalAsync` filtre
+> `user=owner`). Le champ `reseauteurs.adminReseaux` est **déposé/dormant** (remplacé par `reseaux.user`).
+> `estTete()` (`niveau` non-local) remplace le binaire national/local dans les gates de facturation/quota.
+
 Source de vérité du statut payant = **webhooks Stripe** (jamais le client) — invariant ADR-0011 réaffirmé.
 
 ---
@@ -207,7 +271,7 @@ Source de vérité du statut payant = **webhooks Stripe** (jamais le client) —
 | **Cartes / Géo** | requêtes spatiales, GeoJSON, **3 sources** : réseauteurs · réseaux-**locaux** · événements | `/api/geo/reseauteurs`, `/api/geo/reseaux`, `/api/geo/evenements` (PostGIS) + clients MapLibre | **sortie** : GeoJSON FeatureCollection (format figé) ; **1 seul type de marqueur événement** |
 | **Recherche / Filtres** | filtres combinables (simple) ; filtre **national** (umbrella), **niveau**, badge, ville… | route(s) `find` + colonnes indexées (+ `pg_trgm` noms) | **simple** ; pas de moteur FTS/externe |
 | **Comptes & Espaces** | auth, dashboards réseauteur / national / local délégué ; **délégation** de locaux | Payload Auth + `/dashboard/*` + `/api/account/*` | un acteur n'agit que sur ses entités (helper `peutGererReseau`) |
-| **Monétisation B2B** | **Subscription réseau national** (umbrella) · **Subscription annonceur** · factures | `/api/stripe/*`, `lib/stripe`, crons | **source de vérité** des statuts payants ; webhooks idempotents ; **plus de Checkout one-shot Premium** |
+| **Monétisation (mix B2C+B2B)** | **3 Subscriptions** : réseau tête **4 paliers** (ADR-0014) · annonceur · **Réseauteur Plus** ; hub unifié + `change-palier` (ADR-0016) ; factures | `/api/stripe/*`, `lib/stripe`, `lib/abonnement`, `/dashboard/abonnement`, crons | **source de vérité** des statuts payants ; webhooks idempotents ; **plus de Premium ni de packs de licences (ADR-0015)** |
 | **SEO / Contenu** | metadata, JSON-LD `Person`/`Event`/`Organization`, sitemap, llms.txt, maillage, opt-out ; canonical des 2 pages à bascules | `lib/seo`, `lib/jsonld`, `app/sitemap.ts`, `robots.ts` | fiches **inchangées** ; états vue/filtres non canonicalisés |
 | **Admin / Modération** | CRUD 3 entités (+ hiérarchie réseaux) + partenaires + abonnements + badges + catégories ; validation ; délégation fallback | Payload `/admin` | `admin` only ; `groupes` visible (ADR-0009) |
 | **Plateforme / Transverse** | sécurité HTTP, rate-limit, emails, média, audit, RGPD, i18n FR | `next.config.ts`, `lib/*`, Media | identité centralisée `lib/site` |
@@ -262,26 +326,34 @@ Source de vérité du statut payant = **webhooks Stripe** (jamais le client) —
   (ADR-0012). Les **délégués** sont créés via le **flow d'invitation** (pas d'auto-création de national —
   réutilisation du pattern claim-flow `req.context`).
 
-### 4.6 Monétisation — Stripe (recalibrée ADR-0012, étendue ADR-0013)
+### 4.6 Monétisation — Stripe (recalibrée ADR-0012/0013, **révisée ADR-0014 → 0016**)
 - Plomberie conservée (**Subscription**, **Customer Portal**, **webhooks signés idempotents**, factures PDF,
-  crons expiration). **Quatre produits** :
-  - (a) **Abonnement réseau national** = Subscription annuelle, posée sur le réseau `niveau=national` →
-    `national.partenaire` actif. **Débloque** : création de réseaux locaux **et** publication d'événements
-    (par le national **et** par ses locaux), fiche enrichie, logo accueil, badge partenaire. *(Inchangé.)*
+  crons expiration). **Trois produits Stripe, tous en `mode: subscription`** (`src/lib/stripe.ts` → `PRODUITS`) :
+  - (a) **Abonnement réseau national (tête)** = Subscription annuelle **en 4 paliers** (ADR-0014) —
+    **`fiche`** (fiche publiée seule, **0** local) / `starter` (**5**) / `growth` (**25**) / `enterprise`
+    (**illimité**), prix `STRIPE_PRICE_NATIONAL_FICHE/_STARTER/_GROWTH/_ENTERPRISE` (TODO PO). Posée sur la
+    **tête** (`niveau` non-local) → `reseaux.partenaire=true`, `palier`, `partenaireExpireAt`,
+    `statut='publiee'` (tête revendiquée). **Débloque** : publication de la fiche (naît `suspendue` sinon),
+    création de locaux **jusqu'au quota du palier**, publication d'événements, fiche enrichie, logo accueil,
+    badge partenaire.
   - (b) **Partenaire annonceur** = Subscription → logo page d'accueil + page Partenaires + **fiche perso
     `/partenaire/<slug>`** + **offre réservée aux réseauteurs** (espace « Offres partenaires » — livré).
-  - (c) **Réseauteur Plus (ADR-0013)** = Subscription individuelle → `users.plusActif` (+ `plusExpireAt`,
-    `plusSource='abonnement'`). **Débloque** : création d'événements par le réseauteur.
-  - (d) **Packs de licences Plus (ADR-0013)** = achat par pack (**10 / 50 / 100+**) porté par le partenaire →
-    `licences_packs` (quota + **code promo** unique) + `licences_activations` (1 par réseauteur, quota
-    décrémenté **transactionnellement**) → active `users.plusActif` (`plusSource='licence'`).
-- **Supprimé (ADR-0012, toujours en vigueur)** : **événement Premium ponctuel** → pas de tier payant par
-  événement.
-- **Pas** de quota d'événements, **pas** de 3 paliers historiques. Le « freemium réseauteur » historique
-  (39 €/an) reste caduc — le **Plus** (ADR-0013) est un palier **nouveau et distinct**, à avantage unique.
-  Les statuts payants (`abonnementActif` du national, statut **annonceur**, **Plus**) sont posés par
-  webhooks/serveur et **évalués séparément** (jamais comme un niveau cumulatif). La fonction
-  `getEffectiveFeatureLevel` reste **supprimée**.
+    Pose `partenaires.statut='actif'`. *(ADR-0015 : ne conserve QUE cet abonnement de visibilité.)*
+  - (c) **Réseauteur Plus** = Subscription individuelle **39 € HT/an** (`STRIPE_PLUS_PRICE_ID`) →
+    `users.plusActif` (+ `plusExpireAt`, `plusSource='abonnement'`, `stripeSubscriptionId`). **Débloque** :
+    création d'événements par le réseauteur **et** possession/publication de jusqu'à **3 réseaux locaux**
+    (ADR-0014). **Seule voie vers le Plus** (ADR-0015 — les packs de licences sont supprimés).
+- **Gestion unifiée (ADR-0016)** : hub **`/dashboard/abonnement`** + résolveur `resolveAbonnement`
+  (`src/lib/abonnement.ts`) + brique UI `AbonnementManager`. `cancel` / `reactivate` **généralisées aux 3
+  produits** (ownership par construction) ; route **`POST /api/stripe/change-palier`** (swap de price +
+  proration + garde anti-downgrade côté organisateur). **`change-plan` / `preview-change-plan` → 410 Gone.**
+- **Supprimé** : **événement Premium ponctuel** (ADR-0012, champs `premium`+`stripeCheckoutSessionId` droppés) ;
+  **packs de licences Plus + codes promo** (ADR-0015 — route `/api/licences/activer` → 410, collections
+  dormantes).
+- **Pas** de quota d'événements, **pas** de 3 paliers historiques (90/130/190 €). Le « freemium réseauteur »
+  historique (39 €/an) reste caduc — le **Plus** est un palier **nouveau et distinct**. Les statuts payants
+  (`abonnementActif` de la tête, statut **annonceur**, **Plus**) sont posés par webhooks/serveur et **évalués
+  séparément** (jamais comme un niveau cumulatif). La fonction `getEffectiveFeatureLevel` reste **supprimée**.
 
 ### 4.7 SEO (ADR-0005, « comme PanoramaPub »)
 - JSON-LD **`Person`** (réseauteurs), **`Event`** (événements, `organizer` = réseau organisateur),
@@ -336,7 +408,9 @@ src/
         (reseauteur)/profil            # édition profil, badge, contacts facultatifs, affiliation locaux
         (organisateur)/reseau          # fiche réseau ; NATIONAL : + gestion des locaux + délégation + abonnement
         evenements/                    # CRUD événements (gate = national.partenaire)
-        abonnement/  factures/         # Subscription nationale + factures (one-shot Premium RETIRÉ)
+        abonnement/                    # ADR-0016 : HUB unifié tous rôles souscripteurs (souscrire/annuler/réactiver/changer de palier)
+        factures/                      # factures — tout rôle souscripteur avec stripeCustomerId (Plus inclus)
+        mes-reseaux/                   # ADR-0014 : locaux possédés par un réseauteur Plus (≤ 3) + invitation tête absente
         groupe/                        # CONSERVÉ non lié (dormant — ADR-0009)
         evenements-nationaux/          # legacy → déjà redirect /dashboard (neutralisé)
       ...(pages légales, auth — conservées, rebrandées)
@@ -345,7 +419,8 @@ src/
       geo/reseauteurs/route.ts         # route spatiale PostGIS (carte réseauteurs)
       geo/reseaux/route.ts             # NOUVEAU : route spatiale PostGIS (marqueurs = réseaux LOCAUX)
       geo/evenements/route.ts          # route spatiale PostGIS (carte événements — sans Premium)
-      stripe/*                         # Subscription réseau national + Subscription annonceur (Checkout one-shot Premium RETIRÉ)
+      stripe/*                         # 3 Subscriptions (national 4 paliers + annonceur + Plus) ; change-palier ; change-plan/preview → 410
+      licences/activer                 # ADR-0015 : SUPPRIMÉ → 410 Gone (packs de licences retirés)
       account/* cron/* ...             # conservés, repointés
     sitemap.ts  robots.ts  llms.txt    # 3 entités fiches, opt-out indexation (seo-engineer)
   collections/
@@ -359,8 +434,9 @@ src/
     Testimonials.ts                    # CONSERVÉ DORMANT (tranché ADR-0011 §8.5)
   lib/
     site.ts                            # identité RÉSEAUTEURS
-    stripe.ts                          # 2 produits B2B (Subscription nationale + Subscription annonceur)
-    reseau-hierarchie.ts               # NOUVEAU : nationalDe / abonnementActif / peutPublierEvenement / peutGererReseau
+    stripe.ts                          # 3 produits, mode:subscription (national 4 paliers + annonceur + Réseauteur Plus)
+    abonnement.ts                      # ADR-0016 : resolveAbonnement / AbonnementContext / fetchLiveStripeState (3 porteurs)
+    reseau-hierarchie.ts               # estTete / PALIERS_CONFIG / nationalDe / abonnementActif / peutCreerLocalAsync / MAX_LOCAUX_PLUS
     geocode.ts geojson.ts              # conservés
     seo.ts jsonld.ts                   # Person ; Event organizer=réseau ; Organization (+ parentOrganization)
     badge.ts                           # dérivation du badge
@@ -419,8 +495,11 @@ src/
 | 0009 | Paiements de groupe / affiliation dormants | Accepté (inchangé) — **angle « fédération » réalisé par la hiérarchie 0012**, mais groupes restent dormants |
 | 0010 | Annuaire mono-entité (membre seul) | Supersédé sur 3 points par 0011 |
 | 0011 | Plateforme à 3 entités, monétisation B2B, simplicité d'abord | **Accepté — amendé sur 4 points par 0012, sur l'invariant « réseauteurs gratuits » par 0013** |
-| 0012 | Hiérarchie réseaux national↔local, abonnement national, locaux délégables, pages à bascules | **Accepté (en vigueur)** — gate d'événements étendu et « pas de 4ᵉ rôle » levé par 0013 ; réseaux inchangés |
-| **0013** | **Réseauteur Plus (création d'événements), rôle partenaire self-service, packs de licences Plus par code promo** | **Accepté (2026-07-12) — à mettre en œuvre (PLAN.md Partie D)** |
+| 0012 | Hiérarchie réseaux national↔local, abonnement national, locaux délégables, pages à bascules | **Accepté** — abonnement national passé en **4 paliers** par 0014 ; « délégation » complétée par la **propriété** (0014) ; réseaux hiérarchiques réaffirmés |
+| 0013 | Réseauteur Plus (création d'événements), rôle partenaire self-service, packs de licences Plus par code promo | **Accepté (2026-07-12)** — Plus + rôle partenaire **en vigueur** ; **packs de licences supersédés (supprimés) par 0015** |
+| **0014** | **Fiche nationale payante (4 paliers), locaux des réseauteurs Plus par propriété, événements par propriété** | **Accepté (2026-07-17, en vigueur)** — 4 paliers `fiche`/`starter`/`growth`/`enterprise` ; fiche de tête revendiquée naît `suspendue` ; `MAX_LOCAUX_PLUS=3` ; `adminReseaux` dormant |
+| **0015** | **Suppression des packs de licences « Réseauteur Plus »** | **Accepté (2026-07-17, en vigueur)** — `/api/licences/activer` → 410 ; collections dormantes ; Plus par abonnement individuel uniquement |
+| **0016** | **Hub d'abonnement unifié en libre-service (tous rôles souscripteurs)** | **Accepté (2026-07-20, en vigueur)** — `/dashboard/abonnement`, `resolveAbonnement`, cancel/reactivate/`change-palier` ; `change-plan`/`preview-change-plan` → 410 |
 
 ---
 

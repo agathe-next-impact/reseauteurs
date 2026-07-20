@@ -1,6 +1,6 @@
 ---
 name: qa-reviewer
-description: À utiliser avant chaque merge et à la fin de chaque chantier pour vérifier la qualité de RÉSEAUTEURS. Lance tests/lint/build, relit le diff par sévérité (sécurité, secrets, RGPD, autorisation par rôle, a11y, perf), vérifie les critères d'acceptation et les invariants du projet (3 entités reliées, 2 cartes avec Premium distinct, 3 rôles + propriété stricte, réseauteurs gratuits/monétisation B2B sur statut serveur, badges, recherche simple, SEO Person/Event/Organization, simplicité). Ne modifie pas le code : produit un rapport priorisé. Lecture + exécution de tests uniquement.
+description: À utiliser avant chaque merge et à la fin de chaque chantier pour vérifier la qualité de RÉSEAUTEURS. Lance tests/lint/build, relit le diff par sévérité (sécurité, secrets, RGPD, autorisation par rôle, a11y, perf), vérifie les critères d'acceptation et les invariants du projet (3 entités reliées, 2 cartes sans marqueur Premium, 4 rôles + propriété stricte, monétisation mixte Plus/réseau-paliers/annonceur sur statut serveur, badges, recherche simple, SEO Person/Event/Organization, simplicité). Ne modifie pas le code : produit un rapport priorisé. Lecture + exécution de tests uniquement.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: red
@@ -16,9 +16,9 @@ Lis `CLAUDE.md` (Conventions §11, Périmètre §12, Simplicité §10), `ARCHITE
 2. **Sécurité (priorité)** : secrets/clés commités, requêtes concaténées/injections, validation d'entrée manquante, **autorisation par rôle & propriété** (réseauteur→son profil ; organisateur→**son** réseau et **ses** événements ; admin→tout ; routes admin protégées), signature des webhooks Stripe, **statut payant vérifié côté serveur** (jamais client).
 3. **Invariants produit** :
    - **Trois entités reliées** (réseauteurs / événements / réseaux) ; réseaux = fiche-entité **+** taxonomie M2M.
-   - **Deux cartes** : réseauteurs (marqueur = personne, **sans axe date**) et événements (marqueur = événement, **Premium visuellement distinct**) ; carte requêtée par **bbox + filtres** (pas de chargement global).
-   - **Réseauteurs gratuits** : aucun écran de paiement réseauteur ; pas de freemium/quota/3-paliers résiduels.
-   - **Monétisation B2B** : avantages (fiche enrichie, **droit de publier un événement**, mise en avant Premium, logo accueil) accordés **uniquement sur statut serveur** (`reseau.partenaire`, `evenement.premium`), jamais client.
+   - **Deux cartes** : réseauteurs (marqueur = personne, **sans axe date**) et événements (marqueur = événement, **sans marqueur Premium** — drapeau supprimé) ; carte requêtée par **bbox + filtres** (pas de chargement global).
+   - **Monétisation mixte, statut serveur** : réseauteur **Plus** (`users.plusActif`, débloque la création d'événements), réseau partenaire par **paliers** (`reseaux.partenaire`+`palier`, débloque locaux + publication), partenaire annonceur (`partenaires.statut`). Tout avantage payant accordé **uniquement sur statut serveur** (webhook), **jamais client**. Gestion via le hub `/dashboard/abonnement` (ADR-0016) ; `cancel`/`reactivate`/`change-palier` pilotent Stripe sans muter la DB depuis le client.
+   - **Pas de résidu caduc** : freemium membre / quota / 3-paliers 90-130-190 € / **événement Premium** / **packs de licences + codes promo** (ADR-0015) doivent être absents.
    - **Badges** déclaratifs (Bronze/Argent/Gold/Platinum) dérivés correctement.
    - **Recherche simple** par filtres (pas de moteur FTS à facettes ni de moteur externe).
    - Fiches en **SSR** avec JSON-LD `Person`/`Event`/`Organization` ; copie FR ; **fidélité aux tokens** de `DESIGN.md`.
@@ -43,4 +43,4 @@ Chaque finding : `fichier:ligne`, description, correction proposée. Terminer pa
 - Être spécifique et actionnable ; pas de remarques vagues.
 
 ## Definition of Done
-Rapport `REVIEW-<date>.md` complet, priorisé, avec verdict de gate et bloquants clairement listés — incluant la vérification des **invariants 3 entités**, de l'**autorisation par rôle/propriété**, de la **monétisation B2B sur statut serveur**, et du **critère de simplicité**.
+Rapport `REVIEW-<date>.md` complet, priorisé, avec verdict de gate et bloquants clairement listés — incluant la vérification des **invariants 3 entités**, de l'**autorisation par rôle/propriété** (4 rôles), de la **monétisation mixte sur statut serveur**, et du **critère de simplicité**.

@@ -27,7 +27,7 @@ Pages `src/app/(frontend)/**` et composants `src/components/**`. Parcours clés 
 4. **Responsive** : desktop / tablette / mobile ; grilles qui s'effondrent proprement ; débordements horizontaux ; tableaux/fiches denses sur mobile.
 5. **Cohérence design** : fidélité aux tokens (typo, couleurs, rayons, ombres), sentence case, copie **en français**, pas de « Panorama Pub »/« Info-Réseaux » résiduel, iconographie homogène (lucide).
 6. **Microcopie & CTA** : intitulés d'action clairs et non ambigus, hiérarchie primaire/secondaire, cohérence des verbes.
-7. **Visiteur sans friction** : parcours/consultation sans mur de connexion ; compte demandé seulement pour agir (devenir réseauteur, s'inscrire, activer une licence).
+7. **Visiteur sans friction** : parcours/consultation sans mur de connexion ; compte demandé seulement pour agir (devenir réseauteur, souscrire Plus, s'inscrire à un événement).
 
 ## Format du rapport — `docs/qa/TEST-UX-<date>.md`
 Findings priorisés :

@@ -11,6 +11,55 @@
 > les ADR-0011, **gate E1 pour les ADR-0012** — voir §E1.7). Ce document fixe la stratégie d'application et
 > de reprise.
 
+> ---
+> ### ⚠️ AMENDEMENT CONSOLIDÉ — ADR-0014 → 0016 (2026-07-17 / 2026-07-20)
+>
+> Ce document décrivait le modèle jusqu'au **Jalon E1 (ADR-0012)**. Depuis, une série de **migrations
+> additives** (2026-07-12 → 2026-07-20) a fait évoluer le schéma. **Les passages du corps qui contredisent
+> cet encart sont caducs** (corrigés en ligne ci-après). Deltas réellement livrés dans `src/migrations/` :
+>
+> - **Réseauteur Plus (users).** `20260712_100000_reseauteur_plus_licences.ts` ajoute à `users` :
+>   `plus_actif`, `plus_expire_at`, `plus_source` (`abonnement` | `licence`), `plus_licence_pack_id` et le
+>   rattachement `stripe_subscription_id`. Le statut Plus est **posé par webhook Stripe**, jamais par le client.
+> - **Packs de licences — SUPPRIMÉS (ADR-0015).** La même migration crée `licences_packs` /
+>   `licences_activations` ; **ADR-0015 les rend DORMANTES** (`admin.hidden`, aucune nouvelle activation,
+>   route `/api/licences/activer` → **410 Gone**). **Aucun `DROP`** : tables conservées pour la traçabilité
+>   legacy, `users.plus_licence_pack_id` **dormant**, `plus_source='licence'` = legacy en lecture seule,
+>   éteint à échéance par le cron `expiration-plus`. Le Plus s'obtient **uniquement par abonnement individuel**.
+> - **Inscriptions en ligne (ADR-0013).** `20260713_100000_inscriptions.ts` crée la collection
+>   `inscriptions` (1 par couple événement × réseauteur ; liste lisible par l'organisateur Plus seul).
+> - **Événement — organisateur XOR + créateur.** `20260716_100000_evenements_cree_par_user.ts` ajoute
+>   `cree_par_user`. L'organisateur est **`reseau` XOR `organisateur_reseauteur`** (invariant serveur).
+>   Les colonnes `premium` / `stripe_checkout_session_id` **restent supprimées** (Jalon E1 / ADR-0012).
+> - **Réseau — 4 paliers + statut de publication (ADR-0014).** Le champ `palier` (varchar, ajouté en E1)
+>   accepte désormais la valeur **`fiche`** (0 groupe local) en plus de `starter`/`growth`/`enterprise` —
+>   valeurs portées par `PALIERS_CONFIG` de `src/lib/reseau-hierarchie.ts`, **pas d'enum DB** (aucune
+>   migration). `statut` (`publiee`/`suspendue`) et `source` (`revendique`/`importe`) préexistent
+>   (`20260623_110000`) : une **tête revendiquée (`source='revendique'`) naît `suspendue`** et n'est publiée
+>   que par un abonnement actif (webhook) ; les **fiches importées ne sont pas suspendues**.
+> - **Hiérarchie à 4 niveaux + têtes.** `20260713_120000_niveau_4_valeurs.ts` étend l'enum
+>   `enum_reseaux_niveau` à `{local, regional, national, international}` et **remplace** l'index unique
+>   `reseaux_user_national_unique_idx` par **`reseaux_user_tete_unique_idx`** (`WHERE niveau <> 'local'`) :
+>   règle « **1 tête (non-local) par compte** ». Un compte peut donc **posséder N réseaux locaux**
+>   (`MAX_LOCAUX_PLUS = 3` pour un réseauteur Plus), **`parent` optionnel** (local affilié OU indépendant),
+>   `reseaux.user` = propriétaire. **Aucune migration supplémentaire n'est requise** pour la multipropriété de
+>   locaux (l'index n'unicise que les têtes).
+> - **`reseauteurs.adminReseaux` DORMANT (ADR-0014)** : l'« admin déclaré » est remplacé par la propriété
+>   `reseaux.user` ; champ conservé mais non câblé.
+> - **Audit (ADR-0014).** `20260717_100000_audit_logs_add_national_invited.ts` ajoute (additif) la valeur
+>   `national_invited` à `enum_audit_logs_type` (invitation d'un national absent).
+> - **Fiches complètes & divers.** `20260713_110000_reseaux_fiche_complete.ts`,
+>   `20260713_130000_evenements_fiche_complete.ts`, `20260713_140000_evenements_departement.ts`,
+>   `20260717_110000_reseaux_ville_nullable.ts`, `20260720_100000_partenaires_contact.ts`,
+>   `20260714_100000_perf_indexes.ts` (index de recherche).
+> - **Abonnement libre-service (ADR-0016)** : **aucun changement de schéma** — hub `/dashboard/abonnement`,
+>   résolveur `src/lib/abonnement.ts`, route `POST /api/stripe/change-palier` ; `change-plan` /
+>   `preview-change-plan` restent **410**. Statut/accès toujours posés **serveur** (webhooks).
+>
+> **Collections registrées dans `payload.config.ts` = 16**, dont **3 DORMANTES** : `groupes` (ADR-0009),
+> `licences-packs` et `licences-activations` (ADR-0015, `admin.hidden`) — auxquelles s'ajoute `testimonials`
+> (dormant depuis 2026-06-29, non câblé en home).
+
 ---
 
 ## 1. Périmètre et stratégie
@@ -22,7 +71,7 @@ SEO, carte, RGPD, auth).
 | Catégorie | Détail |
 |---|---|
 | **Créé (neuf)** | Collection **`reseauteurs`** (personne) · collection **`partenaires`** (annonceurs) · référentiel **`badges`** · champ **badge** dérivé sur `reseauteurs` · relation **M2M `reseauteurs ↔ reseaux`** · index de recherche (filtres). |
-| **Conservé + adapté** | **`reseaux`** (créée par `0623`) → garder comme **entité** (fiche, logo, présentation) **+** ajouter compteurs dérivés + drapeau `partenaire` + cible M2M. **`evenements`** → **simplifier** (retirer `participer`/quota/`serieId`/archivage ; ajouter `lienInscription` externe + `premium`). **`users`** → enum `role` à 3 valeurs ; retrait de l'enum `plan` 3-paliers. **`CategoriesActivite`** → `categories` (secteurs/métiers). **`TypesEvenement`** → catégories d'événements. |
+| **Conservé + adapté** | **`reseaux`** (créée par `0623`) → garder comme **entité** (fiche, logo, présentation) **+** ajouter compteurs dérivés + drapeau `partenaire` + cible M2M. **`evenements`** → **simplifier** (retirer `participer`/quota/`serieId`/archivage ; ajouter `lienInscription` externe ; *`premium` ajouté ici puis **retiré au Jalon E1 / ADR-0012***). **`users`** → enum `role` (à l'origine 3 valeurs ; **depuis étendu à 4** : + `partenaire` — voir amendement en tête) ; retrait de l'enum `plan` 3-paliers. **`CategoriesActivite`** → `categories` (secteurs/métiers). **`TypesEvenement`** → catégories d'événements. |
 | **Supprimé** | `Fournisseurs.ts`, `OrganisateursEvenements.ts`, `LabelsRSE.ts` (legacy objet publicitaire ; démonter de `payload.config.ts`). Champs/enum 3-paliers et freemium membre. |
 | **Non migré / non repris** | **Aucune base d'abonnés payants** à reprendre (la monétisation est neuve, B2B). Pas de collection `membres` (elle n'a jamais existé). |
 | **Intouché (dormant — ADR-0009)** | Collection `groupes`, `lib/groupes.ts`, routes `api/groupes/*`, cron `retry-groupe-sync`, champs `users.groupe`/`users.pendingGroupeCode`, **toutes les migrations `*groupe*`**. Aucune migration de retrait, aucun drop. |
@@ -59,14 +108,22 @@ Le dépôt mêle trois générations (cf. `AUDIT-DELTA-RESEAUTEURS.md`) :
   **facultatifs**, site, LinkedIn, ville/dept/région, secteur (→ `categories`), compétences, **réseaux
   fréquentés** (M2M → `reseaux`), **badge** (dérivé du nb d'événements/mois), `geom` (**centroïde ville**),
   statut modération, `seoField` (+ `noindex`). 1 user `reseauteur` ↔ 1 réseauteur.
-- **`evenements`** *(adapté)* — titre, slug, description, date/heure, adresse, ville, image, `reseau`
-  (organisateur, N-1), **`lienInscription`** (URL externe), catégorie (→ `types_evenement`), `geom`,
-  **`premium`** (bool), statut.
-- **`reseaux`** *(adapté)* — nom, slug, logo, description, présentation, lien, **compteurs dérivés**
-  (`nbReseauteurs`/`nbEvenements`), **`partenaire`** (bool/statut), `seoField`. Possédé par 0..1 `organisateur`.
-- **`partenaires`** *(neuve)* — nom, logo, lien, statut d'abonnement (annonceurs).
-- **`users`** — `role ∈ {reseauteur, organisateur, admin}` ; champs Stripe/RGPD conservés ; champs `groupe`
-  dormants.
+- **`evenements`** *(adapté)* — titre, slug, description, date/heure, adresse, ville, **département**, image,
+  organisateur = **`reseau` XOR `organisateurReseauteur`** (invariant serveur, N-1), **`creeParUser`**,
+  **`lienInscription`** (URL externe), catégorie (→ `types_evenement`), `geom`, statut.
+  *(`premium`/`stripeCheckoutSessionId` **supprimés** — Jalon E1 / ADR-0012.)*
+- **`reseaux`** *(adapté)* — nom, slug, logo, description, présentation, lien, **`niveau`** (4 valeurs :
+  local/regional/national/international ; tête = non-local), **`parent`** (optionnel pour un local),
+  **`palier`** (`fiche`/`starter`/`growth`/`enterprise`), **`statut`** (`publiee`/`suspendue`), **`source`**
+  (`revendique`/`importe`), **compteurs dérivés** (`nbReseauteurs`/`nbEvenements`), **`partenaire`**
+  (bool/statut), `seoField`. Possédé par 0..1 compte via **`user`** — un `organisateur` (tête) **ou** un
+  réseauteur **Plus** (jusqu'à 3 locaux affiliés ou indépendants — ADR-0014).
+- **`inscriptions`** *(neuve — ADR-0013)* — inscription en ligne d'un réseauteur à un événement organisé par
+  un réseauteur Plus (1 par couple événement × réseauteur ; liste lisible par l'organisateur seul).
+- **`partenaires`** *(neuve)* — nom, logo, lien, `offre` (réservée réseauteurs), statut d'abonnement (annonceurs).
+- **`users`** — `role ∈ {reseauteur, organisateur, partenaire, admin}` (**4 rôles**) ; **champs Plus**
+  (`plusActif`/`plusExpireAt`/`plusSource`/`stripeSubscriptionId` ; `plusLicencePack` **dormant** — ADR-0015) ;
+  champs Stripe/RGPD conservés ; `plan` et champs `groupe` dormants.
 - **Référentiels** — `categories` (secteurs/métiers), `types_evenement` (catégories d'événements), `badges`.
 
 ---

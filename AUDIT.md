@@ -10,6 +10,16 @@
 > PanoramaPub, donc augmente la réutilisation. Lire les mappings de domaine ci-dessous à la lumière de
 > l'ADR-0011 (`Fournisseur`/`Organisateur` → `reseaux`-entité ; `Evenement` → `evenements` simplifié ;
 > nouveauté = collection `reseauteurs`).
+>
+> **Note 2026-07-20 (réconciliation) :** ce document est un **artefact historique** — son corps n'est **pas**
+> réécrit. ⚠️ Plusieurs *recommandations cible* ci-dessous sont désormais **caduques** et ne doivent pas être
+> prises pour le cap actuel : le **quota d'événements/an** et les **3 paliers 90/130/190 €** (colonnes
+> « cible » des tableaux, ADR-4 historique) ont été **abandonnés** ; la monétisation actuelle est **mixte** —
+> réseauteur **Plus** (abonnement 39 € HT/an, ADR-0013), **réseau partenaire par 4 paliers**
+> `fiche`/`starter`/`growth`/`enterprise` (ADR-0012/0014), **partenaire annonceur** — sans **événement
+> Premium** (ADR-0012, supprimé) ni **packs de licences** (ADR-0015, supprimés), gérée en libre-service via le
+> hub `/dashboard/abonnement` (ADR-0016). Pour l'état réel, se référer à `CLAUDE.md` §4, `ARCHITECTURE.md` et
+> `MIGRATION.md` (tous réconciliés le 2026-07-20).
 
 ## 1. Résumé exécutif
 

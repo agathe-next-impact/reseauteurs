@@ -110,6 +110,16 @@ La plateforme repose sur **trois bases de données reliées entre elles** (ADR-0
 > Portal, webhooks idempotents signés, factures PDF, crons d'expiration) est **réutilisée**. Le statut
 > payant est **toujours** posé côté serveur (webhook), jamais par le client (§11).
 > **ADR-0015 (2026-07-17)** : les packs de licences partenaires sont **supprimés** du mix.
+> **ADR-0016 (2026-07-20)** : la **gestion de l'abonnement est unifiée et complète, en libre-service, pour
+> les 3 types de souscripteurs** (réseauteur Plus, organisateur, partenaire). Hub unique **`/dashboard/abonnement`**
+> ouvert à tous les rôles souscripteurs ; résolveur commun **`src/lib/abonnement.ts`** (`resolveAbonnement`
+> → `AbonnementContext` unifiant les 3 porteurs `users`/`reseaux`/`partenaires` + `fetchLiveStripeState`
+> tolérant aux pannes) ; brique partagée **`src/components/billing/AbonnementManager.tsx`** (souscrire /
+> changer de palier / **annuler** / **réactiver** / moyen de paiement / factures). `cancel`+`reactivate`
+> **généralisés aux 3 produits** (ownership garanti par construction) ; nouvelle route
+> **`POST /api/stripe/change-palier`** (organisateur, proration + garde anti-downgrade) ; `change-plan` /
+> `preview-change-plan` restent **410 Gone**. Invariant §11 conservé : accès posé côté serveur (webhooks),
+> les actions in-app **pilotent Stripe** (cancel_at_period_end, swap de price) sans muter la DB depuis le client.
 
 ### 4.1 Réseauteur — 2 niveaux d'accès (Plus **= 39 € HT/an** — décision 2026-07-16)
 | Niveau | Type | Accès |
@@ -169,8 +179,9 @@ le référentiel des badges.
 - **Recherche :** **simple, par filtres** dans Postgres via Payload (`find` + colonnes indexées, `pg_trgm`
   optionnel pour la tolérance de frappe). **Pas de moteur FTS à facettes, pas de moteur externe** (§10, §8).
 - **Auth :** **Payload** (JWT, lockout, verify, reset). Rôles `admin/organisateur/reseauteur/partenaire`.
-- **Paiement :** Stripe (Subscriptions + Checkout one-shot + Customer Portal + webhooks + factures PDF),
-  recalibré sur les 3 produits B2B.
+- **Paiement :** Stripe (**Subscriptions** + Customer Portal + webhooks idempotents signés + factures PDF),
+  recalibré sur les **3 produits** (réseauteur Plus B2C + réseau partenaire par paliers + annonceur, tous en
+  abonnement) ; gestion unifiée en libre-service (`resolveAbonnement` / hub `/dashboard/abonnement`, ADR-0016).
 - **Emails :** Resend (onboarding, sécurité, modération, expiration d'abonnement) — conservé, à rebrander.
 - **Hébergement :** Vercel ; SSL obligatoire.
 
@@ -181,16 +192,18 @@ paliers + SEO complet), partiellement pivoté vers « Info-Réseaux » (modèle 
 `20260623_*`). **Bonne nouvelle pour le modèle à 3 entités :** événements et réseaux-entités, que l'ADR-0010
 avait prévu de **démonter**, **reviennent** — donc une **plus grande part de l'existant se réutilise** :
 
-- **`evenements`** : à **conserver et simplifier** (retirer `participer`/quota/`serieId`/archivage de
-  l'ancien modèle ; ajouter `lienInscription` externe + drapeau **Premium**). ⚠️ Pas d'organisation
-  d'événements ni de gestion d'inscrits en V1.
+- **`evenements`** : **conservée et simplifiée** (retrait de `participer`/quota/`serieId`/archivage de
+  l'ancien modèle ; ajout de `lienInscription` externe). Le **drapeau `premium` a été supprimé** (ADR-0012,
+  colonnes droppées) ; l'organisateur est **réseau XOR réseauteur Plus** (`organisateurReseauteur`), et la
+  collection **`inscriptions`** existe pour les inscriptions en ligne aux événements organisés par un
+  réseauteur Plus (ADR-0013).
 - **`reseaux`** (créée par les migrations `0623`) : à **conserver comme entité** (fiche, logo, présentation,
   compteurs) **et** comme valeur de taxonomie M2M. Possédée par un compte **organisateur**.
 - **Machinerie SEO multi-types** (`Event`, `Organization`, `LocalBusiness`, sitemap, ISR), **carte
   MapLibre/PostGIS**, **Stripe**, **RGPD**, **auth**, **géocodage**, **emails**, **sécurité HTTP** : **infra
   agnostique de qualité production → réutilisée**.
 - À **créer** : collection **`reseauteurs`** (personne), collection **`partenaires`** (annonceurs), champ
-  **badge**, relation M2M réseauteur↔réseaux, **carte des réseauteurs**, recalibrage Stripe B2B.
+  **badge**, relation M2M réseauteur↔réseaux, **carte des réseauteurs**, recalibrage Stripe (Plus B2C + réseau/annonceur B2B).
 - **Dormant (ADR-0009 inchangé) :** groupes/affiliation — conservés, masqués.
 
 > Détail garder/réécrire/supprimer : `docs/evolution/AUDIT-DELTA-RESEAUTEURS.md` **+ son amendement
@@ -209,7 +222,7 @@ Le **système visuel est conservé** comme identité de marque ; la **structure*
 Tokens clés (détail dans `DESIGN.md`) :
 - **Police : Hanken Grotesk** (Google Fonts, 400→800), via `next/font`.
 - **Mode clair dominant** sur canvas **`#faf9f5`** ; surfaces blanches ; **bandes sombres** (`#0d0d10`).
-- **Bleu primaire `#2563EB`**, navy `#16284f`, **accent orange `#f5851f`** (conversion / Premium / CTA),
+- **Bleu primaire `#2563EB`**, navy `#16284f`, **accent orange `#f5851f`** (conversion / abonnement / CTA),
   violet secondaire `#a855f7`, neutres zinc, bordure `#e4e4e7`.
 - **Rayons généreux** (~12px ; conteneurs 16px ; pills 999px) ; sentence case ; deux graisses ; ombres
   discrètes. Copie UI **en français**.
@@ -254,7 +267,7 @@ cette contrainte : un parcours évident, pas de fonctionnalité « parce qu'on p
   **son** réseau et **ses** événements ; l'admin sur tout.
 - **RGPD** : consentement, export, suppression, purge, audit, opt-out d'indexation respectés de bout en bout.
 - Accessibilité (a11y) : contrastes, labels, navigation clavier, focus visibles.
-- Tests sur la logique métier (rôles & propriété, monétisation B2B, géo-filtrage des deux cartes, badges,
+- Tests sur la logique métier (rôles & propriété, monétisation mixte, géo-filtrage des deux cartes, badges,
   recherche par filtres, slugs/SEO). ⚠️ Les **specs existantes valident PanoramaPub** et sont en partie
   caduques — à re-spécifier sur le modèle 3 entités.
 - Mobile-first sur les cartes (plein écran + bottom-sheet, pas une carte rétrécie au-dessus d'une liste).
@@ -263,11 +276,12 @@ cette contrainte : un parcours évident, pas de fonctionnalité « parce qu'on p
 ## 12. Périmètre V1 / V2+ (ne pas déborder — simplicité)
 
 - **Dans la V1 :** les **3 entités** (réseauteurs, événements, réseaux) + leurs fiches publiques SSR ; les
-  **2 cartes** (réseauteurs + événements) ; **recherche simple par filtres** ; comptes + **3 rôles**
-  (réseauteur / organisateur / admin) ; **badges** déclaratifs ; **monétisation B2B Stripe** (réseau
-  partenaire + événement Premium + partenaire annonceur) ; **page Partenaires** ; validation des
-  inscriptions + modération ; SEO `Person`/`Event`/`Organization` + RGPD proportionné ; responsive
-  (desktop / tablette / mobile).
+  **2 cartes** (réseauteurs + événements) ; **recherche simple par filtres** ; comptes + **4 rôles**
+  (réseauteur / organisateur / partenaire / admin) ; **badges** déclaratifs ; **monétisation mixte Stripe**
+  (réseauteur **Plus** 39 € HT/an + réseau partenaire par paliers `fiche`/`starter`/`growth`/`enterprise`
+  + partenaire annonceur), **gérée en libre-service via le hub `/dashboard/abonnement`** (ADR-0016) ;
+  **page Partenaires** ; validation des inscriptions + modération ; SEO `Person`/`Event`/`Organization`
+  + RGPD proportionné ; responsive (desktop / tablette / mobile).
 - **Évolution monétisation (2026-07-12, livrée — voir §4) :** palier **Réseauteur Plus** (abonnement
   débloquant la **création d'événements**). Cela **remplace** l'invariant « pas de palier payant
   réseauteur » ; la création d'événements est ouverte aux **réseauteurs Plus** (en plus des
@@ -286,7 +300,10 @@ cette contrainte : un parcours évident, pas de fonctionnalité « parce qu'on p
 
 ## 13. Pipeline d'agents et artefacts
 
-Voir `.claude/AGENTS_PIPELINE.md` et `.claude/README.md`. **8 agents.** Ordre et livrables :
+Voir `.claude/AGENTS_PIPELINE.md` et `.claude/README.md`. **12 agents** (8 de construction + **4 d'audit
+ciblé** : `test-fonctionnel`, `test-securite`, `test-performance`, `test-ux`). **Phases 0→4 livrées** — la
+V1 3-entités est construite ; le pipeline sert désormais à **faire évoluer et vérifier** l'existant.
+Ordre et livrables :
 
 1. `codebase-auditor` → **`AUDIT.md`** + **`AUDIT-DELTA-RESEAUTEURS.md`** *(lecture seule ; delta + amendement
    3-entités déjà produits ; verdict `REFACTOR_IN_PLACE`)*.
@@ -294,12 +311,14 @@ Voir `.claude/AGENTS_PIPELINE.md` et `.claude/README.md`. **8 agents.** Ordre et
    **`PLAN.md`** reséquencé. *(Réalignés dans la passe docs du 2026-06-28 ; à valider/affiner.)*
 3. `data-architect` → collections **`reseauteurs`**, **`evenements`** (simplifié), **`reseaux`** (entité +
    taxonomie), **`partenaires`**, champ **badge**, relation M2M ; **RGPD** repointé ; recalibrage `users.role`
-   (3 rôles) ; index de recherche simple ; **`MIGRATION.md`**.
+   (**4 rôles** : réseauteur/organisateur/partenaire/admin) ; index de recherche simple ; **`MIGRATION.md`**.
 4. Implémentation parallélisable (cf. `PLAN.md`) : `frontend-builder` (home + 3 fiches + recherche par
-   filtres + dashboards) · `map-engineer` (**2 cartes** réseauteurs/événements, marqueurs Premium) ·
-   `accounts-and-billing` (3 rôles + monétisation B2B Stripe) · `seo-engineer`
-   (`Person`/`Event`/`Organization` + opt-out indexation).
-5. `qa-reviewer` → **`docs/qa/REVIEW-<date>.md`** (gate qualité avant merge).
+   filtres + dashboards) · `map-engineer` (**2 cartes** réseauteurs/événements) ·
+   `accounts-and-billing` (**4 rôles** + monétisation mixte Stripe : Plus + réseau par paliers + annonceur,
+   hub `/dashboard/abonnement`) · `seo-engineer` (`Person`/`Event`/`Organization` + opt-out indexation).
+5. `qa-reviewer` → **`docs/qa/REVIEW-<date>.md`** (gate qualité avant merge) ; **audits ciblés** :
+   `test-fonctionnel` (parcours de bout en bout), `test-securite` (autorisation/RGPD/Stripe serveur),
+   `test-performance` (N+1, ISR, index), `test-ux` (a11y + < 30 s) → `docs/qa/TEST-*.md`.
 
 **Règle d'or :** aucune implémentation (phase 3) ne démarre avant que **`ARCHITECTURE.md` + le schéma soient
 validés** (humain dans la boucle entre les phases). La **simplicité** est un critère de revue à chaque gate.

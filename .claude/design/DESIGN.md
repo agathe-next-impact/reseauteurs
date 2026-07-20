@@ -99,15 +99,15 @@ Tailwind : mapper `--radius` ≈ `12px` et dériver `sm/md/lg/xl` en conséquenc
    Trouvez & soyez trouvé**).
 6. **Chiffres clés** — compteurs (**+N réseauteurs, +N événements, +N réseaux, +N villes**), carte de France.
 7. **Bandeau Partenaires** *(accent orange en filigrane)* — logos des **partenaires annonceurs** + lien vers
-   la page Partenaires ; encart discret « Réseau ? Devenez partenaire » (renvoi B2B, **pas** un freemium
-   réseauteur).
+   la page Partenaires ; encart discret « Réseau ? Devenez partenaire ».
 8. **Newsletter** — « Restez informé des nouveaux pros et événements près de chez vous ».
 9. **Pied de page** — liens (À propos, FAQ, Partenaires, Mentions légales, CGU, **Confidentialité/RGPD**,
    Contact), réseaux sociaux, copyright.
 
-> **Note conversion :** la monétisation est **B2B** (réseaux & annonceurs), pas un Premium réseauteur. Le
-> bloc orange « conversion » de la maquette est réaffecté au **renvoi partenaires/réseau partenaire**, jamais
-> à un paiement réseauteur.
+> **Note conversion :** la monétisation est **mixte** — réseauteur **Plus** (39 € HT/an, B2C), réseau
+> partenaire par paliers et partenaire annonceur (B2B). Le réseauteur reste **gratuit par défaut** ; le bloc
+> orange « conversion » de la maquette sert les CTA d'abonnement (Plus / partenaires). Le paiement se fait
+> dans le **hub `/dashboard/abonnement`** (ADR-0016), pas sur les écrans publics.
 
 ## 6. Cartes (référence visuelle pour `map-engineer` — DEUX cartes)
 
@@ -119,9 +119,9 @@ Réutiliser le **style** de la maquette : **clusters en pastilles colorées avec
   profil »). Filtres de premier rang : **métier / secteur / réseau / ville / badge**. **Pas d'axe date** (un
   réseauteur est persistant).
 - **Carte des événements** — marqueur = **un événement** ; preview = image, titre, **date**, ville,
-  description courte, CTA « S'inscrire » (**lien externe** vers le réseau). Filtres : **réseau / ville /
-  date**. Les **événements Premium ont un marqueur spécifique** (couleur différente, badge Premium) et
-  passent **devant** dans le tri/regroupement.
+  description courte, CTA d'inscription — **lien externe** (événement de réseau) ou **inscription en ligne**
+  (événement de réseauteur Plus, ADR-0013). Filtres : **réseau / ville / département / type / gratuit-payant /
+  date**. **Pas de marqueur Premium** (drapeau supprimé, ADR-0012) — aucun événement n'est mis en avant contre paiement.
 - **Géolocalisation réseauteur** : niveau **ville/commune** par défaut (pas d'adresse personnelle exacte) —
   confidentialité simple, sans double `geom`.
 
@@ -136,8 +136,8 @@ Lib : **MapLibre** (ADR-0006) — la **parité visuelle** prime sur la lib.
 - [ ] **Badge réseauteur** (Bronze/Argent/Gold/Platinum) stylé en pill (4 variantes de couleur).
 - [ ] Home reconstruite **section par section selon §5** — **test des 30 secondes** : un inconnu comprend les
       3 entités et le principe « on rassemble » ; comparée à ~380px et desktop.
-- [ ] **Deux previews carte distinctes** : carte de profil (réseauteur) vs carte d'événement (date + Premium).
-- [ ] Accent **orange = renvoi B2B/partenaires** (pas un paiement réseauteur), **bleu = primaire**,
+- [ ] **Deux previews carte distinctes** : carte de profil (réseauteur) vs carte d'événement (date ; pas de marqueur Premium).
+- [ ] Accent **orange = conversion (CTA abonnement Plus / partenaires)**, **bleu = primaire**,
       **violet = accent secondaire**, **bande sombre** pour le contraste.
 - [ ] a11y : contrastes (orange sur clair, texte sur bandes sombres), focus visibles.
 - [ ] Copie **RÉSEAUTEURS** partout (aucun « Info-Réseaux » ni « Panorama Pub » résiduel).

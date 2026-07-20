@@ -15,6 +15,46 @@
 >   partenaires) — **gate P0 tranché le 2026-07-12**, P1 peut démarrer.
 > - **Partie C — Questions ouvertes (gate humain ADR-0012)** : autorité pour les points à trancher.
 
+> ---
+> ### ⚠️ ENCART D'AMENDEMENT CONSOLIDÉ — ADR-0014 → 0016 (2026-07-17 / 2026-07-20)
+>
+> **État réel du build (2026-07-20) :** les **phases 0→4 sont construites** — la **V1 à 3 entités** (Parties A/B/D)
+> est livrée et en place. Ce document sert désormais de **référence d'évolution + support de vérification**, non
+> de backlog à exécuter. **Seule dépendance PO en suspens :** brancher les **vrais Price Stripe** (les env vars
+> `STRIPE_PLUS_PRICE_ID`, `STRIPE_PRICE_NATIONAL_FICHE/_STARTER/_GROWTH/_ENTERPRISE` pointent encore des
+> placeholders — sans Price réel à 39 € HT/paliers, le checkout facture un montant erroné).
+>
+> Trois ADR postérieurs à la rédaction de ce plan (0014-0016) **amendent** les Parties B et D. Résumé et
+> localisation des corrections :
+>
+> - **ADR-0014 (2026-07-17) — fiche nationale payante · locaux des Plus · événements par propriété.** Amende la
+>   **Partie B** : l'abonnement réseau national n'est plus un produit unique mais **4 paliers**
+>   (`fiche`/`starter`/`growth`/`enterprise`, capacités locaux 0/5/25/999 — `PALIERS_CONFIG` de
+>   `lib/reseau-hierarchie.ts`). La **fiche d'une tête revendiquée (`source='revendique'`) naît `suspendue`** et
+>   n'est **publiée que par l'abonnement** (webhook ; expiration → re-suspendue ; fiches `importe` épargnées).
+>   La **délégation admin (Q2)** est **déposée/dormante** : elle est remplacée par la **propriété** — un
+>   **réseauteur Plus possède jusqu'à `MAX_LOCAUX_PLUS = 3` locaux** (affiliés à une tête OU indépendants) créés
+>   depuis « Mes réseaux » et **publie leurs événements** (gate = `niveau='local'` + Plus actif +
+>   `reseau.user === caller`). Le quota de palier n'est consommé que par les locaux **possédés par le national**.
+>   Les gates raisonnent **« tête (non-local) vs local »** via `estTete()`. Voir E1.2 / E1.5 / E2.A (amendés en place).
+> - **ADR-0015 (2026-07-17) — suppression des packs de licences « Réseauteur Plus ».** Amende la **Partie D** :
+>   les **packs 10/50/100 + code promo** (jalons P1.2, P2.A activation, P2.B section partenaire) ont été **livrés
+>   puis RETIRÉS** — checkout pack, route d'activation (`/api/licences/activer` → **410 Gone**), UI et sections
+>   d'affiliation supprimées. Le **Réseauteur Plus s'obtient désormais uniquement par abonnement individuel**
+>   (`users.plusSource='abonnement'` ; `'licence'` = **legacy en extinction, lecture seule**). Collections
+>   `licences-packs`/`licences-activations` **dormantes** (`admin.hidden`) ; cron `expiration-plus` éteint les
+>   Plus « licence » restants. Le **partenaire annonceur** ne conserve QUE son abonnement de visibilité + son offre.
+> - **ADR-0016 (2026-07-20) — gestion complète de l'abonnement en libre-service, tous rôles.** **Livré** :
+>   **hub unique `/dashboard/abonnement`** (réseauteur Plus / organisateur / partenaire) ; résolveur commun
+>   `src/lib/abonnement.ts` (`resolveAbonnement` → `AbonnementContext` unifiant les 3 porteurs Stripe `users` /
+>   `reseaux` national / `partenaires` ; `fetchLiveStripeState` tolérant aux pannes) ; brique UI partagée
+>   `src/components/billing/AbonnementManager.tsx` (souscrire / changer de palier / annuler / réactiver / portail /
+>   factures) ; **`cancel`/`reactivate` généralisées aux 3 produits** + route `POST /api/stripe/change-palier`
+>   (proration + **garde anti-downgrade** si `maxLocaux(nouveauPalier) < locaux possédés`). `change-plan` /
+>   `preview-change-plan` restent **410 Gone**. Factures (`/dashboard/factures`) ouvertes à tout rôle souscripteur
+>   avec `stripeCustomerId`. Invariant §11 préservé (statut serveur/webhook ; les actions pilotent Stripe).
+> ---
+
 ---
 
 ## 0. Légende
@@ -70,6 +110,10 @@ Jalons : **E1 Schéma (hiérarchie + drop Premium) → E2 Chantiers parallèles 
 > feature E2 avant la fin de E1.
 
 ### E1.1 `reseaux` — hiérarchie national↔local
+> ► **Amendé ADR-0014.** `niveau` livré à **4 valeurs** (`local/regional/national/international`) et non
+> `{national, local}` : la **tête** = tout niveau **non-local** (`estTete()` de `lib/reseau-hierarchie.ts`), le
+> **groupe** = `local` (terme UI « chapitre » banni). Ajoutés aussi : `source` (`revendique`/`importe`) et
+> `statut` (`publiee`/`suspendue`) — une tête revendiquée **naît `suspendue`** (cf. E2.A).
 - Ajouter **`niveau`** (enum `{national, local}`) + **`parent`** (self-relationship N-1).
 - Validation serveur (hook) : `local` ⇒ `parent` requis **et** `parent.niveau === 'national'` ; `national` ⇒
   `parent` null ; **2 niveaux max**. Garde `beforeDelete` étendu : un national avec locaux n'est pas supprimable.
@@ -77,6 +121,10 @@ Jalons : **E1 Schéma (hiérarchie + drop Premium) → E2 Chantiers parallèles 
   parent local (3ᵉ niveau) → refus FR ; supprimer un national avec locaux → refus FR.
 
 ### E1.2 Unicité propriété — « 1 user = au plus 1 national »
+> ► **Amendé ADR-0014.** La « table de config métier » ci-dessous est **livrée** : `PALIERS_CONFIG` à **4 paliers**
+> `fiche/starter/growth/enterprise` → capacités locaux **0 / 5 / 25 / 999**. `maxLocaux(palier)` en découle.
+> **Le quota n'est consommé que par les locaux possédés par le national** (`peutCreerLocalAsync` filtre
+> `user=owner`) : les locaux d'un **réseauteur Plus** (cf. E2.A amendé, `MAX_LOCAUX_PLUS=3`) ne le grèvent pas.
 - Remplacer l'index partiel unique `reseaux.user WHERE user_id IS NOT NULL` par
   **`WHERE niveau='national'`**. Pas d'unicité sur `local.user`.
 - Recalibrer `canCreateReseau` → `canCreateNational` (1 national/user) + `peutCreerLocal(user)` (national
@@ -105,6 +153,13 @@ Jalons : **E1 Schéma (hiérarchie + drop Premium) → E2 Chantiers parallèles 
   le(s) national(aux) dérivé(s).
 
 ### E1.5 `users` — auto-création & délégation admin
+> ► **Amendé ADR-0014.** Le mécanisme de **délégation admin** (`reseauteurs.adminReseaux`) est **déposé/dormant** :
+> il est **remplacé par la propriété** `reseaux.user`. Un **réseauteur Plus crée et possède jusqu'à
+> `MAX_LOCAUX_PLUS = 3` locaux** (affiliés à une tête OU **indépendants**, `parent` optionnel) depuis
+> « Mes réseaux » (`/dashboard/mes-reseaux`) et **publie leurs événements** (gate = `local` + Plus actif +
+> `reseau.user === caller` ; c'est l'abonnement **Plus** qui couvre, pas celui du national). Un national absent
+> peut être **invité par email** (`inviterReseauNational`, rate-limit 3/j). Lire « délégué » ci-dessous comme
+> **« propriétaire du local »**.
 - Auto-création signup : un `organisateur` auto-signé crée un réseau **`niveau='national'`** (et non plat).
 - **Délégation (admin — Q2)** : la délégation d'un local se fait par **réassignation admin de `local.user`**
   (back-office Payload / action admin), **pas** par invitation self-serve. Réutiliser le pattern claim-flow
@@ -130,6 +185,12 @@ questions §Partie C**. **GATE HUMAIN ADR-0012.**
 
 ### E2.A — Comptes, délégation & monétisation national  ·  Owner : `accounts-and-billing`  [PARALLÈLE]
 Dépend de : E1.1/E1.2 (hiérarchie+propriété+palier), E1.3 (gate), E1.5 (délégation admin).
+> ► **Amendé ADR-0014/0016.** Les **4 paliers** sont livrés : `STRIPE_PRICE_NATIONAL_FICHE/_STARTER/_GROWTH/_ENTERPRISE`
+> (**vrais Price = TODO PO**, placeholders). Le palier **`fiche`** publie la fiche sans droit de groupe local ; la
+> **fiche d'une tête revendiquée naît `suspendue`** et n'est **publiée** (`statut='publiee'`) que par le webhook
+> d'activation (`activerReseauPartenaire`) ; **expiration → re-`suspendue`** (webhook + cron `downgrade-expires`),
+> les fiches `importe` épargnées. Le **changement de palier** passe par la route unifiée **`POST /api/stripe/change-palier`**
+> (proration + garde anti-downgrade) du hub `/dashboard/abonnement` (**ADR-0016**), pas par une UI ad hoc.
 - **Abonnement réseau national par paliers (Q5)** : Subscription Stripe posée sur le national, **plusieurs
   produits/prix** (paliers indexés sur le nombre de locaux) → webhook pose `national.partenaire` actif +
   **palier** (+ `stripeSubscriptionId`, `partenaireExpireAt`). Changement de palier (upgrade/downgrade) géré.
@@ -291,6 +352,14 @@ E1 data-architect ──┬──▶ E2.A accounts-and-billing (abo national + d
 > (fiche + offre + abonnement annonceur), fiche publique `/partenaire/<slug>`, offres côté réseauteur
 > (`/dashboard/offres`), participation réseauteur↔événements. La Partie D construit **par-dessus**.
 
+> ► **AMENDEMENT ADR-0015 (2026-07-17) — les licences partenaires sont SUPPRIMÉES.** Tout ce qui, ci-dessous,
+> concerne les **packs de licences 10/50/100 + code promo** (jalons D2/D3/D4, P1.2, l'activation de P2.A, la
+> section partenaire de P2.B, une partie de P3/récap) a été **construit puis RETIRÉ** — ne le lire **ni** comme
+> à faire **ni** comme actif. **Le Réseauteur Plus s'obtient uniquement par abonnement individuel** (39 € HT/an,
+> `plusSource='abonnement'` ; `'licence'` = legacy en extinction, lecture seule). Ce qui **subsiste** de l'ADR-0013 :
+> l'abonnement Plus, l'invariant XOR organisateur d'événement, les inscriptions en ligne (collection `inscriptions`),
+> le CRUD événements du Plus. **Prix révisé : 39 € HT/an** (décision 2026-07-16, remplace le 59 € de D2).
+
 Jalons : **P0 Gate décisions → P1 Schéma (Plus + licences + organisateur d'événement) → P2 Chantiers
 parallèles → P3 Intégration → P4 QA/Gate.**
 
@@ -298,20 +367,25 @@ parallèles → P3 Intégration → P4 QA/Gate.**
 
 | # | Question | **Décision retenue** | Note d'implémentation |
 |---|---|---|---|
-| D1 | Relation organisateur de l'événement | **Le réseauteur EST l'organisateur de ses événements** | `evenements.organisateurReseauteur` (N-1 optionnel) + `reseau` relâché ; invariant serveur « **exactement un** organisateur » (réseau XOR réseauteur) ; fiche/carte/SEO : « Organisé par \<prénom nom\> » (lien fiche réseauteur, `Event.organizer` = `Person`). |
-| D2 | Tarifs | **Plus = 59 €** · packs : **10 licences = 300 €** · **50 = 600 €** · **100 = 1 000 €** | Périodicité du Plus : **annuelle** (cohérente avec les autres produits — à signaler si mensuel voulu). Produits/prix à créer dans Stripe ; env vars `STRIPE_PLUS_PRICE_ID` + `STRIPE_PACK_{10,50,100}_PRICE_ID`. |
-| D3 | Paiement des packs | **Checkout one-shot par pack** | `mode: 'payment'` ; webhook `checkout.session.completed` → création/activation du pack + génération du code. |
-| D4 | Renouvellement des licences | **Expiration alignée sur le pack + reconduction au rachat** | Cron d'expiration : pack expiré → désactivation en cascade des Plus `licence` du pack ; rachat/renouvellement du pack → réactivation (même code, quota rechargé). |
+| D1 | Relation organisateur de l'événement | **Le réseauteur EST l'organisateur de ses événements** | `evenements.organisateurReseauteur` (N-1 optionnel) + `reseau` relâché ; invariant serveur « **exactement un** organisateur » (réseau XOR réseauteur) ; fiche/carte/SEO : « Organisé par \<prénom nom\> » (lien fiche réseauteur, `Event.organizer` = `Person`). **Toujours valide.** |
+| D2 | Tarifs | ~~**Plus = 59 €** · packs 10/50/100 = 300/600/1 000 €~~ → **Plus = 39 € HT/an ; packs SUPPRIMÉS** ⚠️ *ADR-0015/0016* | Plus **annuel**, `STRIPE_PLUS_PRICE_ID` (**vrai Price 39 € HT = TODO PO**, placeholder). `STRIPE_PACK_*` **retirés**. |
+| D3 | ~~Paiement des packs — checkout one-shot~~ **CADUC (ADR-0015)** | Checkout pack retiré du code | Aucun `mode:'payment'` licence ; produit `licences_pack` retiré du checkout/webhook. |
+| D4 | ~~Renouvellement des licences~~ **CADUC (ADR-0015)** | Extinction seulement | Le cron `expiration-plus` **éteint** les Plus `licence` restants à échéance ; aucune reconduction/rachat de pack. |
 
 > **Le gate P0 est LEVÉ** : P1 (schéma) peut démarrer. Un **gate humain léger subsiste en sortie de P1**
 > (validation du schéma) avant P2.
+> ⚠️ **Post-livraison (ADR-0015/0016)** : D2/D3/D4 ne sont plus le contrat — voir l'amendement en tête de Partie D.
 
 ## P1 — Schéma : Plus, licences, organisateur d'événement  [SÉRIALISÉ après P0]  ·  Owner : `data-architect`
 - P1.1 `users` : `plusActif` (bool, serveur-only), `plusExpireAt`, `plusSource` (`abonnement|licence`),
   `plusLicencePack` (N-1). Migration + field-access (jamais éditable client).
+  > ► **ADR-0015** : `plusSource` livré mais `'abonnement'` est **le seul chemin d'obtention** ; `'licence'` et
+  > `plusLicencePack` sont **dormants (legacy, lecture seule, en extinction)**.
 - P1.2 Collections **`licences_packs`** (partenaire N-1, taille 10/50/100+, quota/quotaUtilise, `code`
   unique non devinable généré serveur, statut, expireAt, champs Stripe) et **`licences_activations`**
   (pack N-1, user N-1 **unique**, activeAt). Index + contraintes (1 activation/user, quota ≥ utilisé).
+  > ► **ADR-0015 — livré puis RETIRÉ** : ces deux collections existent mais sont **dormantes** (`admin.hidden`,
+  > traçabilité legacy) ; aucune création/activation de pack n'est possible (route `/api/licences/activer` → **410**).
 - P1.3 `evenements` : selon D1 — `organisateurReseauteur` + `reseau` nullable + invariant serveur
   « exactement un organisateur » ; compteurs `nbEvenements` inchangés (réseaux seulement).
 - P1.4 Helpers serveur centralisés : `estPlus(user)` ; `peutCreerEvenement(user)` (organisateur national
@@ -320,18 +394,25 @@ parallèles → P3 Intégration → P4 QA/Gate.**
 
 ## P2 — Chantiers parallèles  [PARALLÈLE après P1]
 ### P2.A — Billing Plus & packs  ·  Owner : `accounts-and-billing`
+> ► **Amendé ADR-0015/0016.** Seul l'**abonnement Plus** subsiste (webhook `activerReseauteurPlus` →
+> `plusActif`, `plusSource='abonnement'`, `stripeSubscriptionId`, `plusExpireAt` ; cron `expiration-plus`). Toute
+> la partie **packs** (checkout pack, webhook pack, génération/décrément de code, activation par code, cron
+> d'expiration des packs) est **retirée**. La gestion in-app de l'abonnement Plus passe désormais par le **hub
+> `/dashboard/abonnement`** (`resolveAbonnement` / `AbonnementManager`, cancel/reactivate — **ADR-0016**).
 - Produits/prix Stripe : abonnement Plus + 3 packs (config D2). Checkout Plus (réseauteur) ; checkout pack
   (partenaire, D3). Webhooks idempotents : activation/expiration Plus (`plusSource='abonnement'`),
   création/activation du pack + génération du code. Crons : expiration Plus, expiration packs → désactivation
   en cascade des Plus `licence` du pack. Portal : retours par rôle. Emails transactionnels (confirmation
   Plus, pack acheté, licence activée, expiration) via les templates rebrandés.
 - **Activation par code** : route serveur (rate-limitée) — vérifs atomiques (code actif, quota, unicité par
-  user) → décrément transactionnel + activation + trace.
+  user) → décrément transactionnel + activation + trace. **(RETIRÉ — ADR-0015 ; route → 410 Gone.)**
 ### P2.B — Frontend réseauteur & partenaire  ·  Owner : `frontend-builder`
-- Espace réseauteur : bloc « Passer Plus » (abonnement OU saisie de code) ; état Plus visible ; **CRUD de
-  ses événements** (création/édition, statut de modération existant) gaté par `peutCreerEvenement`.
-- Espace partenaire : section « Licences Réseauteur Plus » (acheter un pack, voir quota/activations, code à
-  diffuser).
+- Espace réseauteur : bloc « Passer Plus » (abonnement ~~OU saisie de code~~ — **abonnement seul, ADR-0015**) ;
+  état Plus visible ; **CRUD de ses événements** (création/édition, statut de modération existant) gaté par
+  `peutCreerEvenement`.
+- Espace partenaire : ~~section « Licences Réseauteur Plus » (acheter un pack, voir quota/activations, code à
+  diffuser)~~ **— SUPPRIMÉE (ADR-0015)** ; le partenaire ne conserve que sa fiche, son offre et son abonnement
+  annonceur (géré via le hub `/dashboard/abonnement`).
 ### P2.C — Fiches & cartes  ·  Owner : `frontend-builder` + `map-engineer`
 - Fiche événement : « Organisé par <réseauteur> » (lien fiche) quand organisateurReseauteur ; carte des
   événements : aucun marqueur nouveau (simplicité — un seul type, ADR-0012 réaffirmé).
@@ -340,8 +421,9 @@ parallèles → P3 Intégration → P4 QA/Gate.**
 
 ## P3 — Intégration  [SÉRIALISÉ après P2]
 - Parcours complets : réseauteur → Plus (abonnement) → crée un événement → visible carte/fiche/SEO ;
-  partenaire → achète pack 10 → diffuse code → réseauteur active → crée un événement ; expiration pack →
-  Plus retombe → création bloquée (l'existant reste publié).
+  ~~partenaire → achète pack 10 → diffuse code → réseauteur active → crée un événement ; expiration pack →
+  Plus retombe~~ **(CADUC — ADR-0015)** ; expiration de l'**abonnement Plus** → création bloquée (l'existant
+  reste publié). S'ajoute (ADR-0014) : réseauteur Plus → crée un **local** → publie **ses** événements.
 
 ## P4 — Vérification & gate  [SÉRIALISÉ — final]  ·  Owner : `qa-reviewer`
 - Autorisation stricte (jamais confiance au client : statut Plus, quota, propriété du pack) ; concurrence
@@ -351,5 +433,7 @@ parallèles → P3 Intégration → P4 QA/Gate.**
 
 ## Récapitulatif des dépendances (ADR-0013)
 P0 ✅ (tranché 2026-07-12) → P1 (schéma+helpers) → gate léger → P2.A/B/C/D en parallèle → P3 → P4.
-**Avant P2.A :** créer les produits/prix dans Stripe (Plus 59 € ; packs 300/600/1 000 €) et renseigner les
-env vars correspondantes.
+~~**Avant P2.A :** créer les produits/prix dans Stripe (Plus 59 € ; packs 300/600/1 000 €)~~
+> ► **Post-livraison (ADR-0015/0016)** : plus de packs. **Seule dépendance PO restante** = brancher le **vrai
+> Price Stripe du Plus à 39 € HT** (`STRIPE_PLUS_PRICE_ID`) — et les Price des 4 paliers réseau
+> (`STRIPE_PRICE_NATIONAL_*`) côté ADR-0014 ; tous placeholders aujourd'hui.
