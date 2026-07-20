@@ -47,10 +47,10 @@ export async function POST() {
   }
 
   try {
+    // Retour vers le hub d'abonnement (commun à tous les rôles souscripteurs).
     const session = await stripe.billingPortal.sessions.create({
       customer: freshUser.stripeCustomerId as string,
-      // Retour vers le bon dashboard selon le rôle (partenaire → sa fiche ; sinon réseau).
-      return_url: `${SITE_URL}/dashboard/${freshUser.role === 'partenaire' ? 'partenaire' : 'reseau'}`,
+      return_url: `${SITE_URL}/dashboard/abonnement`,
     })
     return NextResponse.json({ url: session.url })
   } catch (err) {

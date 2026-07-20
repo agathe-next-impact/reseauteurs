@@ -286,6 +286,9 @@ async function activerReseauteurPlus(
     data: {
       plusActif: true,
       plusSource: 'abonnement',
+      // Nécessaire à la gestion native (annuler / réactiver) du Plus depuis le hub :
+      // le porteur du subId Plus est le user (les 2 autres produits le portent déjà).
+      stripeSubscriptionId: subscription.id,
       ...(expiresAt ? { plusExpireAt: expiresAt } : {}),
     },
     overrideAccess: true,

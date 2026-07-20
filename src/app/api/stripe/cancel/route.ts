@@ -1,21 +1,26 @@
 /**
  * POST /api/stripe/cancel
  *
- * Annule l'abonnement réseau partenaire à la fin de la période en cours.
- * L'organisateur conserve le statut partenaire jusqu'à la date d'expiration.
- * Le webhook customer.subscription.updated (→ canceled) retire le drapeau en DB.
+ * Annule l'abonnement du user courant À LA FIN de la période en cours
+ * (cancel_at_period_end = true). L'accès est conservé jusqu'à l'échéance ;
+ * le webhook customer.subscription.updated/deleted retirera le drapeau en DB.
  *
- * Autorisation : organisateur propriétaire du réseau uniquement.
+ * Généralisé aux 3 produits (ADR-0016) via resolveAbonnement :
+ *   - réseauteur Plus (users), organisateur → réseau national (reseaux),
+ *     partenaire annonceur (partenaires).
+ * Autorisation : garantie par construction — resolveAbonnement ne résout que le
+ * porteur du caller, donc on n'agit jamais sur l'abonnement d'un tiers.
  */
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { stripe } from '@/lib/stripe'
+import { stripe, getSubscriptionPeriodEnd } from '@/lib/stripe'
 import { rateLimit } from '@/lib/rate-limit'
 import { logPlanChange } from '@/lib/audit'
 import { sendEmail } from '@/lib/email-sender'
 import { subscriptionCancelScheduledEmail } from '@/lib/emails'
+import { resolveAbonnement } from '@/lib/abonnement'
 import type Stripe from 'stripe'
 
 export async function POST() {
@@ -41,36 +46,30 @@ export async function POST() {
     overrideAccess: true,
   })
 
-  if (freshUser.role !== 'organisateur' && freshUser.role !== 'admin') {
+  const ctx = await resolveAbonnement(freshUser as never, payload)
+  if (!ctx) {
     return NextResponse.json(
-      { error: 'Seul un organisateur peut annuler un abonnement réseau partenaire.' },
+      { error: 'Aucun abonnement gérable pour ce compte.' },
       { status: 403 },
     )
   }
 
-  // Récupère le réseau NATIONAL de l'organisateur (ADR-0012 : abonnement sur le national uniquement)
-  const { docs: reseauxDocs } = await payload.find({
-    collection: 'reseaux',
-    where: {
-      and: [
-        { user: { equals: user.id } },
-        { niveau: { not_equals: 'local' } },
-      ],
-    },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const reseau = reseauxDocs[0] as unknown as Record<string, unknown> | undefined
-
-  if (!reseau?.stripeSubscriptionId) {
+  // Plus obtenu par licence (legacy ADR-0015) : pas d'abonnement Stripe à annuler.
+  if (ctx.produit === 'reseauteur_plus' && ctx.source === 'licence') {
     return NextResponse.json(
-      { error: 'Aucun abonnement réseau partenaire actif.' },
+      { error: 'Votre accès Plus provient d\'une licence — il n\'y a pas d\'abonnement à annuler.' },
       { status: 400 },
     )
   }
 
-  const subId = reseau.stripeSubscriptionId as string
+  if (!ctx.subscriptionId) {
+    return NextResponse.json(
+      { error: 'Aucun abonnement actif à annuler.' },
+      { status: 400 },
+    )
+  }
+
+  const subId = ctx.subscriptionId
 
   let existingSub: Stripe.Subscription
   try {
@@ -99,23 +98,25 @@ export async function POST() {
 
     await logPlanChange(payload, {
       userId: user.id,
-      oldPlan: 'reseau_partenaire',
-      newPlan: 'reseau_partenaire',
+      oldPlan: ctx.produit,
+      newPlan: ctx.produit,
       reason: 'cancel_requested',
-      extra: { subscriptionId: subId, reseauId: String(reseau.id) },
+      extra: { subscriptionId: subId, porteur: ctx.porteur ?? undefined },
     })
 
-    // Email de confirmation d'annulation programmée
-    const expireAt = reseau.partenaireExpireAt as string | null | undefined
-    if (expireAt) {
+    // Email de confirmation d'annulation programmée.
+    const periodEnd = getSubscriptionPeriodEnd(existingSub)
+    const endDateISO =
+      ctx.expireAt ?? (periodEnd ? new Date(periodEnd * 1000).toISOString() : null)
+    if (endDateISO) {
       await sendEmail({
         payload,
         kind: 'subscription-cancel-scheduled',
         to: freshUser.email,
-        subject: 'RÉSEAUTEURS — Annulation de votre abonnement partenaire programmée',
-        html: subscriptionCancelScheduledEmail(freshUser.nomSociete ?? '', {
-          planLabel: 'Réseau partenaire',
-          endDateISO: expireAt,
+        subject: 'RÉSEAUTEURS — Annulation de votre abonnement programmée',
+        html: subscriptionCancelScheduledEmail((freshUser.nomSociete as string) ?? '', {
+          planLabel: ctx.label,
+          endDateISO,
         }),
         userId: freshUser.id,
       })

@@ -103,21 +103,8 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
     }
   }
 
-  async function openPortal() {
-    setSub('portal')
-    try {
-      const res = await fetch('/api/stripe/portal', { method: 'POST', credentials: 'include' })
-      const json = await res.json()
-      if (json.url) window.location.href = json.url
-      else {
-        toast.error(json.error ?? 'Impossible d\'ouvrir le portail.')
-        setSub(null)
-      }
-    } catch {
-      toast.error('Erreur réseau.')
-      setSub(null)
-    }
-  }
+  // La gestion complète (annuler / réactiver / moyen de paiement / factures) vit sur
+  // le hub /dashboard/abonnement — plus de portail direct depuis la fiche partenaire.
 
   return (
     <div className="rsn-page">
@@ -156,15 +143,13 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
                   {partenaire.abonnementExpireAt &&
                     ` Renouvellement le ${new Date(partenaire.abonnementExpireAt).toLocaleDateString('fr-FR')}.`}
                 </p>
-                <button
-                  type="button"
-                  onClick={openPortal}
-                  disabled={sub !== null}
-                  className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-900 disabled:opacity-60"
+                <Link
+                  href="/dashboard/abonnement"
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-900 no-underline"
                 >
-                  {sub === 'portal' ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+                  <CreditCard size={14} aria-hidden />
                   Gérer mon abonnement / factures
-                </button>
+                </Link>
               </div>
             </div>
           ) : (

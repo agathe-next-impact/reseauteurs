@@ -1,9 +1,14 @@
 /**
  * POST /api/stripe/reactivate
  *
- * Réactive le renouvellement automatique d'un abonnement réseau partenaire
- * programmé à annulation (cancel_at_period_end = true).
- * Autorisation : organisateur propriétaire du réseau.
+ * Réactive le renouvellement automatique d'un abonnement programmé à annulation
+ * (cancel_at_period_end = true → false).
+ *
+ * Généralisé aux 3 produits (ADR-0016) via resolveAbonnement :
+ *   - réseauteur Plus (users), organisateur → réseau national (reseaux),
+ *     partenaire annonceur (partenaires).
+ * Autorisation : garantie par construction — resolveAbonnement ne résout que le
+ * porteur du caller.
  */
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
@@ -14,6 +19,8 @@ import { rateLimit } from '@/lib/rate-limit'
 import { logPlanChange } from '@/lib/audit'
 import { sendEmail } from '@/lib/email-sender'
 import { subscriptionReactivatedEmail } from '@/lib/emails'
+import { resolveAbonnement } from '@/lib/abonnement'
+import type Stripe from 'stripe'
 
 export async function POST() {
   const hdrs = await headers()
@@ -38,36 +45,40 @@ export async function POST() {
     overrideAccess: true,
   })
 
-  if (freshUser.role !== 'organisateur' && freshUser.role !== 'admin') {
+  const ctx = await resolveAbonnement(freshUser as never, payload)
+  if (!ctx || !ctx.subscriptionId) {
     return NextResponse.json(
-      { error: 'Seul un organisateur peut réactiver un abonnement réseau partenaire.' },
-      { status: 403 },
-    )
-  }
-
-  // Récupère le réseau NATIONAL de l'organisateur (ADR-0012 : abonnement sur le national uniquement)
-  const { docs: reseauxDocs } = await payload.find({
-    collection: 'reseaux',
-    where: {
-      and: [
-        { user: { equals: user.id } },
-        { niveau: { not_equals: 'local' } },
-      ],
-    },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const reseau = reseauxDocs[0] as unknown as Record<string, unknown> | undefined
-
-  if (!reseau?.stripeSubscriptionId) {
-    return NextResponse.json(
-      { error: 'Aucun abonnement réseau partenaire trouvé.' },
+      { error: 'Aucun abonnement à réactiver.' },
       { status: 400 },
     )
   }
 
-  const subId = reseau.stripeSubscriptionId as string
+  const subId = ctx.subscriptionId
+
+  let existingSub: Stripe.Subscription
+  try {
+    existingSub = await stripe.subscriptions.retrieve(subId)
+  } catch (err) {
+    console.error('[stripe/reactivate] retrieve failed:', err)
+    return NextResponse.json({ error: 'Abonnement introuvable côté Stripe.' }, { status: 500 })
+  }
+
+  if (existingSub.status === 'canceled' || existingSub.status === 'incomplete_expired') {
+    return NextResponse.json(
+      {
+        error: 'L\'abonnement est déjà résilié — souscrivez à nouveau pour le réactiver.',
+        code: 'already_canceled',
+      },
+      { status: 409 },
+    )
+  }
+
+  if (!existingSub.cancel_at_period_end) {
+    return NextResponse.json(
+      { error: 'Le renouvellement automatique est déjà actif.', code: 'not_pending' },
+      { status: 409 },
+    )
+  }
 
   try {
     const updatedSub = await stripe.subscriptions.update(subId, {
@@ -76,25 +87,25 @@ export async function POST() {
 
     await logPlanChange(payload, {
       userId: user.id,
-      oldPlan: 'reseau_partenaire',
-      newPlan: 'reseau_partenaire',
+      oldPlan: ctx.produit,
+      newPlan: ctx.produit,
       reason: 'reactivate_requested',
-      extra: { subscriptionId: subId, reseauId: String(reseau.id) },
+      extra: { subscriptionId: subId, porteur: ctx.porteur ?? undefined },
     })
 
-    // Email de confirmation
+    // Email de confirmation.
     const periodEnd = getSubscriptionPeriodEnd(updatedSub)
     const nextRenewalDateISO = periodEnd
       ? new Date(periodEnd * 1000).toISOString()
-      : (reseau.partenaireExpireAt as string | undefined) ?? new Date().toISOString()
+      : ctx.expireAt ?? new Date().toISOString()
 
     await sendEmail({
       payload,
       kind: 'subscription-reactivated',
       to: freshUser.email,
-      subject: 'RÉSEAUTEURS — Abonnement réseau partenaire réactivé',
-      html: subscriptionReactivatedEmail(freshUser.nomSociete ?? '', {
-        planLabel: 'Réseau partenaire',
+      subject: 'RÉSEAUTEURS — Abonnement réactivé',
+      html: subscriptionReactivatedEmail((freshUser.nomSociete as string) ?? '', {
+        planLabel: ctx.label,
         nextRenewalDateISO,
         nextRenewalAmountCents: 0, // Montant géré côté Stripe
       }),

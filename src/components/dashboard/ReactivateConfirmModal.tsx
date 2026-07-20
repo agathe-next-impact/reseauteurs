@@ -10,9 +10,11 @@ import { Button } from '@/components/ui'
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Libellé de l'abonnement concerné (ex. « Réseauteur Plus »). */
+  productLabel?: string
 }
 
-export default function ReactivateConfirmModal({ open, onOpenChange }: Props) {
+export default function ReactivateConfirmModal({ open, onOpenChange, productLabel }: Props) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
@@ -42,7 +44,7 @@ export default function ReactivateConfirmModal({ open, onOpenChange }: Props) {
         <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,440px)] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white border border-[#e4e4e7] outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
           <div className="flex items-start justify-between border-b border-border p-5">
             <Dialog.Title className="text-lg font-semibold text-text-dark">
-              Reactiver le renouvellement automatique ?
+              Réactiver le renouvellement automatique ?
             </Dialog.Title>
             <Dialog.Close className="text-text-light hover:text-text-dark rounded p-1">
               <X size={18} />
@@ -55,8 +57,8 @@ export default function ReactivateConfirmModal({ open, onOpenChange }: Props) {
 
           <div className="p-5">
             <p className="text-sm text-text-medium">
-              Votre abonnement sera renouvelé automatiquement à la fin de la période en cours.
-              Vous pourrez de nouveau changer de plan immediatement.
+              {productLabel ? `L’abonnement ${productLabel}` : 'Votre abonnement'} sera renouvelé
+              automatiquement à la fin de la période en cours. Aucune interruption d&apos;accès.
             </p>
           </div>
 

@@ -81,16 +81,17 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['organisateur'],
   },
   {
+    // Hub de gestion d'abonnement — commun à tous les rôles souscripteurs (ADR-0016).
     href: '/dashboard/abonnement',
     label: 'Abonnement',
     icon: CreditCard,
-    roles: ['organisateur', 'admin'],
+    roles: ['reseauteur', 'organisateur', 'partenaire', 'admin'],
   },
   {
     href: '/dashboard/factures',
     label: 'Factures',
     icon: Receipt,
-    roles: ['organisateur', 'partenaire'],
+    roles: ['reseauteur', 'organisateur', 'partenaire'],
   },
   {
     href: '/dashboard/compte',

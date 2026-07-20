@@ -48,8 +48,8 @@ export default async function FacturesPage() {
     overrideAccess: true,
   })
 
-  // Seuls les organisateurs ont accès aux factures via ce dashboard
-  if (freshUser.role === 'reseauteur') redirect('/dashboard/profil')
+  // Factures accessibles à tout rôle souscripteur ayant un customer Stripe
+  // (réseauteur Plus inclus — ADR-0016). L'admin gère via le back-office.
   if (freshUser.role === 'admin') redirect('/admin')
 
   const stripeCustomerId = (freshUser as unknown as Record<string, unknown>).stripeCustomerId as string | null | undefined
@@ -105,13 +105,13 @@ export default async function FacturesPage() {
           <CreditCard size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
           <p className="text-sm font-medium text-[#52525b] mb-2">Aucun abonnement actif</p>
           <p className="text-sm text-[#71717a] mb-6">
-            Vous n&apos;avez pas encore d&apos;abonnement partenaire. Souscrivez pour accéder aux factures.
+            Vous n&apos;avez pas encore d&apos;abonnement. Souscrivez pour accéder à vos factures.
           </p>
           <Link
-            href="/dashboard/reseau"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f5851f] text-white font-semibold text-sm hover:bg-[#e07518] transition-colors"
+            href="/dashboard/abonnement"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] transition-colors"
           >
-            Devenir partenaire →
+            Gérer mon abonnement →
           </Link>
         </div>
       ) : stripeError ? (

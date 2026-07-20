@@ -41,22 +41,6 @@ export function PlusClient({
     }
   }
 
-  async function openPortal() {
-    setBusy('portal')
-    try {
-      const res = await fetch('/api/stripe/portal', { method: 'POST', credentials: 'include' })
-      const json = await res.json()
-      if (json.url) window.location.assign(json.url)
-      else {
-        toast.error(json.error ?? 'Impossible d\'ouvrir le portail.')
-        setBusy(null)
-      }
-    } catch {
-      toast.error('Erreur réseau.')
-      setBusy(null)
-    }
-  }
-
   if (actif) {
     return (
       <div className="space-y-4">
@@ -70,15 +54,13 @@ export function PlusClient({
                 {expireAt && ` Valable jusqu'au ${new Date(expireAt).toLocaleDateString('fr-FR')}.`}
               </p>
               {source === 'abonnement' && (
-                <button
-                  type="button"
-                  onClick={openPortal}
-                  disabled={busy !== null}
-                  className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-900 disabled:opacity-60"
+                <Link
+                  href="/dashboard/abonnement"
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-900 no-underline"
                 >
-                  {busy === 'portal' ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+                  <CreditCard size={14} aria-hidden />
                   Gérer mon abonnement / factures
-                </button>
+                </Link>
               )}
             </div>
           </div>

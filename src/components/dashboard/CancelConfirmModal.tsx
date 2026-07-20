@@ -10,9 +10,18 @@ import { Button } from '@/components/ui'
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Libellé de l'abonnement concerné (ex. « Réseauteur Plus »). */
+  productLabel?: string
+  /** Date de fin d'accès affichée (déjà formatée, ex. « 16 juillet 2027 »). */
+  endDateLabel?: string | null
 }
 
-export default function CancelConfirmModal({ open, onOpenChange }: Props) {
+export default function CancelConfirmModal({
+  open,
+  onOpenChange,
+  productLabel,
+  endDateLabel,
+}: Props) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
@@ -42,7 +51,7 @@ export default function CancelConfirmModal({ open, onOpenChange }: Props) {
         <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,480px)] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white border border-[#e4e4e7] outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
           <div className="flex items-start justify-between border-b border-border p-5">
             <Dialog.Title className="text-lg font-semibold text-text-dark">
-              Annuler votre abonnement ?
+              Annuler {productLabel ? `l’abonnement ${productLabel}` : 'votre abonnement'} ?
             </Dialog.Title>
             <Dialog.Close className="text-text-light hover:text-text-dark rounded p-1">
               <X size={18} />
@@ -57,13 +66,13 @@ export default function CancelConfirmModal({ open, onOpenChange }: Props) {
             <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
               <p className="text-sm text-amber-700">
-                Votre accès sera maintenu jusqu&apos;a la fin de la période déjà payée. A cette
-                date, votre fiche repassera en version gratuite et les champs Premium / Infinite
-                seront masques.
+                Votre accès est maintenu jusqu&apos;à la fin de la période déjà payée
+                {endDateLabel ? ` (le ${endDateLabel})` : ''}. À cette date, l&apos;abonnement
+                prend fin et les fonctionnalités associées sont désactivées.
               </p>
             </div>
             <p className="text-sm text-text-medium">
-              Vous pouvez reactiver votre abonnement à tout moment avant la fin de la période.
+              Vous pouvez réactiver votre abonnement à tout moment avant la fin de la période.
             </p>
           </div>
 
