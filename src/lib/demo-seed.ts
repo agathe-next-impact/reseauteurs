@@ -1,4 +1,3 @@
-// @ts-nocheck — seed de démo (ops tooling) : typage souple assumé (collections/data dynamiques).
 /**
  * demo-seed.ts — Données + logique du seed de démonstration (modèle 3 entités).
  *
@@ -11,7 +10,7 @@
  * par les hooks afterChange des collections.
  */
 
-import type { Payload } from 'payload'
+import type { Payload, CollectionSlug, Where } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
 
 /** Marqueur (dans les descriptions) pour repérer/nettoyer la démo. */
@@ -175,15 +174,28 @@ export async function runDemoSeed(
   const geomEvenements: Array<{ id: number | string; lat?: number; lng?: number }> = []
 
   try {
-    const upsert = async (collection, where, data) => {
+    // Forme permissive : le seed lit id + coordonnées selon la collection.
+    type UpsertedDoc = {
+      id: number | string
+      latitude?: number
+      longitude?: number
+      lieuLatitude?: number
+      lieuLongitude?: number
+    }
+    const upsert = async (
+      collection: CollectionSlug,
+      where: Where,
+      data: Record<string, unknown>,
+    ): Promise<UpsertedDoc> => {
       const existing = await payload.find({ collection, where, limit: 1, depth: 0, overrideAccess: true })
       if (existing.docs.length > 0) {
         stats.skipped++
-        return existing.docs[0]
+        return existing.docs[0] as UpsertedDoc
       }
-      const doc = await payload.create({ collection, data, overrideAccess: true })
+      // Seed dynamique : la data varie par collection, on relâche le typage strict de create.
+      const doc = await payload.create({ collection, data: data as never, overrideAccess: true })
       stats.created++
-      return doc
+      return doc as UpsertedDoc
     }
 
     // 1) Secteurs

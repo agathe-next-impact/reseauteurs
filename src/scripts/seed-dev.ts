@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types (data-architect)
 /**
  * seed-dev.ts — Seed de développement pour le modèle à 3 entités hiérarchique (ADR-0012).
  *

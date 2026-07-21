@@ -1,4 +1,3 @@
-// @ts-nocheck — legacy PanoramaPub route (groupes), dormant ADR-0009
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
