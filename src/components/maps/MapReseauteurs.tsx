@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types + versions MapLibre (map-engineer)
 'use client'
 
 /**
@@ -19,6 +18,7 @@ import Link from 'next/link'
 import { List, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
+import type { GeoJSONSource } from 'maplibre-gl'
 import type { GeoJSONFeatureCollection } from '@/lib/geojson'
 import type { TooltipInfo } from '@/types/map'
 import { MAP_COLORS, BADGE_MARKER_COLORS, BADGE_MARKER_FALLBACK } from '@/lib/maplibre/config'
@@ -58,7 +58,9 @@ const badgeCircleColor = [
 ]
 
 /** Table de correspondance badge → { color, label } pour la colonne de résultats. */
-const BADGE_LOOKUP = new Map(BADGE_MARKER_COLORS.map((b) => [b.value, b]))
+const BADGE_LOOKUP = new Map<string, (typeof BADGE_MARKER_COLORS)[number]>(
+  BADGE_MARKER_COLORS.map((b) => [b.value, b]),
+)
 
 interface MapReseauteursProps {
   initialData: GeoJSONFeatureCollection
@@ -176,20 +178,21 @@ export default function MapReseauteurs({
     if (layerId === 'reseauteurs-clusters') {
       const map = mapRef.current?.getMap()
       if (!map) return
-      const source = map.getSource('reseauteurs') as {
-        getClusterExpansionZoom: (
-          clusterId: number,
-          cb: (err: unknown, zoom: number | null) => void,
-        ) => void
-      }
+      const source = map.getSource('reseauteurs') as GeoJSONSource | undefined
+      if (!source) return
       const clusterId = feature.properties?.cluster_id as number
-      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-        if (err || zoom == null) return
-        map.easeTo({
-          center: (feature.geometry as GeoJSON.Point).coordinates as [number, number],
-          zoom,
+      // maplibre-gl 5.x : getClusterExpansionZoom renvoie une Promise (l'ancienne
+      // signature callback est ignoree silencieusement -> le cluster ne zoomait plus).
+      source
+        .getClusterExpansionZoom(clusterId)
+        .then((zoom) => {
+          if (zoom == null) return
+          map.easeTo({
+            center: (feature.geometry as GeoJSON.Point).coordinates as [number, number],
+            zoom,
+          })
         })
-      })
+        .catch(() => {})
       return
     }
 

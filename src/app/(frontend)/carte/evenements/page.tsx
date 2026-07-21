@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types (data-architect + map-engineer)
 /**
  * /carte/evenements — Carte des événements business (ADR-0006, ADR-0011, ADR-0012).
  *

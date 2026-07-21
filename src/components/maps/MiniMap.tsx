@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types + versions MapLibre (map-engineer)
 'use client'
 /**
  * MiniMap — Mini-carte d'un point unique (J3 intégration).
