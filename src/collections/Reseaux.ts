@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types (data-architect)
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
 import { revalidatePath } from 'next/cache'
 import { isAdmin, canCreateNational } from './access'
@@ -139,7 +138,7 @@ export const Reseaux: CollectionConfig = {
             overrideAccess: true,
             select: { slug: true } as Record<string, boolean>,
           })
-          const slugSet = new Set(allSlugs.docs.map((d: { slug?: string }) => d.slug))
+          const slugSet = new Set(allSlugs.docs.map((d) => d.slug))
           let suffix = 2
           let candidate = `${slug}-${suffix}`
           while (slugSet.has(candidate) && suffix < 50) {

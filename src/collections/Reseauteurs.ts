@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types (data-architect)
 /**
  * Reseauteurs.ts — Collection principale : la personne qui réseaute (ADR-0011 §1 ; ADR-0012 E1.4).
  *
@@ -181,8 +180,8 @@ export const Reseauteurs: CollectionConfig = {
         // Exclut le doc courant (une régénération ne doit pas entrer en collision avec lui-même).
         const slugSet = new Set(
           existing.docs
-            .filter((d: { id?: number | string }) => String(d.id) !== String(orig?.id ?? ''))
-            .map((d: { slug?: string }) => d.slug),
+            .filter((d) => String(d.id) !== String(orig?.id ?? ''))
+            .map((d) => d.slug),
         )
         if (!slugSet.has(baseSlug)) {
           data.slug = baseSlug
@@ -397,8 +396,8 @@ export const Reseauteurs: CollectionConfig = {
       // transaction d'inscription → le compte n'est jamais persisté (bug 500/200
       // silencieux). Le prénom (re)devient obligatoire dès que le profil quitte
       // 'en_attente' (validation/publication) : aucune fiche publique sans prénom.
-      validate: (value, { siblingData }) => {
-        const statut = (siblingData as { statut?: string } | undefined)?.statut
+      validate: (value: unknown, { siblingData }: { siblingData?: { statut?: string } }) => {
+        const statut = siblingData?.statut
         if (statut !== 'en_attente' && (!value || String(value).trim() === '')) {
           return 'Le prénom est obligatoire pour publier le profil.'
         }

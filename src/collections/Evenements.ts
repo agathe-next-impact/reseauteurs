@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types (data-architect)
 /**
  * Evenements.ts — Événement business daté (ADR-0011 §1, SIMPLIFIÉ ; ADR-0012 E1.3).
  *
@@ -186,7 +185,7 @@ export const Evenements: CollectionConfig = {
           overrideAccess: true,
           select: { slug: true } as Record<string, boolean>,
         })
-        const slugSet = new Set(existing.docs.map((d: { slug?: string }) => d.slug))
+        const slugSet = new Set(existing.docs.map((d) => d.slug))
         if (slugSet.has(slug)) {
           let suffix = 2
           let candidate = `${slug}-${suffix}`
