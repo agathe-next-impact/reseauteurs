@@ -27,6 +27,7 @@ import {
 import CancelConfirmModal from '@/components/dashboard/CancelConfirmModal'
 import ReactivateConfirmModal from '@/components/dashboard/ReactivateConfirmModal'
 import { PortalButton } from '@/app/(frontend)/dashboard/(organisateur)/reseau/CheckoutButtons'
+import { formatEuroHTAn } from '@/lib/tarifs'
 
 export interface AbonnementView {
   produit: 'reseauteur_plus' | 'reseau_partenaire' | 'partenaire_annonceur'
@@ -42,8 +43,10 @@ export interface AbonnementView {
   reseauId: string | number | null
   source: 'abonnement' | 'licence' | null
   motifIndisponible: 'gratuit' | 'sans_reseau' | 'sans_fiche' | null
-  /** Paliers disponibles (organisateur) — [{ value, label, capacite }]. */
-  paliers: { value: string; label: string; capacite: number }[]
+  /** Prix HT/an du produit à prix unique (Plus, annonceur) ; null pour le réseau (par palier). */
+  prixHT: number | null
+  /** Paliers disponibles (organisateur) — [{ value, label, capacite, prixHT }]. */
+  paliers: { value: string; label: string; capacite: number; prixHT: number | null }[]
 }
 
 function fmtDate(iso: string | null): string | null {
@@ -144,7 +147,12 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                     <p className="text-xs font-semibold text-[#18181b] mb-0.5">
                       {p.value.charAt(0).toUpperCase() + p.value.slice(1)}
                     </p>
-                    <p className="text-[10px] text-[#71717a] mb-2">{capaciteLabel(p.capacite)}</p>
+                    {p.prixHT != null && (
+                      <p className="text-sm font-extrabold text-[#16284f] leading-tight">
+                        {p.prixHT} €<span className="text-[10px] font-medium text-[#71717a]"> HT/an</span>
+                      </p>
+                    )}
+                    <p className="text-[10px] text-[#71717a] mb-2 mt-0.5">{capaciteLabel(p.capacite)}</p>
                     <button
                       type="button"
                       onClick={() => subscribe(p.value)}
@@ -157,18 +165,25 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                 ))}
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => subscribe()}
-                disabled={busy !== null}
-                className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
-              >
-                {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
-                S’abonner
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                {view.prixHT != null && (
+                  <p className="text-lg font-extrabold text-[#16284f]">
+                    {view.prixHT} €<span className="text-xs font-medium text-[#71717a]"> HT / an</span>
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => subscribe()}
+                  disabled={busy !== null}
+                  className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
+                >
+                  {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
+                  S’abonner
+                </button>
+              </div>
             )}
             <p className="text-[10px] text-[#a1a1aa] mt-2">
-              Les tarifs vous sont présentés sur la page de paiement sécurisée Stripe.
+              Prix hors taxes — la TVA applicable est calculée sur la page de paiement sécurisée Stripe.
             </p>
           </section>
         )}
@@ -214,6 +229,15 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                 <p className={cancelScheduled ? 'text-amber-700' : 'text-green-700'}>
                   <span className="font-medium">Palier :</span>{' '}
                   {view.palier.charAt(0).toUpperCase() + view.palier.slice(1)}
+                  {(() => {
+                    const prix = view.paliers.find((p) => p.value === view.palier)?.prixHT
+                    return prix != null ? ` · ${formatEuroHTAn(prix)}` : ''
+                  })()}
+                </p>
+              )}
+              {!view.supportsPalier && view.prixHT != null && (
+                <p className={cancelScheduled ? 'text-amber-700' : 'text-green-700'}>
+                  <span className="font-medium">Tarif :</span> {formatEuroHTAn(view.prixHT)}
                 </p>
               )}
               {renewLabel && (
@@ -291,7 +315,12 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                           {p.value.charAt(0).toUpperCase() + p.value.slice(1)}
                           {current && <span className="text-[#2563EB]"> · actuel</span>}
                         </p>
-                        <p className="text-[10px] text-[#71717a]">{capaciteLabel(p.capacite)}</p>
+                        {p.prixHT != null && (
+                          <p className="text-xs font-bold text-[#16284f]">
+                            {p.prixHT} €<span className="text-[10px] font-medium text-[#71717a]"> HT/an</span>
+                          </p>
+                        )}
+                        <p className="text-[10px] text-[#71717a] mt-0.5">{capaciteLabel(p.capacite)}</p>
                         {busy === `palier:${p.value}` && (
                           <Loader2 size={12} className="animate-spin text-[#2563EB] mt-1" />
                         )}

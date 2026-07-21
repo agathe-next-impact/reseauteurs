@@ -7,6 +7,7 @@ import {
   Building2, Upload, Loader2, CheckCircle2, ExternalLink, Tag, CreditCard, AlertTriangle, ImageIcon,
 } from 'lucide-react'
 import { updatePartenaire } from './actions'
+import { PRIX_ANNONCEUR_HT } from '@/lib/tarifs'
 
 interface SerializedPartenaire {
   id: number
@@ -165,15 +166,21 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
                   Activez votre abonnement pour apparaître sur la page d&apos;accueil, la page Partenaires,
                   et publier votre fiche + votre offre.
                 </p>
+                <p className="text-lg font-extrabold text-[#16284f] mt-3">
+                  {PRIX_ANNONCEUR_HT} €<span className="text-xs font-medium text-[#71717a]"> HT / an</span>
+                </p>
                 <button
                   type="button"
                   onClick={subscribe}
                   disabled={sub !== null}
-                  className="mt-3 inline-flex items-center gap-2 bg-[#f5851f] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#e07710] transition-colors text-sm disabled:opacity-60"
+                  className="mt-2 inline-flex items-center gap-2 bg-[#f5851f] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#e07710] transition-colors text-sm disabled:opacity-60"
                 >
                   {sub === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
                   Activer mon abonnement
                 </button>
+                <p className="text-[10px] text-[#a1a1aa] mt-1.5">
+                  Prix hors taxes — la TVA applicable est calculée au paiement.
+                </p>
               </div>
             </div>
           )}

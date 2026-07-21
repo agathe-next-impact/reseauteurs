@@ -9,3 +9,12 @@ export const SITE_LANG = 'fr'
 export const SITE_COUNTRY = 'FR'
 export const CONTACT_EMAIL = 'contact@reseauteurs.com'
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/opengraph-image`
+
+/**
+ * Réseaux sociaux officiels (affichés en pied de page).
+ * ⚠️ Remplacez par les URLs réelles des comptes RÉSEAUTEURS.
+ */
+export const SOCIAL_LINKS = {
+  instagram: 'https://www.instagram.com/reseauteurs',
+  linkedin: 'https://www.linkedin.com/company/reseauteurs',
+} as const

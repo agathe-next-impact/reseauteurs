@@ -191,10 +191,10 @@ export function peutGererEvenement(
  * TODO (avant E2.A) : remplacer par les valeurs définitives approuvées par le product owner.
  */
 export const PALIERS_CONFIG: Record<string, { maxLocaux: number; label: string }> = {
-  fiche:      { maxLocaux: 0,   label: 'Fiche — publication de la fiche réseau, sans groupes locaux (TODO prix réel)' },
-  starter:    { maxLocaux: 5,   label: 'Starter — jusqu\'à 5 locaux (TODO prix réel)' },
-  growth:     { maxLocaux: 25,  label: 'Growth — jusqu\'à 25 locaux (TODO prix réel)' },
-  enterprise: { maxLocaux: 999, label: 'Enterprise — locaux illimités (TODO prix réel)' },
+  fiche:      { maxLocaux: 0,   label: 'Fiche — publication de la fiche réseau, sans groupes locaux' },
+  starter:    { maxLocaux: 5,   label: 'Starter — jusqu\'à 5 locaux' },
+  growth:     { maxLocaux: 25,  label: 'Growth — jusqu\'à 25 locaux' },
+  enterprise: { maxLocaux: 999, label: 'Enterprise — locaux illimités' },
 }
 
 const PALIER_DEFAUT = 'starter'

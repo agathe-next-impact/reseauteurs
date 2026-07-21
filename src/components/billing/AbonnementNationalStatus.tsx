@@ -14,6 +14,7 @@
  */
 import { CheckCircle, AlertCircle, Clock, Network, CreditCard, TrendingUp } from 'lucide-react'
 import { PALIERS_CONFIG, maxLocaux } from '@/lib/reseau-hierarchie'
+import { PALIER_PRIX_HT } from '@/lib/tarifs'
 import { CheckoutPartenaireButton, PortalButton } from '@/app/(frontend)/dashboard/(organisateur)/reseau/CheckoutButtons'
 
 interface AbonnementNationalStatusProps {
@@ -156,14 +157,18 @@ function PalierSelector({ reseauId }: { reseauId: string | number }) {
         {Object.entries(PALIERS_CONFIG).map(([palier, cfg]) => (
           <div key={palier} className="border border-[#e4e4e7] rounded-xl p-3 bg-white">
             <p className="text-xs font-semibold text-[#18181b] mb-0.5">{palier.charAt(0).toUpperCase() + palier.slice(1)}</p>
-            <p className="text-[10px] text-[#71717a] mb-2">
+            {PALIER_PRIX_HT[palier] != null && (
+              <p className="text-sm font-extrabold text-[#16284f] leading-tight">
+                {PALIER_PRIX_HT[palier]} €<span className="text-[10px] font-medium text-[#71717a]"> HT/an</span>
+              </p>
+            )}
+            <p className="text-[10px] text-[#71717a] mb-2 mt-0.5">
               {cfg.maxLocaux === 0
                 ? 'Publication de la fiche — sans groupes locaux'
                 : cfg.maxLocaux === 999
                   ? 'Fiche publiée + locaux illimités'
                   : `Fiche publiée + jusqu'à ${cfg.maxLocaux} locaux`}
             </p>
-            {/* TODO prix réels à afficher ici (fournis par le product owner) */}
             <CheckoutPartenaireButton
               reseauId={reseauId}
               palier={palier}
@@ -175,8 +180,7 @@ function PalierSelector({ reseauId }: { reseauId: string | number }) {
         ))}
       </div>
       <p className="text-[10px] text-[#a1a1aa]">
-        {/* TODO : afficher les prix réels ici (STRIPE_PRICE_NATIONAL_STARTER/GROWTH/ENTERPRISE) */}
-        Les tarifs vous seront présentés sur la page de paiement Stripe.
+        Prix hors taxes — la TVA applicable est calculée sur la page de paiement Stripe.
       </p>
     </div>
   )

@@ -18,6 +18,7 @@ import { CreditCard } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { resolveAbonnement, fetchLiveStripeState } from '@/lib/abonnement'
 import { PALIERS_CONFIG } from '@/lib/reseau-hierarchie'
+import { PALIER_PRIX_HT, PRIX_PLUS_HT, PRIX_ANNONCEUR_HT } from '@/lib/tarifs'
 import { AbonnementManager, type AbonnementView } from '@/components/billing/AbonnementManager'
 
 export const metadata: Metadata = {
@@ -60,11 +61,19 @@ export default async function AbonnementPage() {
     reseauId: ctx.reseauId ?? null,
     source: ctx.source ?? null,
     motifIndisponible: ctx.motifIndisponible ?? null,
+    // Prix HT/an du produit à prix unique (Plus, annonceur) ; null pour le réseau (par palier).
+    prixHT:
+      ctx.produit === 'reseauteur_plus'
+        ? PRIX_PLUS_HT
+        : ctx.produit === 'partenaire_annonceur'
+          ? PRIX_ANNONCEUR_HT
+          : null,
     paliers: ctx.supportsPalier
       ? Object.entries(PALIERS_CONFIG).map(([value, cfg]) => ({
           value,
           label: cfg.label,
           capacite: cfg.maxLocaux,
+          prixHT: PALIER_PRIX_HT[value] ?? null,
         }))
       : [],
   }
