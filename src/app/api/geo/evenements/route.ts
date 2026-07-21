@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types (data-architect + map-engineer)
 /**
  * GET /api/geo/evenements
  *
