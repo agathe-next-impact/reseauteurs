@@ -110,7 +110,7 @@ export default async function DashboardReseauPage() {
             Votre compte organisateur n&apos;est pas encore rattaché à un réseau. Contactez-nous pour configurer votre espace.
           </p>
           <a
-            href={`mailto:contact@reseauteurs.fr?subject=Rattachement réseau — ${freshUser.email as string}`}
+            href={`mailto:contact@reseauteurs.com?subject=Rattachement réseau — ${freshUser.email as string}`}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors"
           >
             <Mail size={15} />

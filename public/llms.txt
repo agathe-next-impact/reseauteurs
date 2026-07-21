@@ -1,6 +1,6 @@
 # llms.txt — RÉSEAUTEURS
 # Format : https://llmstxt.org/
-# Site : https://reseauteurs.fr
+# Site : https://reseauteurs.com
 
 > RÉSEAUTEURS est la plateforme nationale du networking qui rassemble
 > les réseauteurs, les événements business et les réseaux d'affaires en France.
@@ -57,4 +57,4 @@ Son appartenance nationale est dérivée automatiquement (parent du/des chapitre
 
 ## Contact
 
-contact@reseauteurs.fr
+contact@reseauteurs.com

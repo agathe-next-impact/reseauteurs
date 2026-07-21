@@ -78,7 +78,7 @@ function isDryRun(): boolean {
 
 function resolveReplyTo(): string | undefined {
   const r = process.env.RESEND_REPLY_TO_EMAIL
-  return r && r.length > 0 ? r : 'contact@reseauteurs.fr'
+  return r && r.length > 0 ? r : 'contact@reseauteurs.com'
 }
 
 /**

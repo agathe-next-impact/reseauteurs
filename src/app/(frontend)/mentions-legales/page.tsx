@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 export default function MentionsLegalesPage() {
   return (
     <LegalLayout title="Mentions légales" updatedAt="29 juin 2026">
-      {/* TODO juridique : contenu aligné sur le modèle RÉSEAUTEURS B2B (ADR-0011) — identité de l'éditeur à confirmer pour la marque RÉSEAUTEURS, à faire valider par un juriste avant production. */}
       <p>
         Conformément aux dispositions des articles 6-III et 19 de la loi n&deg; 2004-575 du 21 juin
         2004 pour la Confiance dans l&apos;économie numérique (LCEN), il est porté à la connaissance
@@ -24,7 +23,7 @@ export default function MentionsLegalesPage() {
         Le site <strong>{SITE_DOMAIN}</strong> est édité par :
       </p>
       <ul>
-        <li>Dénomination sociale : HBLGB</li>
+        <li>Dénomination sociale : BizTop - HBLGB</li>
         <li>Forme juridique : SASU (Société par actions simplifiée à associé unique)</li>
         <li>Capital social : 1 000 EUR</li>
         <li>Siège social : 47 rue Vivienne, 75002 Paris</li>
@@ -35,15 +34,9 @@ export default function MentionsLegalesPage() {
         <li>Numéro de TVA intracommunautaire : FR04102509759</li>
         <li>Email : <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
       </ul>
-      <p>
-        <em>
-          [À confirmer par un juriste : identité et coordonnées de l&apos;éditeur exploitant la
-          marque RÉSEAUTEURS.]
-        </em>
-      </p>
 
       <h2>2. Directeur de la publication</h2>
-      <p>Le directeur de la publication est Benoit Huberd, en qualité de Président. <em>[À confirmer]</em></p>
+      <p>Le directeur de la publication est Benoit Huberd, en qualité de Président.</p>
 
       <h2>3. Hébergeur</h2>
       <p>Le site est hébergé par :</p>

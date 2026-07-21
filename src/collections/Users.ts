@@ -192,7 +192,7 @@ export const Users: CollectionConfig = {
               kind: 'password-changed',
               to: doc.email,
               subject: 'RÉSEAUTEURS — Votre mot de passe a été modifié',
-              html: passwordChangedEmail(doc.nomSociete ?? '', 'mailto:contact@reseauteurs.fr'),
+              html: passwordChangedEmail(doc.nomSociete ?? '', 'mailto:contact@reseauteurs.com'),
               userId: doc.id,
               skipBlacklistCheck: true,
             })
@@ -215,7 +215,7 @@ export const Users: CollectionConfig = {
               doc.nomSociete ?? '',
               previousDoc.email,
               doc.email,
-              'mailto:contact@reseauteurs.fr',
+              'mailto:contact@reseauteurs.com',
             )
             const subject = 'RÉSEAUTEURS — Votre adresse email a été modifiée'
             // Old inbox first (security: the legitimate owner is likely there if hijacked).

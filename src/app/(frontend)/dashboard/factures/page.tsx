@@ -160,8 +160,8 @@ export default async function FacturesPage() {
           <p className="text-xs text-[#a1a1aa] text-center pt-2">
             Les factures sont générées et hébergées par Stripe.
             Pour toute question, contactez{' '}
-            <a href="mailto:contact@reseauteurs.fr" className="text-[#2563EB] hover:underline">
-              contact@reseauteurs.fr
+            <a href="mailto:contact@reseauteurs.com" className="text-[#2563EB] hover:underline">
+              contact@reseauteurs.com
             </a>.
           </p>
         </div>

@@ -35,7 +35,7 @@ Variables**. **Ne jamais committer** `.env*`.
 |---|:---:|---|
 | `DATABASE_URI` | ✅ | Chaîne Neon PostgreSQL (⚠️ nom = `DATABASE_URI`, pas `DATABASE_URL`). `?sslmode=require` en prod. |
 | `PAYLOAD_SECRET` | ✅ | Secret JWT/sessions, **min. 32 caractères** (`openssl rand -base64 32`). |
-| `NEXT_PUBLIC_SITE_URL` | ✅ | `http://localhost:3000` en dev ; `https://reseauteurs.fr` en prod. |
+| `NEXT_PUBLIC_SITE_URL` | ✅ | `http://localhost:3000` en dev ; `https://reseauteurs.com` en prod. |
 | `STRIPE_SECRET_KEY` | ✅ | `sk_test_` en dev, `sk_live_` en prod. *(Pas de clé publishable : le Checkout est un redirect serveur.)* |
 | `STRIPE_PRICE_NATIONAL_STARTER` | ✅ | Produit 1 — abonnement réseau **national**, palier **Starter** (≤ 5 locaux). |
 | `STRIPE_PRICE_NATIONAL_GROWTH` | ✅ | Produit 1 — palier **Growth** (≤ 25 locaux). |
@@ -173,11 +173,11 @@ pnpm start         # sert le build de prod en local
 1. **Importer le repo** GitHub dans Vercel.
 2. **Root Directory = racine du dépôt** (champ laissé vide, cf. §5). Framework : Next.js (auto). Install : `pnpm install`. Build : `pnpm build`.
 3. **Base de données** : lier l'**intégration Neon** (renseigne `DATABASE_URI`) ou la coller manuellement.
-4. **Variables d'environnement** (§2) pour les 3 environnements (Production / Preview / Development). En prod : clés Stripe **live**, `NEXT_PUBLIC_SITE_URL=https://reseauteurs.fr`, `SITE_PROTECTION_ENABLED=false`, `CRON_SECRET` défini.
+4. **Variables d'environnement** (§2) pour les 3 environnements (Production / Preview / Development). En prod : clés Stripe **live**, `NEXT_PUBLIC_SITE_URL=https://reseauteurs.com`, `SITE_PROTECTION_ENABLED=false`, `CRON_SECRET` défini.
 5. **Vercel Blob** : créer un store Blob → `BLOB_READ_WRITE_TOKEN`.
-6. **Webhook Stripe (prod)** : Dashboard Stripe → Webhooks → endpoint `https://reseauteurs.fr/api/stripe/webhook` → reporter `whsec_…` dans `STRIPE_WEBHOOK_SECRET`.
+6. **Webhook Stripe (prod)** : Dashboard Stripe → Webhooks → endpoint `https://reseauteurs.com/api/stripe/webhook` → reporter `whsec_…` dans `STRIPE_WEBHOOK_SECRET`.
 7. **Webhook Resend (optionnel)** : endpoint `/api/...` + `RESEND_WEBHOOK_SECRET`.
-8. **Domaine** : ajouter `reseauteurs.fr` (et `www` → redirige vers l'apex).
+8. **Domaine** : ajouter `reseauteurs.com` (et `www` → redirige vers l'apex).
 9. **Déployer** : le build applique les migrations en attente automatiquement (`migrate-safe.ts`). ⚠️ Avant le **1er** déploiement prod, prendre un **snapshot Neon** et faire un dry-run des migrations sur une branche (cf. `MIGRATION.md §8` + issue #1).
 
 ### Crons (Vercel — définis dans `vercel.json`)
@@ -199,14 +199,14 @@ pnpm start         # sert le build de prod en local
 - [ ] Build Vercel **vert** (1er vrai build — confirme l'absence d'erreurs de compilation ; cf. issue #1).
 - [ ] Migrations jouées (dry-run + rollback testés sur branche Neon, snapshot prod pris).
 - [ ] Webhooks **Stripe live** signés et reçus (abonnement national → `reseau.partenaire` + palier ; annonceur → `partenaire`).
-- [ ] `NEXT_PUBLIC_SITE_URL=https://reseauteurs.fr` · `SITE_PROTECTION_ENABLED=false` · `CRON_SECRET` défini.
-- [ ] Domaine `reseauteurs.fr` actif + SSL.
+- [ ] `NEXT_PUBLIC_SITE_URL=https://reseauteurs.com` · `SITE_PROTECTION_ENABLED=false` · `CRON_SECRET` défini.
+- [ ] Domaine `reseauteurs.com` actif + SSL.
 - [ ] **Pages légales** validées par un juriste + grille tarifaire chiffrée (issue #2).
 - [ ] Compte **admin** créé (1ère inscription via `/admin`, puis rôle `admin` en base).
 - [ ] Référentiels seedés (badges=4, categories=16, types_evenement) et réseaux de référence (BNI, DCF, CJD…).
 
 ### Dette résiduelle à nettoyer (non bloquant)
-- `vercel.json` `redirects` contient encore une règle `www.panorama-pub.com` → mettre à jour vers `reseauteurs.fr` (les 301 legacy actives sont dans `next.config.ts`).
+- `vercel.json` `redirects` contient encore une règle `www.panorama-pub.com` → mettre à jour vers `reseauteurs.com` (les 301 legacy actives sont dans `next.config.ts`).
 - `package.json` : `name` = `panorama-pub`, `description` = template Payload → rebrander.
 - `mapbox-gl` encore dans les dépendances (les nouvelles cartes utilisent `maplibre-gl`) → retirer après vérif (`pnpm remove mapbox-gl`).
 - Lever les `@ts-nocheck` (`Reseauteurs.ts`, `Reseaux.ts`, composants carte) après `generate:types` (issue #1).

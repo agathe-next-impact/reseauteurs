@@ -246,8 +246,8 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
           <p className="text-sm text-[#52525b]">
             Votre accès est actif. Aucun abonnement en ligne n’est rattaché à ce compte —
             pour toute question, contactez{' '}
-            <a href="mailto:contact@reseauteurs.fr" className="text-[#2563EB] hover:underline">
-              contact@reseauteurs.fr
+            <a href="mailto:contact@reseauteurs.com" className="text-[#2563EB] hover:underline">
+              contact@reseauteurs.com
             </a>.
           </p>
         </section>

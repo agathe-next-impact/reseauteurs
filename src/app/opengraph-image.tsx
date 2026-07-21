@@ -47,7 +47,7 @@ export default async function Image() {
             opacity: 0.85,
           }}
         >
-          <span>reseauteurs.fr</span>
+          <span>reseauteurs.com</span>
           <span>Réseauteurs · Événements · Réseaux</span>
         </div>
       </div>

@@ -1,4 +1,3 @@
-// @ts-nocheck — types en attente de generate:types + versions MapLibre (map-engineer)
 'use client'
 /**
  * MapContainerLibre — Conteneur de carte MapLibre GL JS (ADR-0006).

@@ -355,6 +355,14 @@ export interface Partenaire {
    */
   lien?: string | null;
   /**
+   * Affiché sur votre fiche publique (bouton « Envoyer un email »). Facultatif.
+   */
+  emailContact?: string | null;
+  /**
+   * Affiché sur votre fiche publique (bouton « Appeler »). Facultatif.
+   */
+  telephone?: string | null;
+  /**
    * Une phrase de présentation affichée sur la page Partenaires et votre fiche.
    */
   description?: string | null;
@@ -1551,6 +1559,8 @@ export interface PartenairesSelect<T extends boolean = true> {
   nom?: T;
   logo?: T;
   lien?: T;
+  emailContact?: T;
+  telephone?: T;
   description?: T;
   offre?:
     | T

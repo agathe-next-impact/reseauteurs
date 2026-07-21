@@ -9,7 +9,7 @@ const dirname = path.dirname(__filename)
 const isDev = process.env.NODE_ENV !== 'production'
 // Domaine canonique RÉSEAUTEURS (rebranding J3). 'self' couvre déjà l'origine de
 // service ; ces entrées CSP autorisent explicitement le domaine de production.
-const siteSources = 'https://reseauteurs.fr https://www.reseauteurs.fr'
+const siteSources = 'https://reseauteurs.com https://www.reseauteurs.com'
 
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
