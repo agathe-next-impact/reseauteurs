@@ -50,6 +50,9 @@ import { createEvenement, updateEvenement, deleteEvenement } from '@/app/(fronte
 
 const validEvenementData = {
   titre: 'Petit-déjeuner networking',
+  // Catégorie requise (types-evenement) — la route rejette sans ce champ
+  // avec "La catégorie est requise" (cf. EvenementSchema, actions.ts).
+  type: 1,
   dateDebut: '2026-09-01T08:30',
   description: 'Un événement test',
   dateFin: '',

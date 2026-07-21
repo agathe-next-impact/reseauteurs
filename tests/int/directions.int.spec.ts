@@ -2,9 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Hoisted mocks ────────────────────────────────────────────────────────────
 
-const { mockRateLimit } = vi.hoisted(() => ({
-  mockRateLimit: vi.fn(() => ({ success: true, remaining: 59 })),
-}))
+const { mockRateLimit } = vi.hoisted(() => {
+  // MAPBOX_TOKEN est lu au niveau module (const), donc évalué à l'import de la route.
+  // Il faut le poser AVANT l'import statique → vi.hoisted s'exécute avant les imports.
+  process.env.MAPBOX_TOKEN = 'pk.test'
+  return {
+    mockRateLimit: vi.fn(() => ({ success: true, remaining: 59 })),
+  }
+})
 
 vi.mock('@/lib/rate-limit', () => ({
   rateLimit: mockRateLimit,
@@ -55,7 +60,7 @@ describe('GET /api/directions', () => {
     const res = await GET(makeRequest({ profile: 'driving' }))
 
     expect(res.status).toBe(400)
-    expect(await res.json()).toEqual({ error: 'Missing coordinates parameter' })
+    expect(await res.json()).toEqual({ error: 'Paramètre de coordonnées manquant' })
   })
 
   it('returns 400 for invalid profile', async () => {
@@ -67,7 +72,7 @@ describe('GET /api/directions', () => {
     }))
 
     expect(res.status).toBe(400)
-    expect(await res.json()).toEqual({ error: 'Invalid profile' })
+    expect(await res.json()).toEqual({ error: 'Profil invalide' })
   })
 
   it('returns 400 for invalid coordinates format', async () => {
@@ -80,7 +85,7 @@ describe('GET /api/directions', () => {
 
     expect(res.status).toBe(400)
     expect(await res.json()).toEqual({
-      error: 'Invalid coordinates (expected lng,lat;lng,lat with valid ranges)',
+      error: 'Coordonnées invalides (format attendu : lng,lat;lng,lat avec 2 à 25 points)',
     })
   })
 

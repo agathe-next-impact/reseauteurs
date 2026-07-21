@@ -21,6 +21,7 @@ const {
   mockFind,
   mockUpdate,
   mockCreate,
+  mockDelete,
   mockSendEmail,
   mockRecalc,
   mockSubsUpdate,
@@ -31,6 +32,7 @@ const {
   mockFind: vi.fn(),
   mockUpdate: vi.fn(),
   mockCreate: vi.fn(),
+  mockDelete: vi.fn(async (..._args: any[]) => ({})),
   mockSendEmail: vi.fn(async (..._args: any[]) => ({ sent: true })),
   mockRecalc: vi.fn(async (..._args: any[]) => undefined),
   mockSubsUpdate: vi.fn(async (..._args: any[]) => ({})),
@@ -44,6 +46,12 @@ vi.mock('payload', () => ({
     find: mockFind,
     update: mockUpdate,
     create: mockCreate,
+    // Route /api/groupes/leave hard-delete le groupe (payload.delete) quand
+    // l'owner quitte sans membre restant — plus un soft-delete (deletedAt) :
+    // le soft-delete laissait owner_id pointer sur le user parti, et la FK
+    // ON DELETE SET NULL (colonne NOT NULL) bloquait la suppression de compte
+    // (cf. commentaire src/app/api/groupes/leave/route.ts:121-127).
+    delete: mockDelete,
   })),
 }))
 
@@ -129,10 +137,28 @@ describe('POST /api/groupes/create', () => {
     expect(mockAuth).not.toHaveBeenCalled()
   })
 
-  it('200 succes : cree groupe + attache user + recalc + audit + email', async () => {
+  // Gate corrige (bug produit dormant) : `getEffectiveFeatureLevel`
+  // (src/collections/access.ts:107-118, réécrite ADR-0011) ne retourne plus
+  // jamais 'infinite' (seulement 'acces' | 'developpement' | 'premium'), alors
+  // que la route comparait encore `!== 'infinite'` → 403 pour absolument tout
+  // utilisateur, y compris un admin. La fonctionnalite groupes/affiliation
+  // reste DORMANTE (ADR-0009 : aucun point d'entree UI public), donc le gate a
+  // ete realigne sur `role === 'admin'` (§5 de l'ADR : conservee pour
+  // l'exploitation/support) plutot que reintroduire une notion de palier
+  // 'infinite' qui n'existe plus dans le modele 3-entites.
+  it('403 si l\'utilisateur n\'est pas admin (fonctionnalite dormante, reservee a l\'exploitation)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockResolvedValue({
-      id: 7, role: 'fournisseur', plan: 'infinite', planExpiresAt: futureISO(),
+      id: 7, role: 'reseauteur', groupe: null, email: 'x@x.com', nomSociete: 'Acme',
+    })
+    const res = await createPOST(makeReq('http://l/api/groupes/create', { nom: 'Mon Groupe' }))
+    expect(res.status).toBe(403)
+  })
+
+  it('200 succes (admin) : cree groupe + attache user + recalc + audit + email', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 7 } })
+    mockFindByID.mockResolvedValue({
+      id: 7, role: 'admin',
       groupe: null, email: 'owner@x.com', nomSociete: 'Acme',
     })
     mockCreate.mockImplementation(async ({ collection }: { collection: string }) => {
@@ -184,10 +210,25 @@ describe('POST /api/groupes/join', () => {
     expect(res.status).toBe(400)
   })
 
-  it('404 si le code n\'existe pas', async () => {
+  // Gate corrige (meme bug/cause que create — voir annotation ci-dessus) :
+  // src/app/api/groupes/join/route.ts realignee sur `role === 'admin'`
+  // (fonctionnalite dormante ADR-0009, gate testable et coherente au lieu
+  // du palier 'infinite' disparu).
+  it('403 si l\'utilisateur n\'est pas admin (fonctionnalite dormante, reservee a l\'exploitation)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockResolvedValue({
-      id: 7, role: 'fournisseur', plan: 'infinite', planExpiresAt: futureISO(),
+      id: 7, role: 'reseauteur', groupe: null, email: 'x@x.com', nomSociete: 'Acme',
+    })
+    const res = await joinPOST(makeReq('http://l/api/groupes/join', { code: 'GRP-XYZAB1' }))
+    expect(res.status).toBe(403)
+    // le lookup du groupe par code n'est jamais atteint si la gate rejette
+    expect(mockFind).not.toHaveBeenCalled()
+  })
+
+  it('404 si le code n\'existe pas (admin)', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 7 } })
+    mockFindByID.mockResolvedValue({
+      id: 7, role: 'admin',
       groupe: null, email: 'x@x.com', nomSociete: 'Acme',
     })
     mockFind.mockResolvedValue({ docs: [] })
@@ -195,14 +236,14 @@ describe('POST /api/groupes/join', () => {
     expect(res.status).toBe(404)
   })
 
-  it('404 sur un groupe soft-deleted (clause deletedAt: { exists: false })', async () => {
+  it('404 sur un groupe soft-deleted (clause deletedAt: { exists: false }) (admin)', async () => {
     // On verrouille le filtre cote `where` : un code rattache a un groupe
     // soft-delete (deletedAt non-null) ne doit pas matcher. Le mock find
     // renvoie [] mais on inspecte la clause envoyee a payload.find pour
     // s'assurer que la regle n'est jamais relachee accidentellement.
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockResolvedValue({
-      id: 7, role: 'fournisseur', plan: 'infinite', planExpiresAt: futureISO(),
+      id: 7, role: 'admin',
       groupe: null, email: 'x@x.com', nomSociete: 'Acme',
     })
     mockFind.mockResolvedValue({ docs: [] })
@@ -220,10 +261,10 @@ describe('POST /api/groupes/join', () => {
     )
   })
 
-  it('normalise le code en uppercase + trim avant lookup', async () => {
+  it('normalise le code en uppercase + trim avant lookup (admin)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockResolvedValue({
-      id: 7, role: 'fournisseur', plan: 'infinite', planExpiresAt: futureISO(),
+      id: 7, role: 'admin',
       groupe: null, email: 'x@x.com', nomSociete: 'Acme',
     })
     mockFind.mockResolvedValue({ docs: [] })
@@ -236,7 +277,7 @@ describe('POST /api/groupes/join', () => {
     expect(codeClause.code.equals).toBe('GRP-ABCDEF')
   })
 
-  it('200 succes : update + recalc + audit + email owner', async () => {
+  it('200 succes (admin) : update + recalc + audit + email owner', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     // refreshed (apres recalc) renvoie le palier "post-bump". Le mock recalc
     // ne touche pas la DB ; on simule donc le post-recalc directement dans
@@ -245,7 +286,7 @@ describe('POST /api/groupes/join', () => {
       if (collection === 'users') {
         if (id === 7) {
           return {
-            id: 7, role: 'fournisseur', plan: 'infinite', planExpiresAt: futureISO(),
+            id: 7, role: 'admin',
             groupe: null, email: 'joiner@x.com', nomSociete: 'Joiner Co',
           }
         }
@@ -290,12 +331,15 @@ describe('POST /api/groupes/join', () => {
     expect(email![0].userId).toBe(99)
   })
 
-  it('aucun email owner si owner == joiner (cas exotique : self-join)', async () => {
+  // Meme gate corrige que ci-dessus (auparavant, un 403 precoce produisait
+  // "par accident" la meme absence d'email — l'assertion de statut garantit
+  // desormais que le succes est bien atteint pour la bonne raison : admin).
+  it('aucun email owner si owner == joiner (cas exotique : self-join, admin)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === 'users') {
         return {
-          id: 7, role: 'fournisseur', plan: 'infinite', planExpiresAt: futureISO(),
+          id: 7, role: 'admin',
           groupe: null, email: 'self@x.com', nomSociete: 'Self',
         }
       }
@@ -308,7 +352,8 @@ describe('POST /api/groupes/join', () => {
       docs: [{ id: 42, nom: 'G', code: 'GRP-SELF11', owner: 7, palierActuel: '0' }],
     })
 
-    await joinPOST(makeReq('http://l/api/groupes/join', { code: 'GRP-SELF11' }))
+    const res = await joinPOST(makeReq('http://l/api/groupes/join', { code: 'GRP-SELF11' }))
+    expect(res.status).toBe(200)
 
     const email = mockSendEmail.mock.calls.find((c) => c[0].kind === 'group-joined-owner')
     expect(email).toBeUndefined()
@@ -444,7 +489,10 @@ describe('POST /api/groupes/leave', () => {
     expect(email![0].userId).toBe(8)
   })
 
-  it('owner sans membre restant : soft-delete + return immediat (pas de recalc, pas d\'email)', async () => {
+  it('owner sans membre restant : hard-delete + return immediat (pas de recalc, pas d\'email)', async () => {
+    // Comportement actuel (route relue) : payload.delete, pas payload.update
+    // avec deletedAt. Le soft-delete laissait owner_id pointer sur le user
+    // parti (FK NOT NULL ON DELETE SET NULL bloquante) — voir route.ts:121-127.
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === 'users') {
@@ -466,16 +514,17 @@ describe('POST /api/groupes/leave', () => {
     const json = await res.json()
     expect(json).toEqual({ left: true, groupeDeleted: true })
 
-    // soft-delete
-    const groupeUpdate = mockUpdate.mock.calls.find((c) => c[0].collection === 'groupes')
-    expect(groupeUpdate![0].data).toHaveProperty('deletedAt')
-    expect(typeof groupeUpdate![0].data.deletedAt).toBe('string')
+    // hard-delete (pas de soft-delete via update)
+    expect(mockDelete).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'groupes', id: 42, overrideAccess: true }),
+    )
+    expect(mockUpdate.mock.calls.some((c) => c[0].collection === 'groupes')).toBe(false)
 
-    // audit groupe_soft_deleted
+    // audit groupe_soft_deleted (nom d'enum conservé — hardDeleted:true dans les metadata)
     const audit = mockCreate.mock.calls.find(
       (c) => c[0].collection === 'audit-logs' && c[0].data.type === 'groupe_soft_deleted',
     )
-    expect(audit![0].data.metadata).toMatchObject({ reason: 'last_member_left' })
+    expect(audit![0].data.metadata).toMatchObject({ reason: 'last_member_left', hardDeleted: true })
 
     // PAS de recalc (return immediat)
     expect(mockRecalc).not.toHaveBeenCalled()

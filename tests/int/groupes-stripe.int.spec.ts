@@ -1,18 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**
- * Tests fonctionnels de l'integration Stripe ↔ groupes apres l'application de
- * la regle "seuls les comptes Infinite alimentent le palier" :
+ * Tests fonctionnels de l'integration Stripe ↔ groupes (ADR-0009 : groupes
+ * dormants, conserves/masques) apres l'application de la regle "seuls les
+ * comptes Infinite alimentent le palier" :
  *
- *  1. Le checkout d'un Premium membre d'un groupe NE PAS appliquer de coupon
- *     (Premium ne compte pas, donc pas de remise mutualisee).
- *  2. Le checkout d'un Infinite membre d'un groupe applique le coupon projete
- *     correspondant au palier futur (count infinite + 1).
- *  3. Le checkout d'un Infinite deja compte (alreadyCounted = 1) NE PAS
- *     bumper le palier (+0).
- *  4. /api/groupes/create refuse les comptes non-Infinite (403).
- *  5. /api/groupes/join refuse les comptes non-Infinite (403).
- *  6. recalculerEtAppliquerPalier ne sync que les subscriptions Infinite.
+ *  1. /api/groupes/create refuse les comptes non-Infinite (403).
+ *  2. /api/groupes/join refuse les comptes non-Infinite (403).
+ *  3. recalculerEtAppliquerPalier ne sync que les subscriptions Infinite.
+ *
+ * ⚠️ Le checkout Stripe a ete recalibre sur les 3 produits B2B (ADR-0011/0012 :
+ * reseau_partenaire / partenaire_annonceur / reseauteur_plus, discriminated
+ * union sur `type`). Il n'accepte plus de body `{ plan: 'premium'|'infinite' }`
+ * et ne calcule plus de palier/coupon groupe au moment du checkout — cette
+ * integration a ete entierement retiree de la route (voir
+ * src/app/api/stripe/checkout/route.ts). Les tests "checkout x groupe" qui
+ * existaient ici sont donc CADUCS et ont ete supprimes (pas une derive
+ * d'assertion : le corps de requete attendu n'existe plus dans le schema Zod
+ * de la route).
  */
 
 // ── Hoisted mocks ────────────────────────────────────────────────────────────
@@ -55,7 +60,8 @@ vi.mock('payload', () => ({
 
 vi.mock('@payload-config', () => ({ default: {} }))
 
-vi.mock('@/lib/stripe', () => ({
+vi.mock('@/lib/stripe', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/stripe')>()),
   stripe: {
     customers: { create: mockCustomersCreate },
     subscriptions: { retrieve: mockSubsRetrieve, update: mockSubsUpdate },
@@ -78,7 +84,6 @@ vi.mock('@/lib/email-sender', () => ({
 }))
 
 // Imports apres les mocks
-import { POST as checkoutPOST } from '@/app/api/stripe/checkout/route'
 import { POST as createPOST } from '@/app/api/groupes/create/route'
 import { POST as joinPOST } from '@/app/api/groupes/join/route'
 import { recalculerEtAppliquerPalier } from '@/lib/groupes'
@@ -100,106 +105,10 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000'
 })
 
-// ── Checkout × groupe × plan ────────────────────────────────────────────────
-
-describe('POST /api/stripe/checkout × groupe', () => {
-  it('Premium dans un groupe : aucun coupon applique (Premium ne compte pas)', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 7, email: 'p@x.com' } })
-    mockFindByID.mockResolvedValue({
-      id: 7,
-      email: 'p@x.com',
-      role: 'fournisseur',
-      groupe: 42,
-      stripeCustomerId: 'cus_7',
-      stripeSubscriptionId: null,
-    })
-    mockSessionsCreate.mockResolvedValue({ url: 'https://stripe/session' })
-
-    const res = await checkoutPOST(makeReq('http://l/api/stripe/checkout', { plan: 'premium' }))
-
-    expect(res.status).toBe(200)
-    // Aucune projection palier ne doit etre faite (count jamais appele)
-    expect(mockCount).not.toHaveBeenCalled()
-    // La session Stripe est creee SANS clause `discounts`
-    const sessionArg = mockSessionsCreate.mock.calls[0][0]
-    expect(sessionArg).not.toHaveProperty('discounts')
-  })
-
-  it('Infinite dans un groupe avec 2 Infinite existants : applique coupon_5 (palier projete 3)', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 7, email: 'i@x.com' } })
-    mockFindByID.mockResolvedValue({
-      id: 7,
-      email: 'i@x.com',
-      role: 'fournisseur',
-      groupe: 42,
-      stripeCustomerId: 'cus_7',
-      stripeSubscriptionId: null,
-    })
-    // 1ere call (calculerPalierGroupe) → 2 Infinite existants ; 2e call
-    // (alreadyCounted) → 0 (l'utilisateur n'est pas encore Infinite).
-    let n = 0
-    mockCount.mockImplementation(async () => {
-      n += 1
-      return { totalDocs: n === 1 ? 2 : 0 }
-    })
-    mockSessionsCreate.mockResolvedValue({ url: 'https://stripe/session' })
-
-    const res = await checkoutPOST(makeReq('http://l/api/stripe/checkout', { plan: 'infinite' }))
-
-    expect(res.status).toBe(200)
-    const sessionArg = mockSessionsCreate.mock.calls[0][0]
-    expect(sessionArg.discounts).toEqual([{ coupon: 'coupon_5' }])
-  })
-
-  it('Infinite deja compte (alreadyCounted=1) : pas de bump, coupon du palier actuel', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 7, email: 'i@x.com' } })
-    mockFindByID.mockResolvedValue({
-      id: 7,
-      email: 'i@x.com',
-      role: 'fournisseur',
-      groupe: 42,
-      stripeCustomerId: 'cus_7',
-      stripeSubscriptionId: null,
-    })
-    // 5 Infinite (incluant l'utilisateur), alreadyCounted=1
-    let n = 0
-    mockCount.mockImplementation(async () => {
-      n += 1
-      return { totalDocs: n === 1 ? 5 : 1 }
-    })
-    mockSessionsCreate.mockResolvedValue({ url: 'https://stripe/session' })
-
-    await checkoutPOST(makeReq('http://l/api/stripe/checkout', { plan: 'infinite' }))
-
-    const sessionArg = mockSessionsCreate.mock.calls[0][0]
-    // 5 sans bump → palier 10 → coupon_10
-    expect(sessionArg.discounts).toEqual([{ coupon: 'coupon_10' }])
-  })
-
-  it('Sans groupe : pas de projection ni de coupon', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 7, email: 'n@x.com' } })
-    mockFindByID.mockResolvedValue({
-      id: 7,
-      email: 'n@x.com',
-      role: 'fournisseur',
-      groupe: null,
-      stripeCustomerId: 'cus_7',
-      stripeSubscriptionId: null,
-    })
-    mockSessionsCreate.mockResolvedValue({ url: 'https://stripe/session' })
-
-    await checkoutPOST(makeReq('http://l/api/stripe/checkout', { plan: 'infinite' }))
-
-    expect(mockCount).not.toHaveBeenCalled()
-    const sessionArg = mockSessionsCreate.mock.calls[0][0]
-    expect(sessionArg).not.toHaveProperty('discounts')
-  })
-})
-
 // ── Gating /api/groupes/create ───────────────────────────────────────────────
 
-describe('POST /api/groupes/create — gating Infinite uniquement', () => {
-  it('refuse Premium avec 403', async () => {
+describe('POST /api/groupes/create — gating admin uniquement', () => {
+  it('refuse un non-admin (Premium) avec 403', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockResolvedValue({
       id: 7,
@@ -215,7 +124,7 @@ describe('POST /api/groupes/create — gating Infinite uniquement', () => {
 
     expect(res.status).toBe(403)
     const json = await res.json()
-    expect(json.error).toMatch(/Infinite/i)
+    expect(json.error).toMatch(/administration/i)
   })
 
   it('refuse Gratuit avec 403', async () => {
@@ -254,8 +163,8 @@ describe('POST /api/groupes/create — gating Infinite uniquement', () => {
 
 // ── Gating /api/groupes/join ─────────────────────────────────────────────────
 
-describe('POST /api/groupes/join — gating Infinite uniquement', () => {
-  it('refuse Premium avec 403 (avant l\'evolution de regle Premium pouvait rejoindre)', async () => {
+describe('POST /api/groupes/join — gating admin uniquement', () => {
+  it('refuse un non-admin (Premium) avec 403', async () => {
     mockAuth.mockResolvedValue({ user: { id: 7 } })
     mockFindByID.mockResolvedValue({
       id: 7,
@@ -271,7 +180,7 @@ describe('POST /api/groupes/join — gating Infinite uniquement', () => {
 
     expect(res.status).toBe(403)
     const json = await res.json()
-    expect(json.error).toMatch(/Infinite/i)
+    expect(json.error).toMatch(/administration/i)
   })
 
   it('refuse Gratuit avec 403', async () => {
@@ -313,7 +222,17 @@ describe('recalculerEtAppliquerPalier × Stripe', () => {
         return null
       }),
       count: vi.fn(async () => ({ totalDocs: opts.infiniteCount })),
-      find: vi.fn(async () => ({ docs: opts.infiniteMembers })),
+      // recalculerEtAppliquerPalier fait 2 find() distincts : les membres Infinite
+      // (payingMembers) et les membres non-Infinite avec une sub active (purge de
+      // coupon residuel, §2b). On distingue via la clause `plan` pour eviter de
+      // compter les memes membres deux fois.
+      find: vi.fn(async (args: { where?: { and?: Array<Record<string, unknown>> } }) => {
+        const isNonInfiniteQuery = args.where?.and?.some(
+          (c) => (c as { plan?: { not_equals?: string } }).plan?.not_equals === 'infinite',
+        )
+        if (isNonInfiniteQuery) return { docs: [] }
+        return { docs: opts.infiniteMembers }
+      }),
       update: vi.fn(async () => ({})),
       create: vi.fn(async () => ({})),
     } as unknown as Payload
@@ -486,7 +405,17 @@ describe('recalculerEtAppliquerPalier — invariants en cas d\'echec', () => {
         return null
       }),
       count: vi.fn(async () => ({ totalDocs: opts.infiniteCount })),
-      find: vi.fn(async () => ({ docs: opts.infiniteMembers })),
+      // recalculerEtAppliquerPalier fait 2 find() distincts : les membres Infinite
+      // (payingMembers) et les membres non-Infinite avec une sub active (purge de
+      // coupon residuel, §2b). On distingue via la clause `plan` pour eviter de
+      // compter les memes membres deux fois.
+      find: vi.fn(async (args: { where?: { and?: Array<Record<string, unknown>> } }) => {
+        const isNonInfiniteQuery = args.where?.and?.some(
+          (c) => (c as { plan?: { not_equals?: string } }).plan?.not_equals === 'infinite',
+        )
+        if (isNonInfiniteQuery) return { docs: [] }
+        return { docs: opts.infiniteMembers }
+      }),
       update: vi.fn(async () => ({})),
       create: vi.fn(async () => ({})),
     } as unknown as Payload
@@ -665,7 +594,17 @@ describe('recalculerEtAppliquerPalier — transitions de palier intermediaires',
         return null
       }),
       count: vi.fn(async () => ({ totalDocs: opts.infiniteCount })),
-      find: vi.fn(async () => ({ docs: opts.infiniteMembers })),
+      // recalculerEtAppliquerPalier fait 2 find() distincts : les membres Infinite
+      // (payingMembers) et les membres non-Infinite avec une sub active (purge de
+      // coupon residuel, §2b). On distingue via la clause `plan` pour eviter de
+      // compter les memes membres deux fois.
+      find: vi.fn(async (args: { where?: { and?: Array<Record<string, unknown>> } }) => {
+        const isNonInfiniteQuery = args.where?.and?.some(
+          (c) => (c as { plan?: { not_equals?: string } }).plan?.not_equals === 'infinite',
+        )
+        if (isNonInfiniteQuery) return { docs: [] }
+        return { docs: opts.infiniteMembers }
+      }),
       update: vi.fn(async () => ({})),
       create: vi.fn(async () => ({})),
     } as unknown as Payload
@@ -761,7 +700,17 @@ describe('recalculerEtAppliquerPalier — emails de transition palier', () => {
         return null
       }),
       count: vi.fn(async () => ({ totalDocs: opts.infiniteCount })),
-      find: vi.fn(async () => ({ docs: opts.infiniteMembers })),
+      // recalculerEtAppliquerPalier fait 2 find() distincts : les membres Infinite
+      // (payingMembers) et les membres non-Infinite avec une sub active (purge de
+      // coupon residuel, §2b). On distingue via la clause `plan` pour eviter de
+      // compter les memes membres deux fois.
+      find: vi.fn(async (args: { where?: { and?: Array<Record<string, unknown>> } }) => {
+        const isNonInfiniteQuery = args.where?.and?.some(
+          (c) => (c as { plan?: { not_equals?: string } }).plan?.not_equals === 'infinite',
+        )
+        if (isNonInfiniteQuery) return { docs: [] }
+        return { docs: opts.infiniteMembers }
+      }),
       update: vi.fn(async () => ({})),
       create: vi.fn(async () => ({})),
     } as unknown as Payload

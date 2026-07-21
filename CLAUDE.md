@@ -300,8 +300,9 @@ cette contrainte : un parcours évident, pas de fonctionnalité « parce qu'on p
 
 ## 13. Pipeline d'agents et artefacts
 
-Voir `.claude/AGENTS_PIPELINE.md` et `.claude/README.md`. **12 agents** (8 de construction + **4 d'audit
-ciblé** : `test-fonctionnel`, `test-securite`, `test-performance`, `test-ux`). **Phases 0→4 livrées** — la
+Voir `.claude/AGENTS_PIPELINE.md` et `.claude/README.md`. **13 agents** (8 de construction + **4 d'audit
+ciblé** : `test-fonctionnel`, `test-securite`, `test-performance`, `test-ux` + **1 de contrôle de santé**
+`test-sante`, gate green/red qui exécute la chaîne de vérif du dépôt). **Phases 0→4 livrées** — la
 V1 3-entités est construite ; le pipeline sert désormais à **faire évoluer et vérifier** l'existant.
 Ordre et livrables :
 

@@ -38,6 +38,7 @@ import {
   generateUnsubscribeToken,
   verifyUnsubscribeToken,
 } from '@/lib/emails'
+import { SITE_NAME } from '@/lib/site'
 
 const XSS = '<script>alert(1)</script>'
 const XSS_ESCAPED = '&lt;script&gt;alert(1)&lt;/script&gt;'
@@ -51,8 +52,8 @@ type TemplateCase = {
 
 const cases: TemplateCase[] = [
   { kind: 'welcome', html: welcomeEmail('Acme'), marketing: false, shouldContain: ['Bienvenue', '/dashboard/fiche'] },
-  { kind: 'verify-email', html: verifyEmailTemplate('Acme', 'https://panorama-pub.com/verify?t=x'), marketing: false, shouldContain: ['verify?t=x', 'Verifier mon email'] },
-  { kind: 'forgot-password', html: forgotPasswordEmail('https://panorama-pub.com/reset?t=abc'), marketing: false, shouldContain: ['reset?t=abc', 'Reinitialiser mon mot de passe'] },
+  { kind: 'verify-email', html: verifyEmailTemplate('Acme', 'https://panorama-pub.com/verify?t=x'), marketing: false, shouldContain: ['verify?t=x', 'Vérifier mon email'] },
+  { kind: 'forgot-password', html: forgotPasswordEmail('https://panorama-pub.com/reset?t=abc'), marketing: false, shouldContain: ['reset?t=abc', 'Réinitialiser mon mot de passe'] },
   { kind: 'csv-invitation', html: csvInvitationEmail('Acme', 'demo@example.com', 'Pwd123!'), marketing: false, shouldContain: ['demo@example.com', 'Pwd123!'] },
   { kind: 'completion-reminder', html: completionReminderEmail('Acme', 40, 42), marketing: true, shouldContain: ['40%', '/dashboard'] },
   { kind: 'upgrade-nudge', html: upgradeNudgeEmail('Acme', 42), marketing: true, shouldContain: ['Premium', '/dashboard/abonnement'] },
@@ -66,12 +67,14 @@ const cases: TemplateCase[] = [
   { kind: 'account-locked', html: accountLockedEmail('Acme', 10, 'https://panorama-pub.com/mot-de-passe-oublie'), marketing: false, shouldContain: ['10 minutes', 'mot-de-passe-oublie'] },
   { kind: 'password-changed', html: passwordChangedEmail('Acme', 'mailto:contact@panorama-pub.com'), marketing: false, shouldContain: ['mailto:contact@panorama-pub.com'] },
   { kind: 'email-changed', html: emailChangedEmail('Acme', 'old@example.com', 'new@example.com', 'mailto:contact@panorama-pub.com'), marketing: false, shouldContain: ['old@example.com', 'new@example.com'] },
-  { kind: 'subscription-confirmation-premium', html: subscriptionConfirmationEmail('premium', 'Acme'), marketing: false, shouldContain: ['Premium', '99 EUR'] },
-  { kind: 'subscription-confirmation-infinite', html: subscriptionConfirmationEmail('infinite', 'Acme'), marketing: false, shouldContain: ['Infinite', '219 EUR'] },
+  // subscriptionConfirmationEmail(planLabel, nomSociete) est générique : il rend le libellé
+  // verbatim et n'inclut plus de montant (le prix n'est plus dans ce template).
+  { kind: 'subscription-confirmation-premium', html: subscriptionConfirmationEmail('Premium', 'Acme'), marketing: false, shouldContain: ['Premium'] },
+  { kind: 'subscription-confirmation-infinite', html: subscriptionConfirmationEmail('Infinite', 'Acme'), marketing: false, shouldContain: ['Infinite'] },
   { kind: 'expiration-warning-30', html: expirationWarningEmail('Acme', 30, 'Premium'), marketing: false, shouldContain: ['30 jours', 'Premium'] },
   { kind: 'expiration-warning-7', html: expirationWarningEmail('Acme', 7, 'Infinite'), marketing: false, shouldContain: ['7 jours'] },
   { kind: 'expiration-warning-1', html: expirationWarningEmail('Acme', 1), marketing: false, shouldContain: ['1 jour</strong>'] },
-  { kind: 'payment-failed', html: paymentFailedEmail('Acme'), marketing: false, shouldContain: ['Echec de paiement'] },
+  { kind: 'payment-failed', html: paymentFailedEmail('Acme'), marketing: false, shouldContain: ['Échec de paiement'] },
   { kind: 'subscription-canceled', html: subscriptionCanceledEmail('Acme', '31/12/2026'), marketing: false, shouldContain: ['31/12/2026'] },
   { kind: 'subscription-cancel-scheduled', html: subscriptionCancelScheduledEmail('Acme', { planLabel: 'Premium', endDateISO: '2026-12-31T00:00:00.000Z' }), marketing: false, shouldContain: ['Premium', '31 décembre 2026'] },
   { kind: 'subscription-reactivated', html: subscriptionReactivatedEmail('Acme', { planLabel: 'Premium', nextRenewalDateISO: '2026-12-31T00:00:00.000Z', nextRenewalAmountCents: 9900 }), marketing: false, shouldContain: ['Premium', '99,00 EUR', '31 décembre 2026'] },
@@ -81,17 +84,18 @@ const cases: TemplateCase[] = [
   { kind: 'fiche-rejected-with-reason', html: ficheRejectedEmail('Acme', 'Contenu incomplet'), marketing: false, shouldContain: ['Contenu incomplet'] },
   { kind: 'fiche-rejected-no-reason', html: ficheRejectedEmail('Acme'), marketing: false, shouldContain: ['suspendue'] },
   { kind: 'evenement-rejected', html: evenementRejectedEmail('Acme', 'Salon', 'Doublon'), marketing: false, shouldContain: ['Salon', 'Doublon'] },
-  { kind: 'account-deleted', html: accountDeletedEmail('Acme'), marketing: false, shouldContain: ['supprime', 'RGPD'] },
+  { kind: 'account-deleted', html: accountDeletedEmail('Acme'), marketing: false, shouldContain: ['supprimé', 'RGPD'] },
   { kind: 'stripe-misconfig', html: stripeMisconfigAlertEmail({ userId: '1', stripeCustomerId: 'cus_1', subscriptionId: 'sub_1', priceId: 'price_x' }), marketing: false, shouldContain: ['price_x', 'cus_1'] },
 ]
 
 describe('Email templates — structure', () => {
-  it.each(cases)('$kind has DOCTYPE, title, logo, footer', ({ html }) => {
+  it.each(cases)('$kind has DOCTYPE, title, brand wordmark, footer', ({ html }) => {
     expect(html).toContain('<!DOCTYPE html')
     expect(html).toContain('<html lang="fr"')
     expect(html).toContain('<title>')
     expect(html).toContain('</title>')
-    expect(html).toContain('/img/logo.png')
+    // Le template rend la marque en wordmark texte (SITE_NAME), plus d'image /img/logo.png.
+    expect(html).toContain(SITE_NAME)
     expect(html).toContain('Mentions legales')
   })
 
@@ -129,7 +133,7 @@ describe('Email templates — footer kind (marketing vs transactional)', () => {
     const hasUnsubLink = html.includes('/api/emails/unsubscribe')
     if (marketing) {
       expect(hasUnsubLink, 'marketing email must contain unsubscribe link').toBe(true)
-      expect(html).toContain('Se desabonner en un clic')
+      expect(html).toContain('Se désabonner en un clic')
     } else {
       expect(hasUnsubLink, 'transactional email must NOT contain unsubscribe link').toBe(false)
     }

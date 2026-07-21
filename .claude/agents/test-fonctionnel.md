@@ -17,7 +17,7 @@ Lis `CLAUDE.md` (§2 entités, §3 rôles, §4 monétisation, §11 conventions),
 - pose `process.env.SEED_DEV='true'` et `process.env.EMAILS_DRY_RUN='1'` pour éviter géocodage réseau + envois Resend.
 
 ## Méthode
-Le projet **n'a pas de framework de test** : on exerce l'API locale Payload via des scripts tsx.
+Le dépôt a une suite d'intégration/e2e configurée (vitest `tests/int/**` + playwright `tests/e2e/**`), mais **cet agent ne l'utilise pas** : il exerce l'API locale Payload via des scripts tsx **éphémères** (jetables, nettoyés après), pour prouver les parcours métier de bout en bout contre la vraie logique.
 - Modèle : `src/scripts/_verify-*.mts` (bootstrap `getPayload({config})`, dotenv `.env.local`, actions réelles, assertions, nettoyage, `process.exit(0)`).
 - Exécution : `node --import=tsx/esm src/scripts/_verify-xxx.mts` (filtre le bruit libpq/deprecation). Supprime le fichier après (`rm`/`Remove-Item`).
 - Pour les gates d'accès : utilise `overrideAccess:false` + `user` pour prouver le refus/accord ; `overrideAccess:true` seulement pour préparer/nettoyer le décor.

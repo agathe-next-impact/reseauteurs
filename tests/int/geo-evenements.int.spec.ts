@@ -1,14 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Hoisted mocks ────────────────────────────────────────────────────────────
+//
+// La route /api/geo/evenements a été refondue sur le modèle 3-entités (ADR-0011/0013).
+// Elle lit `payload.db.drizzle` (SQL PostGIS paramétré : ST_MakeEnvelope pour la bbox,
+// ST_DWithin pour le rayon) EN PLUS de `payload.find`. On mocke donc un exécuteur Drizzle
+// (`execute` → `{ rows }`) renvoyant des lignes factices, et on réaligne les filtres sur
+// ceux réellement implémentés (`reseau`, spatial), l'ancien modèle PanoramaPub
+// (`types-evenement`, `categories-activite`, `fournisseur`, `activite`, `periode`) étant caduc.
 
-const { mockFind } = vi.hoisted(() => ({
+const { mockFind, mockExecute } = vi.hoisted(() => ({
   mockFind: vi.fn(),
+  mockExecute: vi.fn(),
 }))
 
 vi.mock('payload', () => ({
   getPayload: vi.fn(() => ({
     find: mockFind,
+    db: {
+      // Exécuteur Drizzle sous-jacent : la route appelle drizzle.execute(sql`…`).then(r => r.rows)
+      drizzle: {
+        execute: mockExecute,
+      },
+    },
   })),
 }))
 
@@ -44,6 +58,8 @@ function makeRequest(params: Record<string, string> = {}): Request {
 describe('GET /api/geo/evenements', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Défaut : aucun ID spatial (les tests spatiaux le surchargent).
+    mockExecute.mockResolvedValue({ rows: [] })
   })
 
   it('returns a valid GeoJSON FeatureCollection', async () => {
@@ -51,18 +67,15 @@ describe('GET /api/geo/evenements', () => {
       docs: [
         {
           id: 1,
+          slug: 'salon-pro',
           titre: 'Salon Pro',
-          type: { value: 'salon', couleur: '#dc2626', label: 'Salon' },
           dateDebut: '2026-06-01',
           dateFin: '2026-06-03',
           lieuVille: 'Paris',
           lieuLatitude: 48.86,
           lieuLongitude: 2.35,
-          fournisseur: {
-            slug: 'acme',
-            raisonSociale: 'ACME',
-            activitePrincipale: { value: 'goodies', couleur: '#1e40af' },
-          },
+          reseau: { id: 10, slug: 'bni', nom: 'BNI' },
+          organisateurReseauteur: null,
         },
       ],
     })
@@ -82,10 +95,10 @@ describe('GET /api/geo/evenements', () => {
         {
           id: 1,
           titre: 'NoGeo',
-          type: null,
           lieuLatitude: null,
           lieuLongitude: null,
-          fournisseur: null,
+          reseau: null,
+          organisateurReseauteur: null,
         },
       ],
     })
@@ -103,6 +116,7 @@ describe('GET /api/geo/evenements', () => {
 
     expect(mockFind).toHaveBeenCalledWith(
       expect.objectContaining({
+        collection: 'evenements',
         where: expect.objectContaining({
           and: expect.arrayContaining([
             { statut: { equals: 'publie' } },
@@ -112,47 +126,28 @@ describe('GET /api/geo/evenements', () => {
     )
   })
 
-  it('resolves type filter slugs to IDs', async () => {
+  it('resolves reseau filter slugs to IDs', async () => {
     mockFind
-      .mockResolvedValueOnce({ docs: [{ id: 3 }] }) // resolve type slugs
+      .mockResolvedValueOnce({ docs: [{ id: 3 }] }) // resolve reseau slugs
       .mockResolvedValueOnce({ docs: [] }) // no events
 
-    await GET(makeRequest({ type: 'salon' }))
+    await GET(makeRequest({ reseau: 'bni' }))
 
+    // 1er find : résolution des slugs de réseau → IDs
     expect(mockFind).toHaveBeenCalledWith(
       expect.objectContaining({
-        collection: 'types-evenement',
-        where: { value: { in: ['salon'] } },
+        collection: 'reseaux',
+        where: { slug: { in: ['bni'] } },
       }),
     )
-  })
-
-  it('resolves activite filter slugs to IDs', async () => {
-    mockFind
-      .mockResolvedValueOnce({ docs: [{ id: 7 }, { id: 9 }] }) // resolve activite slugs
-      .mockResolvedValueOnce({ docs: [] }) // no events
-
-    await GET(makeRequest({ activite: 'textile,goodies' }))
-
-    expect(mockFind).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'categories-activite',
-        where: { value: { in: ['textile', 'goodies'] } },
-      }),
-    )
+    // 2e find : requête événements contrainte par le réseau organisateur résolu
     expect(mockFind).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'evenements',
         where: expect.objectContaining({
           and: expect.arrayContaining([
             expect.objectContaining({
-              or: expect.arrayContaining([
-                { activites: { contains: 7 } },
-                { activites: { contains: 9 } },
-                { 'fournisseur.activitePrincipale': { in: [7, 9] } },
-                { 'fournisseur.activitesSecondaires': { contains: 7 } },
-                { 'fournisseur.activitesSecondaires': { contains: 9 } },
-              ]),
+              or: expect.arrayContaining([{ reseau: { equals: 3 } }]),
             }),
           ]),
         }),
@@ -160,42 +155,77 @@ describe('GET /api/geo/evenements', () => {
     )
   })
 
-  it('keeps period filtering on upcoming or ongoing events', async () => {
+  it('applies a bounding-box spatial filter via PostGIS (Drizzle) and constrains ids', async () => {
+    mockExecute.mockResolvedValueOnce({ rows: [{ id: 1 }, { id: 2 }] })
     mockFind.mockResolvedValue({ docs: [] })
 
-    await GET(makeRequest({ periode: '2026-06,2026-08' }))
+    await GET(makeRequest({ sw_lng: '2', sw_lat: '48', ne_lng: '3', ne_lat: '49' }))
 
+    // Le filtre spatial passe par le driver Drizzle (SQL PostGIS paramétré).
+    expect(mockExecute).toHaveBeenCalledTimes(1)
+    // Les IDs retournés par PostGIS contraignent la requête Payload principale.
     expect(mockFind).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'evenements',
         where: expect.objectContaining({
-          and: expect.arrayContaining([
-            expect.objectContaining({
-              or: expect.arrayContaining([
-                expect.objectContaining({
-                  dateFin: expect.objectContaining({ greater_than_equal: expect.any(String) }),
-                }),
-              ]),
-            }),
-            { dateDebut: { less_than: '2026-09-01T00:00:00.000Z' } },
-          ]),
+          and: expect.arrayContaining([{ id: { in: [1, 2] } }]),
         }),
       }),
     )
   })
 
-  it('marks events without fournisseur as national', async () => {
+  it('applies a radius spatial filter (ST_DWithin) via Drizzle', async () => {
+    mockExecute.mockResolvedValueOnce({ rows: [{ id: 5 }] })
+    mockFind.mockResolvedValue({ docs: [] })
+
+    await GET(makeRequest({ lat: '48.86', lng: '2.35', rayon: '10' }))
+
+    expect(mockExecute).toHaveBeenCalledTimes(1)
+    expect(mockFind).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'evenements',
+        where: expect.objectContaining({
+          and: expect.arrayContaining([{ id: { in: [5] } }]),
+        }),
+      }),
+    )
+  })
+
+  it('returns an empty collection when the spatial filter matches nothing', async () => {
+    mockExecute.mockResolvedValueOnce({ rows: [] })
+
+    const res = await GET(makeRequest({ sw_lng: '2', sw_lat: '48', ne_lng: '3', ne_lat: '49' }))
+    const body = await res.json()
+
+    expect(body.features).toHaveLength(0)
+    // Court-circuit : pas de requête événements quand la bbox ne matche rien.
+    expect(mockFind).not.toHaveBeenCalled()
+  })
+
+  it('discriminates the organiser (reseau vs reseauteur Plus)', async () => {
     mockFind.mockResolvedValue({
       docs: [
         {
           id: 1,
-          titre: 'Event National',
-          type: { value: 'salon', couleur: '#000', label: 'Salon' },
+          slug: 'evt-reseau',
+          titre: 'Event Réseau',
           dateDebut: '2026-06-01',
           lieuVille: 'Paris',
           lieuLatitude: 48.86,
           lieuLongitude: 2.35,
-          fournisseur: null,
+          reseau: { id: 10, slug: 'bni', nom: 'BNI' },
+          organisateurReseauteur: null,
+        },
+        {
+          id: 2,
+          slug: 'evt-reseauteur',
+          titre: 'Event Réseauteur',
+          dateDebut: '2026-06-02',
+          lieuVille: 'Lyon',
+          lieuLatitude: 45.75,
+          lieuLongitude: 4.85,
+          reseau: null,
+          organisateurReseauteur: 7,
         },
       ],
     })
@@ -203,7 +233,9 @@ describe('GET /api/geo/evenements', () => {
     const res = await GET(makeRequest())
     const body = await res.json()
 
-    expect(body.features[0].properties.isNational).toBe(true)
-    expect(body.features[0].properties.fournisseurSlug).toBeNull()
+    expect(body.features).toHaveLength(2)
+    expect(body.features[0].properties.organisateur).toBe('reseau')
+    expect(body.features[0].properties.reseauNom).toBe('BNI')
+    expect(body.features[1].properties.organisateur).toBe('reseauteur')
   })
 })

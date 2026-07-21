@@ -28,8 +28,15 @@ function makeRequest(cronSecret?: string): Request {
 }
 
 // ── Tests ────────────────────────────────────────────────────────────────────
+//
+// RÉALIGNEMENT 2026-07-21 : la route d'archivage est NEUTRALISÉE (ADR-0011).
+// Le modèle RÉSEAUTEURS n'a pas de statut 'archive' — les événements passés
+// restent visibles (actif SEO). La route est un no-op qui renvoie
+// { archived: 0, note: 'cron neutralisé (ADR-0011)' } et ne touche jamais la DB.
+// Cf. src/app/api/cron/archiver-evenements/route.ts. Les anciennes assertions
+// (archives past events, query publie, etc.) sont caduques et supprimées.
 
-describe('GET /api/cron/archiver-evenements', () => {
+describe('GET /api/cron/archiver-evenements (neutralisé — ADR-0011)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.CRON_SECRET = 'test-cron-secret'
@@ -45,77 +52,15 @@ describe('GET /api/cron/archiver-evenements', () => {
     expect(res.status).toBe(401)
   })
 
-  it('returns {archived: 0} when no events need archiving', async () => {
-    mockFind.mockResolvedValue({ docs: [] })
-
+  it('is a no-op: returns {archived: 0, note} and never touches the DB', async () => {
     const res = await GET(makeRequest('test-cron-secret'))
 
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ archived: 0 })
+    expect(await res.json()).toEqual({
+      archived: 0,
+      note: 'cron neutralisé (ADR-0011)',
+    })
+    expect(mockFind).not.toHaveBeenCalled()
     expect(mockUpdate).not.toHaveBeenCalled()
-  })
-
-  it('archives past published events', async () => {
-    mockFind.mockResolvedValue({
-      docs: [
-        { id: 1, titre: 'Old Event', statut: 'publie' },
-        { id: 2, titre: 'Ancient Event', statut: 'publie' },
-      ],
-    })
-    mockUpdate.mockResolvedValue({})
-
-    const res = await GET(makeRequest('test-cron-secret'))
-
-    expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ archived: 2 })
-
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'evenements',
-        id: 1,
-        data: { statut: 'archive' },
-      }),
-    )
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'evenements',
-        id: 2,
-        data: { statut: 'archive' },
-      }),
-    )
-  })
-
-  it('only queries publie events with dateDebut before yesterday', async () => {
-    mockFind.mockResolvedValue({ docs: [] })
-
-    await GET(makeRequest('test-cron-secret'))
-
-    expect(mockFind).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'evenements',
-        where: expect.objectContaining({
-          and: expect.arrayContaining([
-            { statut: { equals: 'publie' } },
-          ]),
-        }),
-      }),
-    )
-  })
-
-  it('continues archiving even if one update fails', async () => {
-    mockFind.mockResolvedValue({
-      docs: [
-        { id: 1, titre: 'Failing' },
-        { id: 2, titre: 'Succeeding' },
-      ],
-    })
-    mockUpdate
-      .mockRejectedValueOnce(new Error('DB error'))
-      .mockResolvedValueOnce({})
-
-    const res = await GET(makeRequest('test-cron-secret'))
-
-    expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ archived: 1 })
   })
 })

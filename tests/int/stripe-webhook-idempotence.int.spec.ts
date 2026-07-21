@@ -41,7 +41,8 @@ vi.mock('payload', () => ({
 
 vi.mock('@payload-config', () => ({ default: {} }))
 
-vi.mock('@/lib/stripe', () => ({
+vi.mock('@/lib/stripe', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/stripe')>()),
   stripe: {
     webhooks: { constructEvent: mockConstructEvent },
     subscriptions: { retrieve: mockSubscriptionsRetrieve },
