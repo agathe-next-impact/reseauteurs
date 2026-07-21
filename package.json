@@ -31,6 +31,8 @@
     "test:local:db": "docker compose up -d postgres",
     "test:local:migrate": "cross-env DATABASE_URI=postgresql://postgres:dev@localhost:5432/reseauteurs PAYLOAD_SECRET=test-secret-reseauteurs-local-e2e NODE_OPTIONS=--no-deprecation node --import=tsx/esm src/scripts/migrate-safe.ts",
     "test:local:setup": "pnpm run test:local:db && node -e \"setTimeout(()=>{},4000)\" && pnpm run test:local:migrate",
+    "test:local:seed": "cross-env DATABASE_URI=postgresql://postgres:dev@localhost:5432/reseauteurs PAYLOAD_SECRET=test-secret-reseauteurs-local-e2e SEED_DEV=true EMAILS_DRY_RUN=1 NODE_OPTIONS=--no-deprecation node --import=tsx/esm src/scripts/seed-demo.ts --confirm",
+    "dev:local": "cross-env DATABASE_URI=postgresql://postgres:dev@localhost:5432/reseauteurs PAYLOAD_SECRET=test-secret-reseauteurs-local-e2e EMAILS_DRY_RUN=1 NODE_OPTIONS=--no-deprecation next dev",
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
   },
   "dependencies": {
