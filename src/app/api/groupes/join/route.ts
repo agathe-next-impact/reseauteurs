@@ -9,7 +9,6 @@ import { getClientIp } from '@/lib/client-ip'
 import { recalculerEtAppliquerPalier } from '@/lib/groupes'
 import { groupeJoinedOwnerEmail } from '@/lib/emails'
 import { sendEmail } from '@/lib/email-sender'
-import { getEffectiveFeatureLevel } from '@/collections/access'
 import { hashUserId } from '@/lib/audit'
 
 const bodySchema = z.object({
@@ -53,12 +52,16 @@ export async function POST(request: Request) {
     )
   }
 
-  // Seuls les comptes Infinite peuvent rejoindre un groupe : Premium et
-  // Gratuit ne contribuent pas au palier et n'auraient aucun benefice a
-  // figurer dans la liste.
-  if (getEffectiveFeatureLevel(freshUser) !== 'infinite') {
+  // Fonctionnalite groupes/affiliation DORMANTE (ADR-0009) : aucun point
+  // d'entree UI expose au grand public, conservee pour l'exploitation/support
+  // admin (ADR-0009 §5). L'ancien gate "plan Infinite" n'existe plus dans le
+  // modele 3-entites (ADR-0011) et rendait la route structurellement
+  // inaccessible (403 pour tout le monde, y compris l'admin) : on la
+  // realigne sur un gate admin, coherent avec l'intention "reservee a
+  // l'exploitation" sans reactiver la feature au public.
+  if (freshUser.role !== 'admin') {
     return NextResponse.json(
-      { error: 'Un abonnement Infinite est requis pour rejoindre un groupe' },
+      { error: 'L\'adhesion a un groupe est reservee a l\'administration' },
       { status: 403 },
     )
   }
