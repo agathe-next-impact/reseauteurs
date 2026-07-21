@@ -1,19 +1,27 @@
 import { test, expect, Page } from '@playwright/test'
-import { login } from '../helpers/login'
+import { loginAdmin } from '../helpers/login'
 import { seedTestUser, cleanupTestUser, testUser } from '../helpers/seedUser'
 
 const SERVER_URL = 'http://localhost:3000'
 
 test.describe('Admin Panel', () => {
+  // La 1re compilation du bundle admin Payload en mode dev (next dev, a la
+  // demande) depasse largement les 30s par defaut -> beforeAll/1er test en
+  // timeout a froid. On elargit pour absorber ce cout unique.
+  test.describe.configure({ timeout: 120_000 })
+
   let page: Page
 
   test.beforeAll(async ({ browser }) => {
+    test.setTimeout(120_000)
     await seedTestUser()
 
     const context = await browser.newContext()
     page = await context.newPage()
 
-    await login({ page, user: testUser })
+    // Login via la page CUSTOM /login (pas le /admin/login Payload par defaut),
+    // avec redirect vers /admin. testUser a role:'admin'.
+    await loginAdmin({ page, user: testUser })
   })
 
   test.afterAll(async () => {
@@ -29,46 +37,46 @@ test.describe('Admin Panel', () => {
     await expect(dashboardArtifact).toBeVisible()
   })
 
-  test('dashboard displays DashboardWidgets (stats section)', async () => {
+  // DashboardWidgets (composant custom, modele 3 entites) — remplace l'ancien
+  // tableau PanoramaPub (« Statistiques fournisseurs », « Import CSV »,
+  // « Fiches/Evenements en attente », « Abonnements ») aujourd'hui supprime.
+  test('dashboard displays DashboardWidgets overview section', async () => {
     await page.goto(`${SERVER_URL}/admin`)
-    // DashboardWidgets renders stats with "Statistiques fournisseurs" heading
-    const statsHeading = page.locator('h3', { hasText: 'Statistiques fournisseurs' })
-    await expect(statsHeading).toBeVisible({ timeout: 10_000 })
+    const heading = page.locator('h3', { hasText: "Vue d’ensemble" })
+    await expect(heading).toBeVisible({ timeout: 10_000 })
   })
 
-  test('dashboard displays fiches en attente section', async () => {
+  test('dashboard displays moderation section', async () => {
     await page.goto(`${SERVER_URL}/admin`)
-    const pendingHeading = page.locator('h3', { hasText: 'Fiches en attente' })
-    await expect(pendingHeading).toBeVisible({ timeout: 10_000 })
+    const heading = page.locator('h3', { hasText: 'Modération des réseauteurs' })
+    await expect(heading).toBeVisible({ timeout: 10_000 })
   })
 
-  test('dashboard displays evenements en attente section', async () => {
+  test('dashboard displays comptes par role section', async () => {
     await page.goto(`${SERVER_URL}/admin`)
-    const evtHeading = page.locator('h3', { hasText: 'Evenements en attente' })
-    await expect(evtHeading).toBeVisible({ timeout: 10_000 })
+    const heading = page.locator('h3', { hasText: 'Comptes par rôle' })
+    await expect(heading).toBeVisible({ timeout: 10_000 })
   })
 
-  test('dashboard displays abonnements section', async () => {
+  test('dashboard displays badges section', async () => {
     await page.goto(`${SERVER_URL}/admin`)
-    const subHeading = page.locator('h3', { hasText: 'Abonnements' })
-    await expect(subHeading).toBeVisible({ timeout: 10_000 })
+    const heading = page.locator('h3', { hasText: 'Badges déclarés' })
+    await expect(heading).toBeVisible({ timeout: 10_000 })
   })
 
-  test('dashboard displays CSV Import section', async () => {
-    await page.goto(`${SERVER_URL}/admin`)
-    const csvHeading = page.locator('h3', { hasText: 'Import CSV' })
-    await expect(csvHeading).toBeVisible({ timeout: 10_000 })
-  })
+  // ── Sidebar collections (modele 3 entites) ──────────────────────────────────
 
-  // ── Sidebar collections ────────────────────────────────────────────────────
-
-  test('sidebar shows all 7 collections', async () => {
+  test('sidebar shows the 3-entity collections', async () => {
     await page.goto(`${SERVER_URL}/admin`)
 
+    // Collections reelles du modele ADR-0011 (Fournisseurs / CategoriesActivite /
+    // TypesEvenement PanoramaPub retires du config Payload).
     const collections = [
       'Users',
-      'Fournisseurs',
+      'Reseauteurs',
+      'Reseaux',
       'Evenements',
+      'Partenaires',
       'Media',
     ]
 
@@ -87,32 +95,37 @@ test.describe('Admin Panel', () => {
     await expect(heading).toBeVisible()
   })
 
-  test('can navigate to Fournisseurs list view', async () => {
-    await page.goto(`${SERVER_URL}/admin/collections/fournisseurs`)
-    const heading = page.locator('h1', { hasText: 'Fournisseurs' }).first()
+  test('can navigate to Reseauteurs list view', async () => {
+    await page.goto(`${SERVER_URL}/admin/collections/reseauteurs`)
+    await expect(page).toHaveURL(`${SERVER_URL}/admin/collections/reseauteurs`)
+    const heading = page.locator('h1', { hasText: 'Reseauteurs' }).first()
+    await expect(heading).toBeVisible()
+  })
+
+  test('can navigate to Reseaux list view', async () => {
+    await page.goto(`${SERVER_URL}/admin/collections/reseaux`)
+    await expect(page).toHaveURL(`${SERVER_URL}/admin/collections/reseaux`)
+    const heading = page.locator('h1', { hasText: 'Reseaux' }).first()
     await expect(heading).toBeVisible()
   })
 
   test('can navigate to Evenements list view', async () => {
     await page.goto(`${SERVER_URL}/admin/collections/evenements`)
+    await expect(page).toHaveURL(`${SERVER_URL}/admin/collections/evenements`)
     const heading = page.locator('h1', { hasText: 'Evenements' }).first()
     await expect(heading).toBeVisible()
   })
 
-  test('can navigate to CategoriesActivite list view', async () => {
-    await page.goto(`${SERVER_URL}/admin/collections/categories-activite`)
-    const heading = page.locator('h1', { hasText: 'Categories Activite' }).first()
-    await expect(heading).toBeVisible()
-  })
-
-  test('can navigate to TypesEvenement list view', async () => {
-    await page.goto(`${SERVER_URL}/admin/collections/types-evenement`)
-    const heading = page.locator('h1', { hasText: 'Types Evenement' }).first()
+  test('can navigate to Partenaires list view', async () => {
+    await page.goto(`${SERVER_URL}/admin/collections/partenaires`)
+    await expect(page).toHaveURL(`${SERVER_URL}/admin/collections/partenaires`)
+    const heading = page.locator('h1', { hasText: 'Partenaires' }).first()
     await expect(heading).toBeVisible()
   })
 
   test('can navigate to Media list view', async () => {
     await page.goto(`${SERVER_URL}/admin/collections/media`)
+    await expect(page).toHaveURL(`${SERVER_URL}/admin/collections/media`)
     const heading = page.locator('h1', { hasText: 'Media' }).first()
     await expect(heading).toBeVisible()
   })
@@ -126,10 +139,12 @@ test.describe('Admin Panel', () => {
     await expect(emailField).toBeVisible()
   })
 
-  test('can navigate to CategorieActivite create view', async () => {
-    await page.goto(`${SERVER_URL}/admin/collections/categories-activite/create`)
-    const labelField = page.locator('#field-label')
-    await expect(labelField).toBeVisible({ timeout: 5_000 })
+  test('can navigate to Reseauteur create view', async () => {
+    await page.goto(`${SERVER_URL}/admin/collections/reseauteurs/create`)
+    await expect(page).toHaveURL(/\/admin\/collections\/reseauteurs\/[a-zA-Z0-9-_]+/)
+    // useAsTitle: 'nom' -> le champ #field-nom existe sur le formulaire.
+    const nomField = page.locator('#field-nom')
+    await expect(nomField).toBeVisible({ timeout: 5_000 })
   })
 
   // ── AdminNavLinks ──────────────────────────────────────────────────────────
@@ -142,9 +157,9 @@ test.describe('Admin Panel', () => {
     expect(href).toBe('/')
   })
 
-  test('AdminNavLinks shows "Deconnexion" button', async () => {
+  test('AdminNavLinks shows "Déconnexion" button', async () => {
     await page.goto(`${SERVER_URL}/admin`)
-    const button = page.locator('button', { hasText: 'Deconnexion' })
+    const button = page.locator('button', { hasText: 'Déconnexion' })
     await expect(button).toBeVisible({ timeout: 5_000 })
   })
 })
