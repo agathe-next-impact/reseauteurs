@@ -18,10 +18,11 @@ test.describe('Frontend — Pages publiques', () => {
   })
 
   test('inscription page is accessible', async ({ page }) => {
-    await page.goto(`${SERVER_URL}/inscription`)
-    // Should load without error (200 status)
-    const response = await page.waitForResponse((r) => r.url().includes('/inscription'))
-    expect(response.status()).toBeLessThan(500)
+    // page.goto renvoie directement la reponse de navigation principale ;
+    // un waitForResponse APRES goto rate la reponse deja consommee -> timeout.
+    const response = await page.goto(`${SERVER_URL}/inscription`)
+    // Should load without error (< 500)
+    expect(response?.status()).toBeLessThan(500)
   })
 })
 
