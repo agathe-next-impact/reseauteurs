@@ -20,10 +20,11 @@ import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { MAP_COLORS } from '@/lib/maplibre/config'
 import { SITE_NAME } from '@/lib/site'
 import { todayParisDateString } from '@/lib/dates'
-import { compterInscrits } from '@/lib/inscriptions'
+import { compterInscrits, listerReseauteurIdsInscrits } from '@/lib/inscriptions'
 import InscriptionEvenement from '@/components/evenement/InscriptionEvenement'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
+import type { Where } from 'payload'
 import type { EvenementRsn as Evenement, Media, Reseau, TypesEvenement, Reseauteur, Categorie } from '@/types/reseauteurs-domain'
 
 export const revalidate = 300
@@ -60,16 +61,23 @@ const getEvenement = cache(async (slug: string): Promise<Evenement | null> => {
 })
 
 /**
- * Réseauteurs (validés) ayant signalé leur présence à cet événement.
+ * Réseauteurs (validés) participant à cet événement — DEUX sources fusionnées :
+ *   - présence signalée sur le profil (`evenementsParticipes` — événements de réseau) ;
+ *   - inscription en ligne (`inscriptions` — événements d'un réseauteur Plus, ADR-0013 §3bis).
+ * Les deux ensembles sont disjoints par le XOR d'organisateur, mais le `or` garantit
+ * l'unicité même si les règles évoluent (un réseauteur = une seule carte).
  * RGPD : uniquement les profils publics (statut === 'valide').
  */
 async function getParticipants(eventId: number | string): Promise<Reseauteur[]> {
   const payload = await getPayload({ config })
+  const inscritIds = await listerReseauteurIdsInscrits(payload, eventId)
+  const sources: Where[] = [{ evenementsParticipes: { in: [eventId] } }]
+  if (inscritIds.length > 0) sources.push({ id: { in: inscritIds } })
   const { docs } = await payload.find({
     collection: 'reseauteurs',
     where: {
       and: [
-        { evenementsParticipes: { in: [eventId] } },
+        { or: sources },
         { statut: { equals: 'valide' } },
       ],
     },
@@ -523,7 +531,9 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                     })}
                   </div>
                   <p className="text-xs text-[#999A9D] mt-2">
-                    Réseauteurs de la plateforme ayant signalé leur présence.
+                    {isPlusEvent
+                      ? 'Réseauteurs inscrits à cet événement.'
+                      : 'Réseauteurs de la plateforme ayant signalé leur présence.'}
                   </p>
                 </section>
               </Reveal>

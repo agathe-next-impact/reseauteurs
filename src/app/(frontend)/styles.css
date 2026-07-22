@@ -1568,11 +1568,15 @@ p {
 }
 
 /* ── Hero : panneau tableau de bord (sombre dans les deux thèmes) ── */
+/* Mobile & tablette (< 881px) : le visuel du hero est en PLEINE LARGEUR d'écran.
+   Pas de gouttière latérale — seul l'espacement vertical est conservé pour ne pas
+   coller au texte ni à la section suivante. */
 .rsn-hero-dash-wrap {
-  padding: clamp(24px, 4vw, 56px);
+  padding: clamp(24px, 4vw, 56px) 0;
 }
 @media (min-width: 881px) {
   .rsn-hero-dash-wrap {
+    padding: clamp(24px, 4vw, 56px);
     padding-left: 0;
   }
 }
@@ -1588,6 +1592,14 @@ p {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: #090E14;
+}
+/* En pleine largeur (mobile & tablette), les bordures gauche/droite tomberaient
+   au ras des bords de l'écran : on ne garde que le haut et le bas. */
+@media (max-width: 880px) {
+  .rsn-hero-dash {
+    border-left: 0;
+    border-right: 0;
+  }
 }
 .rsn-hero-dash-bar {
   display: flex;
@@ -2276,5 +2288,22 @@ p {
   .rsn-split > * + * {
     border-left: 0;
     border-top: 1px solid rgba(var(--ir-line-rgb), 0.1);
+  }
+
+  /* Mobile & tablette : le visuel « carte nationale » occupe TOUTE la largeur
+     d'écran. Il est imbriqué dans des conteneurs padés (px-6 + cadre .rsn-split),
+     qu'on ne peut pas dépader sans désaligner le texte : on le sort donc des
+     gouttières jusqu'aux bords de la fenêtre. Son padding interne est conservé,
+     le contenu reste lisible. */
+  .ir-atlas-map-panel {
+    margin-inline: calc(50% - 50vw);
+    border-left: 0;
+    border-right: 0;
+  }
+
+  /* Le cadre du bloc ne doit pas être traversé par le visuel pleine largeur. */
+  .rsn-split {
+    border-left: 0;
+    border-right: 0;
   }
 }

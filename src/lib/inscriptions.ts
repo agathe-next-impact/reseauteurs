@@ -10,6 +10,7 @@
  * Appelé par la route POST /api/evenements/inscription (jamais le client directement).
  */
 import type { Payload } from 'payload'
+import type { EvenementRsn } from '@/types/reseauteurs-domain'
 
 export interface InscriptionResult {
   ok: boolean
@@ -212,6 +213,52 @@ export async function listerInscrits(
     overrideAccess: true,
   })
   return docs.map(toInscritSummary).filter((x): x is InscritSummary => x !== null)
+}
+
+/**
+ * IDs des réseauteurs inscrits en ligne à un événement (ADR-0013 §3bis).
+ * Utilisé par la fiche publique de l'événement pour afficher les participants
+ * — la sélection des profils réellement affichables (statut `valide`) reste à
+ * l'appelant, qui la combine avec les présences signalées (`evenementsParticipes`).
+ */
+export async function listerReseauteurIdsInscrits(
+  payload: Payload,
+  evenementId: number | string,
+  limit = 500,
+): Promise<number[]> {
+  const { docs } = await payload.find({
+    collection: 'inscriptions',
+    where: { evenement: { equals: Number(evenementId) } },
+    depth: 0,
+    limit,
+    overrideAccess: true,
+    select: { reseauteur: true } as Record<string, boolean>,
+  })
+  return docs
+    .map((d) => relId((d as { reseauteur?: unknown }).reseauteur))
+    .filter((id): id is number => id != null)
+}
+
+/**
+ * Événements auxquels un réseauteur s'est inscrit en ligne (ADR-0013 §3bis).
+ * Retourne les événements peuplés (depth 2 → réseau organisateur inclus) pour la
+ * fiche publique du réseauteur, qui les fusionne avec `evenementsParticipes`.
+ */
+export async function listerEvenementsInscrits(
+  payload: Payload,
+  reseauteurId: number | string,
+  limit = 100,
+): Promise<EvenementRsn[]> {
+  const { docs } = await payload.find({
+    collection: 'inscriptions',
+    where: { reseauteur: { equals: Number(reseauteurId) } },
+    depth: 2,
+    limit,
+    overrideAccess: true,
+  })
+  return docs
+    .map((d) => (d as { evenement?: unknown }).evenement)
+    .filter((e): e is EvenementRsn => !!e && typeof e === 'object')
 }
 
 /**

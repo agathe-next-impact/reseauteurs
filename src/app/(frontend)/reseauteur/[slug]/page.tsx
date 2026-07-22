@@ -20,6 +20,7 @@ import MiniMapLoader from '@/components/maps/MiniMapLoader'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import { SITE_NAME } from '@/lib/site'
 import { todayParisDateString } from '@/lib/dates'
+import { listerEvenementsInscrits } from '@/lib/inscriptions'
 import Reveal from '@/components/home/Reveal'
 import type { Metadata } from 'next'
 import type { Reseauteur, Media, Reseau, Categorie, EvenementRsn } from '@/types/reseauteurs-domain'
@@ -91,10 +92,18 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
   const competences = (r.competences as Array<{ label: string; id?: string }> | null | undefined) ?? []
 
   // Événements auxquels le réseauteur participe (publiés + à venir, triés par date).
+  // DEUX sources fusionnées : présence signalée sur le profil (`evenementsParticipes`,
+  // événements de réseau) + inscriptions en ligne aux événements organisés par un
+  // réseauteur Plus (ADR-0013 §3bis). Dédoublonnage par id.
   // Borne "aujourd'hui" via lib (le "now" reste hors du rendu — règle de pureté).
   const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
-  const evenementsParticipes = ((r.evenementsParticipes as EvenementRsn[] | null | undefined) ?? [])
+  const evenementsInscrits = await listerEvenementsInscrits(await getPayload({ config }), r.id)
+  const evenementsParticipes = [
+    ...((r.evenementsParticipes as EvenementRsn[] | null | undefined) ?? []),
+    ...evenementsInscrits,
+  ]
     .filter((e): e is EvenementRsn => !!e && typeof e === 'object' && e.statut === 'publie')
+    .filter((e, i, arr) => arr.findIndex((o) => String(o.id) === String(e.id)) === i)
     .filter((e) => {
       const finMs = e.dateFin ? new Date(e.dateFin).getTime() : new Date(e.dateDebut).getTime()
       return finMs >= todayStartMs
@@ -305,6 +314,8 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                       const jour = d.toLocaleDateString('fr-FR', { day: 'numeric' })
                       const mois = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')
                       const evReseau = ev.reseau as Reseau | null | undefined
+                      // ADR-0013 : événement organisé par un réseauteur Plus (XOR avec réseau)
+                      const evOrganisateurRz = ev.organisateurReseauteur != null
                       return (
                         <Link
                           key={ev.id}
@@ -321,7 +332,12 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                               {ev.titre}
                             </p>
                             <p className="text-xs text-[#6E7175] truncate">
-                              {ev.lieuVille}{evReseau?.nom ? ` · ${evReseau.nom}` : ''}
+                              {ev.lieuVille}
+                              {evReseau?.nom
+                                ? ` · ${evReseau.nom}`
+                                : evOrganisateurRz
+                                  ? ' · organisé par un réseauteur'
+                                  : ''}
                             </p>
                           </div>
                           <ArrowRight size={14} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />

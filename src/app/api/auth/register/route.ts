@@ -1,5 +1,6 @@
+import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
 import config from '@payload-config'
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site'
 import { userRegisteredAdminEmail, verifyEmailTemplate } from '@/lib/emails'
@@ -7,11 +8,61 @@ import { sendEmail } from '@/lib/email-sender'
 import { rateLimit } from '@/lib/rate-limit'
 
 /**
+ * Jeton de vérification de l'utilisateur, ou un jeton neuf si la colonne est
+ * vide (compte importé, seed, flux interrompu…). Payload n'expose pas de
+ * régénération native : `_verificationToken` est stocké en clair et comparé tel
+ * quel par POST /api/users/verify/:token — le poser nous-mêmes est équivalent.
+ * `webhookTrusted` évite le strip des champs protégés du hook beforeChange.
+ */
+async function ensureVerificationToken(
+  payload: Payload,
+  user: { id: number | string; _verificationToken?: string | null },
+): Promise<string> {
+  const current = user._verificationToken
+  if (typeof current === 'string' && current.length > 0) return current
+
+  const token = randomBytes(20).toString('hex')
+  await payload.update({
+    collection: 'users',
+    id: user.id,
+    data: { _verificationToken: token },
+    context: { webhookTrusted: true },
+    overrideAccess: true,
+  })
+  return token
+}
+
+/** Envoi (ou renvoi) du lien de vérification — jamais bloquant pour l'appelant. */
+async function sendVerificationEmail(
+  payload: Payload,
+  user: { id: number | string; email: string; nomSociete?: string | null },
+  token: string,
+): Promise<boolean> {
+  try {
+    const result = await sendEmail({
+      payload,
+      kind: 'verify-email',
+      to: user.email,
+      subject: 'RÉSEAUTEURS — Verifiez votre email',
+      html: verifyEmailTemplate(user.nomSociete ?? '', `${SITE_URL}/verify?token=${token}`),
+      userId: user.id,
+    })
+    return result.sent
+  } catch (err) {
+    console.error('[auth/register] Verification email failed (non-blocking):', err)
+    return false
+  }
+}
+
+/**
  * POST /api/auth/register
  *
  * Custom registration endpoint that creates the user even if the
  * verification email fails (Resend down, invalid key, etc.).
- * The user can request a new verification email later.
+ * Si l'email correspond à un compte existant **non vérifié**, on renvoie le lien
+ * de vérification au lieu de renvoyer 409 : sans cela, un utilisateur dont
+ * l'email n'est jamais arrivé restait bloqué définitivement (409 à l'inscription,
+ * login refusé tant que non vérifié).
  */
 export async function POST(request: Request) {
   // Anti-abus : endpoint non authentifié qui crée des comptes ET envoie des emails.
@@ -74,15 +125,70 @@ export async function POST(request: Request) {
   }
 
   const payload = await getPayload({ config })
+  const normalizedEmail = email.trim().toLowerCase()
 
-  // Check if user already exists
-  const { totalDocs } = await payload.count({
+  // Compte existant : deux situations très différentes.
+  //  • connexion possible → 409, il faut se connecter (ou réinitialiser le mot de passe) ;
+  //  • connexion bloquée faute de vérification → le compte est créé AVANT l'envoi de
+  //    l'email (non bloquant), donc un premier essai a pu laisser un compte orphelin
+  //    sans email reçu. On renvoie le lien. Aucune donnée du compte existant n'est
+  //    touchée : mot de passe, rôle et nom saisis ici sont ignorés (pas de prise de
+  //    contrôle). Le test porte sur `_verified === false` — même sémantique exacte que
+  //    le gate de Payload (auth/operations/login) : un `_verified` null (ligne legacy,
+  //    colonne ajoutée par migration) autorise le login et ne doit donc PAS être
+  //    traité comme un compte à vérifier.
+  const { docs: existingDocs } = await payload.find({
     collection: 'users',
-    where: { email: { equals: email.trim().toLowerCase() } },
+    where: { email: { equals: normalizedEmail } },
+    limit: 1,
+    depth: 0,
+    showHiddenFields: true,
     overrideAccess: true,
   })
-  if (totalDocs > 0) {
-    return NextResponse.json({ error: 'Un compte avec cet email existe deja.' }, { status: 409 })
+  const existing = existingDocs[0]
+
+  if (existing) {
+    if (existing._verified !== false) {
+      return NextResponse.json(
+        {
+          error:
+            'Un compte avec cet email existe deja. Connectez-vous, ou réinitialisez votre mot de passe.',
+          code: 'account_exists',
+        },
+        { status: 409 },
+      )
+    }
+
+    // Plafond par adresse en plus du plafond par IP : empêche d'inonder la boîte
+    // d'un tiers en rejouant l'inscription avec son email.
+    const { success: resendAllowed } = rateLimit(`register-resend:${normalizedEmail}`, {
+      limit: 3,
+      windowMs: 3_600_000,
+    })
+    if (!resendAllowed) {
+      return NextResponse.json(
+        {
+          error:
+            "L'email de vérification a déjà été renvoyé plusieurs fois. Réessayez dans une heure.",
+        },
+        { status: 429 },
+      )
+    }
+
+    let emailSent = false
+    try {
+      const token = await ensureVerificationToken(payload, existing)
+      emailSent = await sendVerificationEmail(payload, existing, token)
+    } catch (err) {
+      console.error('[auth/register] Resend of verification email failed:', err)
+    }
+
+    return NextResponse.json({
+      message: 'Compte déjà existant, non vérifié — lien de vérification renvoyé.',
+      alreadyRegistered: true,
+      emailSent,
+      user: { id: existing.id, email: existing.email },
+    })
   }
 
   try {
@@ -97,7 +203,7 @@ export async function POST(request: Request) {
     const user = await payload.create({
       collection: 'users',
       data: {
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password,
         nomSociete: nomSociete.trim(),
         ville: ville.trim(),
@@ -123,19 +229,12 @@ export async function POST(request: Request) {
         overrideAccess: true,
         showHiddenFields: true,
       })
-      const token = (freshUser as unknown as { _verificationToken?: string })._verificationToken
-      if (token) {
-        const url = `${SITE_URL}/verify?token=${token}`
-        const result = await sendEmail({
-          payload,
-          kind: 'verify-email',
-          to: user.email,
-          subject: 'RÉSEAUTEURS — Verifiez votre email',
-          html: verifyEmailTemplate(nomSociete.trim(), url),
-          userId: user.id,
-        })
-        emailSent = result.sent
-      }
+      const token = await ensureVerificationToken(payload, freshUser)
+      emailSent = await sendVerificationEmail(
+        payload,
+        { id: user.id, email: user.email, nomSociete: nomSociete.trim() },
+        token,
+      )
     } catch (emailErr) {
       console.error('[auth/register] Verification email failed (non-blocking):', emailErr)
     }

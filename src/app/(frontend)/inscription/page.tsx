@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Check, UserPlus, Sparkles, CalendarPlus } from 'lucide-react'
+import { Check, UserPlus, Sparkles, CalendarPlus, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell from '@/components/layout/AuthShell'
+import { CONTACT_EMAIL } from '@/lib/site'
 
 // Toutes les inscriptions créent un compte gratuit — y compris le choix « Réseauteur+ » :
 // l'abonnement Plus (39 € HT/an) se souscrit depuis /dashboard/plus après vérification de
@@ -43,8 +44,18 @@ export default function InscriptionPage() {
   const [offreReseauteur, setOffreReseauteur] = useState<'gratuit' | 'plus' | null>(null)
   const [step, setStep] = useState(0)
   const [error, setError] = useState('')
+  // Compte déjà vérifié : on propose la connexion / le mot de passe oublié plutôt
+  // qu'un simple message d'erreur sans issue.
+  const [accountExists, setAccountExists] = useState(false)
   const [success, setSuccess] = useState(false)
+  // Réponse du serveur : le compte existait déjà (non vérifié, lien renvoyé) et
+  // l'email a-t-il effectivement pu partir (Resend peut échouer sans bloquer).
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
+  const [emailSent, setEmailSent] = useState(true)
   const [loading, setLoading] = useState(false)
+  // `loading` passe par un re-render : un double-clic rapide peut envoyer deux
+  // POST avant que le bouton ne soit désactivé (le 2e finissait en 409).
+  const submittingRef = useRef(false)
   const STEPS =
     accountType === 'organisateur' || accountType === 'partenaire' ? STEPS_ORGANISATEUR : STEPS_RESEAUTEUR
 
@@ -112,10 +123,13 @@ export default function InscriptionPage() {
 
   async function handleSubmit() {
     setError('')
+    setAccountExists(false)
     if (!nomSociete || !ville) {
       setError('Veuillez remplir la raison sociale et la ville.')
       return
     }
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
 
     try {
@@ -141,30 +155,65 @@ export default function InscriptionPage() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || "Erreur lors de l'inscription.")
-        setLoading(false)
+        setAccountExists(data.code === 'account_exists')
         return
       }
 
+      setAlreadyRegistered(data.alreadyRegistered === true)
+      setEmailSent(data.emailSent !== false)
       setSuccess(true)
     } catch {
       toast.error('Erreur de connexion. Reessayez.')
     } finally {
+      submittingRef.current = false
       setLoading(false)
     }
   }
 
   if (success) {
     return (
-      <AuthShell title="Verifiez votre email">
+      <AuthShell title={emailSent ? 'Verifiez votre email' : 'Votre compte est créé'}>
         <div className="text-center">
-          <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check size={28} className="text-green-600" />
+          <div
+            className={`w-14 h-14 ${emailSent ? 'bg-green-100' : 'bg-amber-100'} rounded-full flex items-center justify-center mx-auto mb-4`}
+          >
+            {emailSent ? (
+              <Check size={28} className="text-green-600" />
+            ) : (
+              <AlertTriangle size={28} className="text-amber-600" />
+            )}
           </div>
-          <p className="text-sm text-text-light mb-6">
-            Un email de vérification a été envoyé a{' '}
-            <strong className="text-text-dark">{email}</strong>. Cliquez sur le lien pour activer
-            votre compte.
-          </p>
+          {emailSent ? (
+            <p className="text-sm text-text-light mb-6">
+              {alreadyRegistered ? (
+                <>
+                  Un compte existait déjà pour{' '}
+                  <strong className="text-text-dark">{email}</strong> mais son email n&apos;avait
+                  jamais été vérifié. Nous venons de vous renvoyer le lien de vérification :
+                  cliquez dessus pour activer votre compte. Le mot de passe enregistré lors de
+                  votre première inscription reste inchangé — utilisez « mot de passe oublié » si
+                  besoin.
+                </>
+              ) : (
+                <>
+                  Un email de vérification a été envoyé a{' '}
+                  <strong className="text-text-dark">{email}</strong>. Cliquez sur le lien pour
+                  activer votre compte.
+                </>
+              )}
+            </p>
+          ) : (
+            <p className="text-sm text-text-light mb-6">
+              Votre compte <strong className="text-text-dark">{email}</strong> est bien enregistré,
+              mais l&apos;email de vérification n&apos;a pas pu être envoyé. Relancez
+              l&apos;inscription avec le même email dans quelques minutes pour recevoir un nouveau
+              lien, ou écrivez-nous à{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline">
+                {CONTACT_EMAIL}
+              </a>
+              .
+            </p>
+          )}
           <p className="text-sm text-text-light mb-4">
             {accountType === 'organisateur'
               ? "Pour publier vos événements, souscrivez à l'abonnement réseau partenaire depuis votre tableau de bord après vérification de votre email."
@@ -521,6 +570,19 @@ export default function InscriptionPage() {
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
           {error}
+          {accountExists && (
+            <p className="mt-2 flex flex-wrap gap-x-4">
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Se connecter
+              </Link>
+              <Link
+                href="/mot-de-passe-oublie"
+                className="font-medium text-primary hover:underline"
+              >
+                Mot de passe oublié
+              </Link>
+            </p>
+          )}
         </div>
       )}
 

@@ -7,11 +7,47 @@
  */
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { getPayload } from 'payload'
+import type { Payload } from 'payload'
 import config from '@payload-config'
 import { z } from 'zod/v4'
 import { rateLimit } from '@/lib/rate-limit'
 import { inscrire, desinscrire, compterInscrits, estInscrit } from '@/lib/inscriptions'
+
+/**
+ * Les deux fiches publiques listent désormais les participants (fiche événement) et les
+ * événements (fiche réseauteur) — on les revalide pour que l'inscription apparaisse
+ * immédiatement, sans attendre la fenêtre ISR de 300 s.
+ */
+async function revaliderFiches(payload: Payload, evenementId: number, userId: number | string) {
+  try {
+    const [{ docs: evs }, { docs: rzs }] = await Promise.all([
+      payload.find({
+        collection: 'evenements',
+        where: { id: { equals: evenementId } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+        select: { slug: true } as Record<string, boolean>,
+      }),
+      payload.find({
+        collection: 'reseauteurs',
+        where: { user: { equals: Number(userId) } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+        select: { slug: true } as Record<string, boolean>,
+      }),
+    ])
+    const evSlug = (evs[0] as { slug?: string | null } | undefined)?.slug
+    const rzSlug = (rzs[0] as { slug?: string | null } | undefined)?.slug
+    if (evSlug) revalidatePath(`/evenement/${evSlug}`, 'page')
+    if (rzSlug) revalidatePath(`/reseauteur/${rzSlug}`, 'page')
+  } catch {
+    // Best-effort : l'ISR (300 s) reste le filet de sécurité.
+  }
+}
 
 const bodySchema = z.object({
   evenementId: z.coerce.number().int().positive(),
@@ -66,5 +102,6 @@ export async function POST(request: Request) {
   if (!result.ok) {
     return NextResponse.json({ error: result.raison ?? 'Opération refusée.' }, { status: 400 })
   }
+  await revaliderFiches(payload, parsed.data.evenementId, user.id)
   return NextResponse.json({ ok: true, inscrit: parsed.data.inscrire, total: result.total ?? 0 })
 }
