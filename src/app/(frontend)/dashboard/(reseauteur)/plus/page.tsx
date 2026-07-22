@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
-import { ArrowLeft, Sparkles, Network } from 'lucide-react'
+import { Sparkles, Network } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
 import { PlusClient } from './PlusClient'
@@ -48,7 +48,7 @@ export default async function PlusPage() {
             href="/dashboard/profil"
             className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
-            <ArrowLeft size={14} aria-hidden /> Mon profil
+             Mon profil
           </Link>
           <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
             <Sparkles size={20} className="text-[#8A6D0B]" aria-hidden />

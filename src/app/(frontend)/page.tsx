@@ -13,19 +13,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getPayload, type Where } from 'payload'
 import config from '@payload-config'
-import {
-  ArrowRight,
-  Users,
-  Calendar,
-  Network,
-  MapPin,
-  Star,
-  Building2,
-  Search,
-  TrendingUp,
-  Award,
-  Sparkles,
-} from 'lucide-react'
+import { Users, Calendar, Network, MapPin, Star, Search, TrendingUp, Award, Sparkles } from 'lucide-react'
 import { withDbRetry } from '@/lib/db-retry'
 import { buildMetadata } from '@/lib/seo'
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/site'
@@ -320,13 +308,10 @@ export default async function HomePage() {
 
             <div className="ir-atlas-actions">
               <Link href="/carte/reseauteurs" className="ir-atlas-primary rsn-linkrow">
-                <MapPin size={16} aria-hidden />
                 Explorer la carte des réseauteurs
               </Link>
               <Link href="/carte/evenements" className="ir-atlas-secondary rsn-linkrow">
-                <Calendar size={16} aria-hidden />
                 Voir les événements
-                <ArrowRight size={14} aria-hidden className="rsn-arrow" />
               </Link>
             </div>
 
@@ -480,7 +465,6 @@ export default async function HomePage() {
               <span className="rsn-strip-desc">{desc}</span>
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#035AA6] mt-1">
                 Découvrir
-                <ArrowRight size={14} aria-hidden className="rsn-arrow" />
               </span>
             </Link>
           ))}
@@ -549,7 +533,6 @@ export default async function HomePage() {
                       style={{ color }}
                     >
                       {cta}
-                      <ArrowRight size={14} aria-hidden className="rsn-arrow" />
                     </Link>
                   </div>
                 </div>
@@ -608,7 +591,6 @@ export default async function HomePage() {
                 <div className="mt-8">
                   <Link href="/inscription" className="ir-atlas-primary rsn-linkrow">
                     Créer mon profil — gratuit
-                    <ArrowRight size={15} aria-hidden className="rsn-arrow" />
                   </Link>
                 </div>
               </div>
@@ -710,7 +692,6 @@ export default async function HomePage() {
           <div className="text-center mt-10">
             <Link href="/inscription" className="ir-atlas-primary rsn-linkrow">
               Créer mon profil — c&apos;est gratuit
-              <ArrowRight size={16} aria-hidden className="rsn-arrow" />
             </Link>
           </div>
         </div>
@@ -774,12 +755,10 @@ export default async function HomePage() {
                 </p>
                 <div className="ir-atlas-actions mt-8">
                   <Link href="/carte/reseauteurs" className="ir-atlas-primary rsn-linkrow">
-                    <MapPin size={16} aria-hidden />
                     Ouvrir la carte
                   </Link>
                   <Link href="/reseaux" className="ir-atlas-secondary rsn-linkrow">
                     Parcourir les réseaux
-                    <ArrowRight size={14} aria-hidden className="rsn-arrow" />
                   </Link>
                 </div>
               </div>
@@ -882,9 +861,7 @@ export default async function HomePage() {
               className="ir-atlas-secondary rsn-linkrow"
               style={{ margin: '0 auto' }}
             >
-              <Building2 size={16} aria-hidden />
               Référencer mon entreprise
-              <ArrowRight size={14} aria-hidden className="rsn-arrow" />
             </Link>
           </div>
         </div>

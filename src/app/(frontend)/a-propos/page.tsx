@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { SITE_URL, SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL } from '@/lib/site'
-import { Network, Users, CalendarDays, MapPin, Building2, Heart, ArrowRight } from 'lucide-react'
+import { Network, Users, CalendarDays, MapPin, Building2, Heart } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 import Reveal from '@/components/home/Reveal'
 import CountUp from '@/components/home/CountUp'
@@ -138,7 +138,6 @@ export default async function AProposPage() {
                     className={`inline-flex items-center gap-1.5 text-sm font-semibold ${color} hover:underline no-underline rsn-linkrow`}
                   >
                     {cta}
-                    <ArrowRight size={14} aria-hidden className="rsn-arrow" />
                   </Link>
                 </div>
               </Reveal>
@@ -222,7 +221,6 @@ export default async function AProposPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Link href="/inscription" className="ir-atlas-primary rsn-linkrow">
                 Créer mon profil gratuitement
-                <ArrowRight size={15} aria-hidden className="rsn-arrow" />
               </Link>
               <Link href={`mailto:${CONTACT_EMAIL}`} className="ir-atlas-secondary rsn-linkrow">
                 Nous contacter

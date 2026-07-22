@@ -21,6 +21,7 @@ import { Users, MapPin } from 'lucide-react'
 import { buildTogglePageMetadata } from '@/lib/seo-canonical'
 import { withDbRetry } from '@/lib/db-retry'
 import { BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
+import { ContactChips } from '@/components/fiche/ContactChips'
 import { ReseauteursFilters } from '@/components/search/ReseauteursFilters'
 import { toFeatureCollection, toFeature } from '@/lib/geojson'
 import { SITE_NAME } from '@/lib/site'
@@ -379,10 +380,17 @@ export default async function ReseauteursPage({
                       const photoMedia = r.photo as Media | null | undefined
                       const photoUrl = photoMedia?.sizes?.thumbnail?.url ?? photoMedia?.url
                       return (
-                        <article key={r.id} role="listitem">
+                        <article
+                          key={r.id}
+                          role="listitem"
+                          // Le cadre porte le style de carte (et non le <Link>) : les
+                          // coordonnées doivent rester DANS la carte tout en étant des
+                          // liens frères — un <a> dans un <a> est invalide.
+                          className="flex flex-col bg-white rounded-2xl border border-[#DFE0E1] hover:border-[#035AA6]/30 h-full group rsn-lift transition-colors"
+                        >
                           <Link
                             href={`/reseauteur/${r.slug}`}
-                            className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-[#DFE0E1] hover:border-[#035AA6]/30 no-underline h-full group rsn-lift"
+                            className="flex flex-col gap-3 p-4 no-underline flex-1"
                           >
                             <div className="flex items-start gap-3">
                               {photoUrl ? (
@@ -420,6 +428,14 @@ export default async function ReseauteursPage({
                               </p>
                             )}
                           </Link>
+                          {/* Coordonnées — hors du <Link> (pas d'<a> imbriqué) */}
+                          <ContactChips
+                            email={r.emailContact}
+                            telephone={r.telephone}
+                            site={r.site}
+                            entityName={`${r.prenom} ${r.nom}`}
+                            className="px-4 pb-4"
+                          />
                         </article>
                       )
                     })}

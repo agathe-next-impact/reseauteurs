@@ -9,7 +9,7 @@
 
 import { useCallback, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, SlidersHorizontal } from 'lucide-react'
 import { DebouncedFilterInput } from './DebouncedFilterInput'
 
 interface ReseauteursFiltersProps {
@@ -85,7 +85,6 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
             className="text-xs text-[#6E7175] hover:text-[#035AA6] flex items-center gap-1 cursor-pointer transition-colors"
             aria-label="Effacer tous les filtres"
           >
-            <X size={12} aria-hidden />
             Effacer
           </button>
         )}

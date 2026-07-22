@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
-import { User, Network, Calendar, ArrowRight, CalendarCheck, Sparkles, Tag } from 'lucide-react'
+import { User, Network } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import type { Reseauteur, Reseau } from '@/types/reseauteurs-domain'
 
@@ -83,7 +83,6 @@ export default async function DashboardPage() {
                     className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] transition-colors no-underline"
                   >
                     Créer mon profil
-                    <ArrowRight size={14} aria-hidden />
                   </Link>
                 </div>
               </Reveal>
@@ -96,7 +95,6 @@ export default async function DashboardPage() {
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      <User size={13} aria-hidden />
                       Mon profil
                     </h2>
                     <p className="font-bold text-[#012A4A] mb-1">{reseauteur.prenom} {reseauteur.nom}</p>
@@ -110,7 +108,7 @@ export default async function DashboardPage() {
                     </div>
                     <div className="mt-4">
                       <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
-                        Modifier mon profil <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                        Modifier mon profil 
                       </span>
                     </div>
                   </Link>
@@ -121,13 +119,12 @@ export default async function DashboardPage() {
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      <Tag size={13} aria-hidden />
                       Offres entreprises
                     </h2>
                     <p className="text-sm text-[#4E5155]">Avantages exclusifs réservés aux réseauteurs.</p>
                     <div className="mt-4">
                       <span className="text-sm text-[#8A6D0B] font-medium flex items-center gap-1">
-                        Découvrir les offres <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                        Découvrir les offres 
                       </span>
                     </div>
                   </Link>
@@ -144,13 +141,12 @@ export default async function DashboardPage() {
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      <CalendarCheck size={13} aria-hidden />
                       Mes participations
                     </h3>
                     <p className="text-sm text-[#4E5155]">Signalez votre présence aux événements de vos réseaux.</p>
                     <div className="mt-4">
                       <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
-                        Voir mes participations <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                        Voir mes participations 
                       </span>
                     </div>
                   </Link>
@@ -161,13 +157,12 @@ export default async function DashboardPage() {
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      <Sparkles size={13} aria-hidden />
                       Réseauteur Plus
                     </h3>
                     <p className="text-sm text-[#4E5155]">Créez vos propres événements avec l&apos;abonnement Réseauteur Plus.</p>
                     <div className="mt-4">
                       <span className="text-sm text-[#8A6D0B] font-medium flex items-center gap-1">
-                        Mes événements Plus <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                        Mes événements Plus 
                       </span>
                     </div>
                   </Link>
@@ -191,7 +186,6 @@ export default async function DashboardPage() {
                     className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#F5E050] text-[#012A4A] font-semibold text-sm hover:bg-[#E3CB2E] transition-colors no-underline"
                   >
                     Créer ma fiche réseau
-                    <ArrowRight size={14} aria-hidden />
                   </Link>
                 </div>
               </Reveal>
@@ -203,7 +197,6 @@ export default async function DashboardPage() {
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      <Network size={13} aria-hidden />
                       Mon réseau
                     </h2>
                     <p className="font-bold text-[#012A4A] mb-1">{reseau.nom}</p>
@@ -222,7 +215,7 @@ export default async function DashboardPage() {
                     )}
                     <div className="mt-4">
                       <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
-                        Gérer mon réseau <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                        Gérer mon réseau 
                       </span>
                     </div>
                   </Link>
@@ -233,13 +226,12 @@ export default async function DashboardPage() {
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      <Calendar size={13} aria-hidden />
                       Événements
                     </h2>
                     <p className="text-sm text-[#4E5155]">{reseau.nbEvenements ?? 0} événement{(reseau.nbEvenements ?? 0) !== 1 ? 's' : ''} publié{(reseau.nbEvenements ?? 0) !== 1 ? 's' : ''}</p>
                     <div className="mt-4">
                       <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
-                        Gérer mes événements <ArrowRight size={12} aria-hidden className="rsn-arrow" />
+                        Gérer mes événements 
                       </span>
                     </div>
                     {!reseau.partenaire && (
@@ -266,7 +258,6 @@ export default async function DashboardPage() {
                 className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#012A4A] text-white font-semibold text-sm hover:bg-[#02467F] transition-colors no-underline"
               >
                 Accéder au back-office
-                <ArrowRight size={14} aria-hidden />
               </Link>
             </div>
           </Reveal>

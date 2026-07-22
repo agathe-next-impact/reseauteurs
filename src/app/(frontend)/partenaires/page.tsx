@@ -9,6 +9,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Building2, ArrowRight } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
+import { ContactChips } from '@/components/fiche/ContactChips'
 import { withDbRetry } from '@/lib/db-retry'
 import { SITE_NAME } from '@/lib/site'
 import PageHeader from '@/components/layout/PageHeader'
@@ -80,7 +81,7 @@ export default async function PartenairesPage() {
                 const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url
 
                 const inner = (
-                  <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#DFE0E1] rsn-lift rsn-shine h-full group">
+                  <div className="flex flex-col items-center gap-3 p-5 pb-3 h-full">
                     {logoUrl ? (
                       <Image
                         src={logoUrl}
@@ -110,11 +111,17 @@ export default async function PartenairesPage() {
                 )
 
                 return (
-                  <div key={p.id} role="listitem">
+                  // Le cadre porte le style de carte : les coordonnées restent DANS la
+                  // carte tout en étant des liens frères du <Link> (pas d'<a> imbriqué).
+                  <div
+                    key={p.id}
+                    role="listitem"
+                    className="flex flex-col bg-white border border-[#DFE0E1] rsn-lift rsn-shine h-full group"
+                  >
                     {p.slug ? (
                       <Link
                         href={`/partenaire/${p.slug}`}
-                        className="block no-underline"
+                        className="block no-underline flex-1"
                         aria-label={`Voir la fiche de ${p.nom}`}
                       >
                         {inner}
@@ -122,6 +129,13 @@ export default async function PartenairesPage() {
                     ) : (
                       inner
                     )}
+                    <ContactChips
+                      email={p.emailContact}
+                      telephone={p.telephone}
+                      site={p.lien}
+                      entityName={p.nom}
+                      className="justify-center px-4 pb-4"
+                    />
                   </div>
                 )
               })}
@@ -146,7 +160,6 @@ export default async function PartenairesPage() {
               className="w-xs mx-auto inline-flex items-center gap-2 px-6 py-3 bg-white text-[#8A6D0B] font-bold text-sm hover:bg-[#FEFBE6] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Référencer mon entreprise
-              <ArrowRight size={16} aria-hidden className="rsn-arrow" />
             </Link>
           </div>
         </Reveal>

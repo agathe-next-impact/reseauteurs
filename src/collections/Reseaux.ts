@@ -510,14 +510,20 @@ export const Reseaux: CollectionConfig = {
     // ============================================================
     // CATÉGORIE
     // ============================================================
+    // [DORMANT — audit fiches 2026-07-22] Aucune surface publique ne lit ce champ :
+    // ni la fiche /reseau/<slug>, ni les filtres de l'annuaire, ni le JSON-LD.
+    // Conservé en DB (pas de migration destructive), masqué de l'admin pour ne pas
+    // faire saisir une donnée qui ne s'affiche nulle part.
     {
       name: 'categorie',
       type: 'relationship',
       relationTo: 'types-evenement',
       index: true,
-      label: 'Catégorie',
+      label: 'Catégorie [dormant]',
       admin: {
-        description: 'Catégorie principale du réseau (Réseaux d\'affaires, Afterworks, Congrès…).',
+        hidden: true,
+        description:
+          '[Dormant] Catégorie principale du réseau — non exploitée par le front (fiche, filtres, JSON-LD).',
       },
     },
     // ============================================================
@@ -537,11 +543,19 @@ export const Reseaux: CollectionConfig = {
       relationTo: 'media',
       label: 'Logo',
     },
+    // [DORMANT — audit fiches 2026-07-22] La fiche publique n'affiche pas de bannière
+    // (en-tête = bandeau navy + logo) et le fallback OG « bannière puis logo » n'est pas
+    // implémenté (cf. buildReseauOrganizationJsonLd : image = champ seo.ogImage seul).
+    // Conservé en DB — le GC média (media-cleanup) continue de le prendre en compte.
     {
       name: 'banniere',
       type: 'upload',
       relationTo: 'media',
-      label: 'Bannière',
+      label: 'Bannière [dormant]',
+      admin: {
+        hidden: true,
+        description: '[Dormant] Non affichée sur la fiche publique. Utilisez le logo et la galerie.',
+      },
     },
     {
       name: 'illustrations',

@@ -42,6 +42,8 @@ export interface EvenementFormData {
   participationInvite?: string
   niveauPublic?: string
   publicConcerne?: string
+  /** Secteur d'activité concerné (id `categories`) ; null = non renseigné. */
+  secteur?: number | null
   // Contact
   contactNom?: string
   contactEmail?: string
@@ -111,6 +113,15 @@ function sanitize(data: EvenementFormData) {
     participationInvite: enumOr(data.participationInvite, ['oui', 'non']),
     niveauPublic: enumOr(data.niveauPublic, ['debutant', 'confirme', 'tous']),
     publicConcerne: opt(data.publicConcerne),
+    // Relation optionnelle : entier positif, ou null (« non renseigné »), ou `undefined`
+    // (champ absent du formulaire → on ne touche pas à la valeur existante).
+    // Jamais NaN/0 : ce serait une FK invalide.
+    secteur:
+      data.secteur === undefined
+        ? undefined
+        : Number.isInteger(data.secteur) && Number(data.secteur) > 0
+          ? Number(data.secteur)
+          : null,
     // Contact
     contactNom: opt(data.contactNom),
     contactEmail: opt(data.contactEmail),

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mail, MessageCircle, ShieldCheck, Bug, Newspaper, Users2, ArrowRight } from 'lucide-react'
+import { Mail, MessageCircle, ShieldCheck, Bug, Newspaper, Users2 } from 'lucide-react'
 import { SITE_URL, CONTACT_EMAIL } from '@/lib/site'
 import PageHeader from '@/components/layout/PageHeader'
 import Reveal from '@/components/home/Reveal'
@@ -84,7 +84,6 @@ export default function ContactPage() {
               className="ir-atlas-primary rsn-linkrow inline-flex"
             >
               {CONTACT_EMAIL}
-              <ArrowRight size={15} aria-hidden className="rsn-arrow" />
             </a>
           </div>
         </Reveal>

@@ -53,21 +53,36 @@ export default async function DashboardProfilPage() {
 
   // Affiliation ouverte aux têtes de réseau ET aux groupes locaux publiés
   // (décision 2026-07-17 — annuaire des réseaux nationaux sélectionnable).
-  const { docs: reseauxLocauxDocs } = await payload.find({
-    collection: 'reseaux',
-    where: { statut: { equals: 'publiee' } },
-    select: { id: true, nom: true, ville: true } as Record<string, boolean>,
-    limit: 1000,
-    sort: 'nom',
-    depth: 0,
-    overrideAccess: true,
-  })
+  // + référentiel des secteurs d'activité (`categories`) pour le sélecteur du profil.
+  const [{ docs: reseauxLocauxDocs }, { docs: secteursDocs }] = await Promise.all([
+    payload.find({
+      collection: 'reseaux',
+      where: { statut: { equals: 'publiee' } },
+      select: { id: true, nom: true, ville: true } as Record<string, boolean>,
+      limit: 1000,
+      sort: 'nom',
+      depth: 0,
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: 'categories',
+      select: { id: true, label: true } as Record<string, boolean>,
+      limit: 200,
+      sort: 'label',
+      depth: 0,
+      overrideAccess: true,
+    }),
+  ])
 
   const reseauxLocaux = (reseauxLocauxDocs as unknown as Record<string, unknown>[]).map((r) => ({
     id: r.id as number | string,
     nom: r.nom as string,
     ville: (r.ville as string | null | undefined) ?? null,
   }))
+
+  const secteurs = (secteursDocs as unknown as Record<string, unknown>[])
+    .map((c) => ({ id: c.id as number | string, label: (c.label as string | null) ?? '' }))
+    .filter((c) => c.label)
 
   return (
     <div className="rsn-page">
@@ -228,7 +243,11 @@ export default async function DashboardProfilPage() {
             {/* Formulaire d'édition */}
             <div className="rsn-card rounded-2xl p-6">
               <h2 className="text-sm font-semibold text-[#1D1E21] mb-5">Modifier mon profil</h2>
-              <ProfilForm reseauteur={reseauteur} reseauxLocaux={reseauxLocaux} />
+              <ProfilForm
+                reseauteur={reseauteur}
+                reseauxLocaux={reseauxLocaux}
+                secteurs={secteurs}
+              />
             </div>
 
             {/* Confidentialité & RGPD */}

@@ -7,8 +7,6 @@
  */
 
 import { useState } from 'react'
-import { Info, ChevronDown } from 'lucide-react'
-
 export interface LegendItem {
   label: string
   color: string
@@ -36,9 +34,7 @@ export default function MapLegend({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        <Info size={13} aria-hidden />
         <span>{title}</span>
-        <ChevronDown size={14} aria-hidden className="rsn-map-legend-chevron" />
       </button>
       {open && (
         <div className="rsn-map-legend-body">

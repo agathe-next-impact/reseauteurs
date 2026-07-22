@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui'
 
 export default function StripePortalButton() {
@@ -32,7 +31,6 @@ export default function StripePortalButton() {
       loading={loading}
       disabled={loading}
       onClick={handleClick}
-      iconLeft={CreditCard}
     >
       {loading ? 'Ouverture du portail...' : 'Gérer mon moyen de paiement et mes factures'}
     </Button>

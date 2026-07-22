@@ -11,7 +11,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Network, Plus, Pencil, ExternalLink, MapPin, Loader2, Mail, X } from 'lucide-react'
+import { Network, Pencil, ExternalLink, MapPin, Loader2, Mail, X } from 'lucide-react'
 import { createMonReseauLocal, updateMonReseauLocal, inviterReseauNational } from './actions'
 
 export interface MonReseauLocal {
@@ -199,7 +199,6 @@ export function MesReseauxClient({
               onClick={() => setEditing('new')}
               className="inline-flex items-center gap-2 bg-[#3E7CA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#2E6389] transition-colors text-sm"
             >
-              <Plus size={15} aria-hidden />
               Créer un réseau local
             </button>
           )}
@@ -343,7 +342,7 @@ function InvitationNational() {
           disabled={pending}
           className="inline-flex items-center justify-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60 shrink-0"
         >
-          {pending ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Mail size={14} aria-hidden />}
+          {pending ? <Loader2 size={14} className="animate-spin" aria-hidden /> : null}
           Inviter
         </button>
       </form>

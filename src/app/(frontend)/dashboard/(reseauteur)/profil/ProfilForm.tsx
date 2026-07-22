@@ -29,17 +29,63 @@ export interface ReseauLocalLite {
   ville?: string | null
 }
 
+/** Secteur d'activité (collection `categories`) pour le sélecteur. */
+export interface SecteurLite {
+  id: number | string
+  label: string
+}
+
+/** Borne alignée sur `maxRows: 20` du champ `competences` (Reseauteurs.ts). */
+const MAX_COMPETENCES = 20
+
 interface ProfilFormProps {
   reseauteur: Reseauteur
   /** Réseaux locaux disponibles pour l'affiliation (ADR-0012 : niveau=local uniquement) */
   reseauxLocaux?: ReseauLocalLite[]
+  /** Secteurs d'activité disponibles (référentiel `categories`) */
+  secteurs?: SecteurLite[]
 }
 
-export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) {
+export function ProfilForm({ reseauteur, reseauxLocaux = [], secteurs = [] }: ProfilFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  // ── Compétences : éditeur de puces piloté par l'état React.
+  //    Le champ étant un array d'objets côté Payload, on ne peut pas le sérialiser
+  //    en simples inputs nommés ; l'état est la source de vérité à la soumission.
+  const [competences, setCompetences] = useState<string[]>(() =>
+    ((reseauteur.competences as Array<{ label?: string | null }> | null | undefined) ?? [])
+      .map((c) => (c?.label ?? '').trim())
+      .filter(Boolean),
+  )
+  const [competenceDraft, setCompetenceDraft] = useState('')
+
+  const addCompetence = () => {
+    const value = competenceDraft.trim()
+    if (!value) return
+    if (competences.length >= MAX_COMPETENCES) return
+    // Dédoublonnage insensible à la casse — évite « Vente » et « vente ».
+    if (competences.some((c) => c.toLowerCase() === value.toLowerCase())) {
+      setCompetenceDraft('')
+      return
+    }
+    setCompetences([...competences, value.slice(0, 120)])
+    setCompetenceDraft('')
+  }
+
+  const removeCompetence = (index: number) => {
+    setCompetences(competences.filter((_, i) => i !== index))
+  }
+
+  // Secteur actuel (relation populée à depth 1 ou simple id)
+  const currentSecteurId =
+    typeof reseauteur.secteur === 'object' && reseauteur.secteur !== null
+      ? String((reseauteur.secteur as { id: number | string }).id)
+      : reseauteur.secteur != null
+        ? String(reseauteur.secteur)
+        : ''
 
   // Photo actuelle (populée par la page — depth 1)
   const photoMedia = (typeof reseauteur.photo === 'object' ? reseauteur.photo : null) as Media | null
@@ -73,6 +119,14 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
     const fd = new FormData(e.currentTarget)
     // Récupérer les réseaux cochés
     const reseauxIds = fd.getAll('reseauxFrequentes').map((v) => Number(v))
+    // Secteur : '' = « non renseigné » → null explicite. Si le select n'a pas été rendu
+    // (référentiel `categories` vide), on renvoie `undefined` pour NE PAS écraser une
+    // valeur posée en administration.
+    const secteurValue: number | null | undefined = fd.has('secteur')
+      ? fd.get('secteur')
+        ? Number(fd.get('secteur'))
+        : null
+      : undefined
 
     const data: ProfilFormData = {
       prenom: fd.get('prenom') as string,
@@ -88,6 +142,8 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
       departement: fd.get('departement') as string | undefined,
       region: fd.get('region') as string | undefined,
       evenementsParMois: Number(fd.get('evenementsParMois') ?? 0),
+      secteur: secteurValue,
+      competences,
       noindex: fd.get('noindex') === '1',
       reseauxFrequentes: reseauxIds,
     }
@@ -223,6 +279,98 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
               className={inputClass}
             />
           </div>
+        </div>
+      </fieldset>
+
+      {/* Activité — secteur + compétences (affichés sur la fiche publique,
+          utilisés par le filtre de l'annuaire et le maillage « même secteur ») */}
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-semibold text-[#1D1E21] mb-3">Activité</legend>
+
+        {secteurs.length > 0 && (
+          <div>
+            <label htmlFor="secteur" className={labelClass}>Secteur d&apos;activité</label>
+            <select
+              id="secteur"
+              name="secteur"
+              defaultValue={currentSecteurId}
+              className={inputClass}
+            >
+              <option value="">— Non renseigné —</option>
+              {secteurs.map((s) => (
+                <option key={s.id} value={String(s.id)}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[#999A9D] mt-1">
+              Permet aux visiteurs de vous trouver via le filtre par secteur.
+            </p>
+          </div>
+        )}
+
+        <div>
+          <span className={labelClass} id="competences-label">
+            Compétences <span className="text-[#999A9D]">({competences.length}/{MAX_COMPETENCES})</span>
+          </span>
+
+          {competences.length > 0 && (
+            <ul
+              className="flex flex-wrap gap-2 mb-2"
+              aria-labelledby="competences-label"
+            >
+              {competences.map((c, i) => (
+                <li
+                  key={`${c}-${i}`}
+                  className="inline-flex items-center gap-1.5 pl-2.5 pr-1 py-1 rounded-full bg-[#E9E9EA] border border-[#DFE0E1] text-xs font-medium text-[#4E5155]"
+                >
+                  {c}
+                  <button
+                    type="button"
+                    onClick={() => removeCompetence(i)}
+                    className="rounded-full px-1 leading-none text-sm text-[#6E7175] hover:text-[#B3261E] hover:bg-white transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[#035AA6]/40"
+                    aria-label={`Retirer la compétence ${c}`}
+                  >
+                    <span aria-hidden>&times;</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex gap-2">
+            <input
+              id="competenceDraft"
+              type="text"
+              value={competenceDraft}
+              onChange={(e) => setCompetenceDraft(e.target.value)}
+              // Entrée valide la compétence sans soumettre le formulaire entier.
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  addCompetence()
+                }
+              }}
+              maxLength={120}
+              disabled={competences.length >= MAX_COMPETENCES}
+              placeholder="ex : négociation, développement web…"
+              aria-label="Ajouter une compétence"
+              className={inputClass}
+            />
+            <button
+              type="button"
+              onClick={addCompetence}
+              disabled={!competenceDraft.trim() || competences.length >= MAX_COMPETENCES}
+              className="shrink-0 px-3 rounded-xl border border-[#DFE0E1] text-sm font-medium text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] disabled:opacity-50 disabled:hover:border-[#DFE0E1] disabled:hover:text-[#4E5155] transition-colors cursor-pointer"
+            >
+              Ajouter
+            </button>
+          </div>
+          <p className="text-xs text-[#999A9D] mt-1">
+            {competences.length >= MAX_COMPETENCES
+              ? `Maximum ${MAX_COMPETENCES} compétences atteint.`
+              : 'Les compétences sont affichées sur votre fiche publique.'}
+          </p>
         </div>
       </fieldset>
 

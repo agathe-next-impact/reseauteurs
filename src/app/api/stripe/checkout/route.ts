@@ -285,6 +285,11 @@ export async function POST(request: Request) {
           line_items: [{ price: priceId, quantity: 1 }],
           automatic_tax: { enabled: true },
           billing_address_collection: 'required',
+          // Obligatoire avec automatic_tax : le Customer est créé ci-dessus sans
+          // adresse, et Stripe refuse la session (customer_tax_location_invalid)
+          // tant qu'il ne sait pas qu'il peut recopier sur le Customer l'adresse
+          // saisie dans le Checkout. Même réglage que les deux autres produits.
+          customer_update: { address: 'auto', name: 'auto' },
           subscription_data: {
             description: `Abonnement partenaire annonceur — RÉSEAUTEURS`,
             metadata: {

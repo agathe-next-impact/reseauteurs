@@ -15,16 +15,9 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import {
-  MapPin,
-  Globe,
-  Users,
-  CalendarDays,
-  AlertTriangle,
-  RefreshCw,
-  Building2,
-} from 'lucide-react'
+import { MapPin, Users, CalendarDays, AlertTriangle, Building2 } from 'lucide-react'
 import SlideOver from './SlideOver'
+import SlideOverContacts from './SlideOverContacts'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 interface ReseauParent {
@@ -41,11 +34,14 @@ interface ReseauDetail {
   nom: string
   niveau: 'national' | 'local'
   ville: string
+  departement: string | null
   adresse: string | null
   codePostal: string | null
   description: string | null
   logoUrl: string | null
   siteWeb: string | null
+  emailContact: string | null
+  telephone: string | null
   partenaire: boolean
   nbReseauteurs: number
   nbEvenements: number
@@ -121,7 +117,6 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
             onClick={() => fetchData(slug)}
             className="inline-flex items-center gap-2 text-sm font-medium text-[#3E7CA6] hover:text-[#2E6389] transition-colors mt-2 cursor-pointer"
           >
-            <RefreshCw size={13} />
             Réessayer
           </button>
         </div>
@@ -174,7 +169,10 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
                 {/* Ville */}
                 <div className="flex items-center gap-1.5 mt-1 text-sm text-[#6E7175]">
                   <MapPin size={12} className="shrink-0" />
-                  <span>{data.ville}</span>
+                  <span>
+                    {data.ville}
+                    {data.departement ? ` (${data.departement})` : ''}
+                  </span>
                 </div>
 
                 {/* Réseau national parent */}
@@ -249,20 +247,12 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
             </div>
           )}
 
-          {/* Site web */}
-          {data.siteWeb && (
-            <div className="py-4">
-              <a
-                href={data.siteWeb}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-[#035AA6] hover:text-[#02467F] transition-colors"
-              >
-                <Globe size={14} className="shrink-0" />
-                {data.siteWeb.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-              </a>
-            </div>
-          )}
+          {/* Contact — email / téléphone / site web (mêmes canaux que la fiche) */}
+          <SlideOverContacts
+            email={data.emailContact}
+            telephone={data.telephone}
+            site={data.siteWeb}
+          />
         </div>
       )}
     </SlideOver>

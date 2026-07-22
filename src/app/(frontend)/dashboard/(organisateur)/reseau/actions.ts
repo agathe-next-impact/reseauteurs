@@ -79,6 +79,29 @@ const ReseauSchema = z.object({
   ville: z.string().max(100).optional(),
   departement: z.string().max(100).optional(),
   region: z.string().max(100).optional(),
+  // Adresse du siège — affichée sous la mini-carte de la fiche publique
+  adresse: z.string().max(300).optional(),
+  codePostal: z.string().max(10).optional(),
+  // Vidéo de présentation (section dédiée de la fiche) — URL YouTube
+  videoYoutube: z.string().url('URL invalide').optional().or(z.literal('')),
+  // Réseaux sociaux (array — maxRows 6 côté collection)
+  reseauxSociaux: z
+    .array(
+      z.object({
+        plateforme: z.enum([
+          'facebook',
+          'instagram',
+          'linkedin',
+          'twitter',
+          'youtube',
+          'tiktok',
+          'pinterest',
+        ]),
+        url: z.string().url('URL de réseau social invalide'),
+      }),
+    )
+    .max(6, 'Maximum 6 réseaux sociaux')
+    .optional(),
   // Fiche complète (spec 2026-07-13) — champs texte/sélecteurs (uploads gérés en admin)
   typeJuridique: z.string().max(30).optional(),
   responsableNom: z.string().max(200).optional(),
@@ -126,6 +149,8 @@ const EvenementSchema = z.object({
   participationInvite: z.string().max(4).optional(),
   niveauPublic: z.string().max(12).optional(),
   publicConcerne: z.string().max(300).optional(),
+  // Secteur d'activité concerné (relation `categories`) ; null = non renseigné.
+  secteur: z.number().int().positive().nullable().optional(),
   contactNom: z.string().max(200).optional(),
   contactEmail: z.string().max(254).optional(),
   contactTelephone: z.string().max(30).optional(),
@@ -199,6 +224,15 @@ function evenementExtras(d: z.infer<typeof EvenementSchema>): Record<string, unk
     participationInvite: enumOr(d.participationInvite, ['oui', 'non']),
     niveauPublic: enumOr(d.niveauPublic, ['debutant', 'confirme', 'tous']),
     publicConcerne: opt(d.publicConcerne),
+    // Relation optionnelle : entier positif, ou null (« non renseigné »), ou `undefined`
+    // (champ absent du formulaire → on ne touche pas à la valeur existante).
+    // Jamais NaN/0 : ce serait une FK invalide.
+    secteur:
+      d.secteur === undefined
+        ? undefined
+        : Number.isInteger(d.secteur) && Number(d.secteur) > 0
+          ? Number(d.secteur)
+          : null,
     contactNom: opt(d.contactNom),
     contactEmail: opt(d.contactEmail),
     contactTelephone: opt(d.contactTelephone),
@@ -239,9 +273,14 @@ export async function updateFicheReseau(
         ville: d.ville,
         departement: d.departement,
         region: d.region,
+        adresse: emptyToNull(d.adresse),
+        codePostal: emptyToNull(d.codePostal),
         siteWeb: d.siteWeb || null,
         emailContact: d.emailContact || null,
         telephone: d.telephone || null,
+        videoYoutube: d.videoYoutube || null,
+        // `undefined` = champ non soumis (on n'écrase pas) ; [] = tout retiré.
+        reseauxSociaux: d.reseauxSociaux === undefined ? undefined : d.reseauxSociaux,
         // Fiche complète
         typeJuridique: enumOrNull(d.typeJuridique, ['association', 'prive', 'franchise', 'institution', 'autre']),
         responsableNom: emptyToNull(d.responsableNom),

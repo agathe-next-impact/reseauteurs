@@ -10,11 +10,46 @@ interface FicheReseauFormProps {
   reseau: Record<string, unknown>
 }
 
+/** Plateformes acceptées par la collection (`reseauxSociaux.plateforme`). */
+const PLATEFORMES = [
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'twitter', label: 'X (Twitter)' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'pinterest', label: 'Pinterest' },
+] as const
+
+type Plateforme = (typeof PLATEFORMES)[number]['value']
+type SocialRow = { plateforme: Plateforme; url: string }
+
+/** Borne alignée sur `maxRows: 6` du champ `reseauxSociaux` (Reseaux.ts). */
+const MAX_SOCIAUX = 6
+
 export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  // ── Réseaux sociaux : array d'objets côté Payload → état React (pas sérialisable
+  //    en simples inputs nommés). L'état est la source de vérité à la soumission.
+  const [sociaux, setSociaux] = useState<SocialRow[]>(() =>
+    ((reseau.reseauxSociaux as Array<{ plateforme?: string; url?: string }> | null | undefined) ?? [])
+      .filter((s) => s?.plateforme && s?.url)
+      .map((s) => ({ plateforme: s.plateforme as Plateforme, url: s.url as string }))
+      .slice(0, MAX_SOCIAUX),
+  )
+
+  const addSocial = () =>
+    setSociaux((prev) =>
+      prev.length >= MAX_SOCIAUX ? prev : [...prev, { plateforme: 'linkedin', url: '' }],
+    )
+  const updateSocial = (index: number, patch: Partial<SocialRow>) =>
+    setSociaux((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)))
+  const removeSocial = (index: number) =>
+    setSociaux((prev) => prev.filter((_, i) => i !== index))
 
   // Logo actuel (populé par la page — depth 1)
   const logoMedia = (typeof reseau.logo === 'object' ? reseau.logo : null) as Media | null
@@ -49,6 +84,11 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       ville: str('ville'),
       departement: str('departement'),
       region: str('region'),
+      adresse: str('adresse'),
+      codePostal: str('codePostal'),
+      videoYoutube: str('videoYoutube'),
+      // Lignes incomplètes ignorées : une URL vide n'a pas à échouer la validation Zod.
+      reseauxSociaux: sociaux.filter((s) => s.url.trim() !== ''),
       typeJuridique: str('typeJuridique'),
       responsableNom: str('responsableNom'),
       responsableFonction: str('responsableFonction'),
@@ -158,6 +198,33 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
             type="text"
             maxLength={100}
             defaultValue={reseau.region as string ?? ''}
+            className={inputClass}
+          />
+        </div>
+      </div>
+
+      {/* Adresse du siège — affichée sous la carte de la fiche publique */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="sm:col-span-2">
+          <label htmlFor="adresse" className={labelClass}>Adresse du siège</label>
+          <input
+            id="adresse"
+            name="adresse"
+            type="text"
+            maxLength={300}
+            placeholder="12 rue de la République"
+            defaultValue={reseau.adresse as string ?? ''}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label htmlFor="codePostal" className={labelClass}>Code postal</label>
+          <input
+            id="codePostal"
+            name="codePostal"
+            type="text"
+            maxLength={10}
+            defaultValue={reseau.codePostal as string ?? ''}
             className={inputClass}
           />
         </div>
@@ -274,8 +341,69 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
         </div>
       </fieldset>
 
+      {/* ── Réseaux sociaux — affichés dans « Responsable & ressources » de la fiche */}
+      <fieldset className="space-y-2 pt-2 border-t border-[#E9E9EA]">
+        <legend className="text-xs font-semibold text-[#4E5155]">
+          Réseaux sociaux <span className="font-normal text-[#999A9D]">({sociaux.length}/{MAX_SOCIAUX})</span>
+        </legend>
+
+        {sociaux.map((s, i) => (
+          <div key={i} className="flex gap-2 items-start">
+            <select
+              value={s.plateforme}
+              onChange={(e) => updateSocial(i, { plateforme: e.target.value as Plateforme })}
+              aria-label={`Plateforme du lien ${i + 1}`}
+              className={`${inputClass} sm:w-40 shrink-0`}
+            >
+              {PLATEFORMES.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+            <input
+              type="url"
+              value={s.url}
+              onChange={(e) => updateSocial(i, { url: e.target.value })}
+              maxLength={500}
+              placeholder="https://…"
+              aria-label={`URL du lien ${i + 1}`}
+              className={inputClass}
+            />
+            <button
+              type="button"
+              onClick={() => removeSocial(i)}
+              aria-label={`Retirer le lien ${i + 1}`}
+              className="shrink-0 px-3 py-2 rounded-xl border border-[#DFE0E1] text-sm font-medium text-[#6E7175] hover:border-[#B3261E] hover:text-[#B3261E] transition-colors cursor-pointer"
+            >
+              Retirer
+            </button>
+          </div>
+        ))}
+
+        {sociaux.length < MAX_SOCIAUX && (
+          <button
+            type="button"
+            onClick={addSocial}
+            className="inline-flex items-center p-2.5 rounded-xl border border-[#DFE0E1] text-sm font-medium text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] transition-colors cursor-pointer"
+          >
+            Ajouter un réseau social
+          </button>
+        )}
+      </fieldset>
+
       {/* ── Médias & validation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E9E9EA]">
+        <div>
+          <label htmlFor="videoYoutube" className={labelClass}>Vidéo de présentation (YouTube)</label>
+          <input
+            id="videoYoutube"
+            name="videoYoutube"
+            type="url"
+            maxLength={500}
+            placeholder="https://www.youtube.com/watch?v=…"
+            defaultValue={reseau.videoYoutube as string ?? ''}
+            className={inputClass}
+          />
+        </div>
         <div>
           <label htmlFor="plaquetteUrl" className={labelClass}>Plaquette PDF (lien)</label>
           <input id="plaquetteUrl" name="plaquetteUrl" type="url" maxLength={500} placeholder="https://…/plaquette.pdf" defaultValue={(reseau.plaquetteUrl as string) ?? ''} className={inputClass} />

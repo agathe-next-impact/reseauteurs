@@ -12,7 +12,7 @@
  */
 import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Check, Loader2, UserPlus, Users } from 'lucide-react'
+import { Loader2, Users } from 'lucide-react'
 
 interface Props {
   evenementId: number
@@ -80,7 +80,6 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
           href={`/login?redirect=${encodeURIComponent(`/evenement/${slug}`)}`}
           className="ir-atlas-primary rsn-linkrow rsn-shine"
         >
-          <UserPlus size={15} aria-hidden />
           Je m&apos;inscris
         </a>
         <span className={`text-xs ${onDark ? 'text-white/60' : 'text-[#6E7175]'}`}>
@@ -139,7 +138,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
           }`}
           aria-label="Se désinscrire de cet événement"
         >
-          {pending ? <Loader2 size={15} className="animate-spin" aria-hidden /> : <Check size={15} aria-hidden />}
+          {pending ? <Loader2 size={15} className="animate-spin" aria-hidden /> : null}
           Inscrit — se désinscrire
         </button>
       ) : (
@@ -150,7 +149,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
           className="ir-atlas-primary rsn-linkrow rsn-shine disabled:opacity-60"
           aria-label="S'inscrire à cet événement"
         >
-          {pending ? <Loader2 size={15} className="animate-spin" aria-hidden /> : <UserPlus size={15} aria-hidden />}
+          {pending ? <Loader2 size={15} className="animate-spin" aria-hidden /> : null}
           Je m&apos;inscris
         </button>
       )}

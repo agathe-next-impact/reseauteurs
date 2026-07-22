@@ -3,7 +3,7 @@ import type { Field } from 'payload'
 /**
  * Shared SEO field group appended to public-facing collections.
  * Overrides are optional — when empty, routes fall back on entity defaults
- * (raisonSociale / titre, description, banniere / logo).
+ * (nom / titre, description).
  */
 export const seoField: Field = {
   name: 'seo',
@@ -47,7 +47,8 @@ export const seoField: Field = {
       relationTo: 'media',
       label: 'Image OpenGraph',
       admin: {
-        description: 'Image partagee sur les reseaux sociaux. Fallback : banniere puis logo.',
+        description:
+          'Image partagee sur les reseaux sociaux. Fallback : image OpenGraph par defaut du site.',
       },
     },
     {

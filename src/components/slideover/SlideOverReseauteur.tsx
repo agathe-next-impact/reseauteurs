@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Globe, ExternalLink, Phone, Mail, AlertTriangle, RefreshCw, User } from 'lucide-react'
+import { MapPin, Globe, ExternalLink, Phone, Mail, AlertTriangle, User } from 'lucide-react'
 import SlideOver from './SlideOver'
 import { Skeleton } from '@/components/ui/Skeleton'
 
@@ -116,7 +116,6 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
             onClick={() => fetchData(slug)}
             className="inline-flex items-center gap-2 text-sm font-medium text-[#035AA6] hover:text-[#02467F] transition-colors mt-2 cursor-pointer"
           >
-            <RefreshCw size={13} />
             Réessayer
           </button>
         </div>

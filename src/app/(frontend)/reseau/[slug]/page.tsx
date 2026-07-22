@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Users, Calendar, ArrowRight, MapPin, Network, User, FileText, ExternalLink } from 'lucide-react'
+import { Users, Calendar, MapPin, Network, User } from 'lucide-react'
 import { ContactCTA } from '@/components/fiche/ContactCTA'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildReseauOrganizationJsonLd, buildBreadcrumbListJsonLd, type ReseauLocalLite } from '@/lib/jsonld'
@@ -258,10 +258,10 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
       />
 
       {/* Héros de fiche — fond de marque navy (même token que PageHeader) */}
-      <section className="rsn-pagehead" data-tone="navy">
+      <section className="rsn-pagehead rsn-pagehead--compact" data-tone="navy">
         <div className="rsn-pagehead-inner">
           {/* Fil d'Ariane */}
-          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-white/60 flex items-center gap-1.5">
+          <nav aria-label="Fil d'Ariane" className="mb-4 text-xs text-white/60 flex items-center gap-1.5">
             <Link href="/" className="hover:text-white no-underline transition-colors">Accueil</Link>
             <span aria-hidden>/</span>
             <Link href="/reseaux" className="hover:text-white no-underline transition-colors">Réseaux</Link>
@@ -473,7 +473,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         className="rsn-linkrow text-xs text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
                       >
                         Voir tous ({reseau.nbReseauteurs})
-                        <ArrowRight size={12} aria-hidden className="rsn-arrow inline-block ml-0.5" />
                       </Link>
                     )}
                   </div>
@@ -522,7 +521,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                   <p className="text-sm text-[#6E7175] mb-2">Aucun réseauteur dans ce réseau pour l&apos;instant.</p>
                   <Link href="/inscription" className="rsn-linkrow text-sm text-[#035AA6] font-medium hover:text-[#02467F] no-underline transition-colors">
                     Créer mon profil et rejoindre ce réseau
-                    <ArrowRight size={13} aria-hidden className="rsn-arrow inline-block ml-1" />
                   </Link>
                 </div>
               </Reveal>
@@ -543,7 +541,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         className="rsn-linkrow text-xs text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
                       >
                         Voir tous ({reseau.nbEvenements})
-                        <ArrowRight size={12} aria-hidden className="rsn-arrow inline-block ml-0.5" />
                       </Link>
                     )}
                   </div>
@@ -556,7 +553,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#035AA6]/40 transition-colors no-underline group"
                       >
                         <div className="shrink-0 flex flex-col items-center justify-center text-[#8A6D0B]">
-                          <Calendar size={16} aria-hidden />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[#1D1E21] truncate group-hover:text-[#035AA6] transition-colors">
@@ -567,7 +563,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                             {ev.lieuVille && ` · ${ev.lieuVille}`}
                           </p>
                         </div>
-                        <ArrowRight size={13} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />
                       </Link>
                     ))}
                   </div>
@@ -591,7 +586,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         className="rsn-linkrow text-xs text-[#3E7CA6] hover:text-[#2E6389] no-underline font-medium transition-colors"
                       >
                         Voir sur la carte
-                        <ArrowRight size={12} aria-hidden className="rsn-arrow inline-block ml-0.5" />
                       </Link>
                     )}
                   </div>
@@ -604,7 +598,6 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         className="rsn-lift flex items-center gap-2 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#3E7CA6]/40 transition-colors no-underline group"
                       >
                         <div className="flex items-center justify-center text-[#3E7CA6] shrink-0" aria-hidden>
-                          <Network size={13} />
                         </div>
                         <p className="text-xs font-semibold text-[#1D1E21] truncate group-hover:text-[#3E7CA6] transition-colors">
                           {local.nom}
@@ -657,7 +650,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                   {plaquetteSafe && (
                     <div className="flex flex-wrap gap-2">
                       <a href={plaquetteSafe} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors">
-                        <FileText size={13} aria-hidden />Plaquette PDF
+                        Plaquette PDF
                       </a>
                     </div>
                   )}
@@ -666,7 +659,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                     <div className="flex flex-wrap gap-2 mt-2" aria-label="Réseaux sociaux">
                       {socials.map((s, i) => (
                         <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors capitalize">
-                          <ExternalLink size={13} aria-hidden />{s.plateforme}
+                          {s.plateforme}
                         </a>
                       ))}
                     </div>

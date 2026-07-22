@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Users, ArrowRight, Building2, ExternalLink, CalendarDays } from 'lucide-react'
+import { MapPin, Users, Building2, CalendarDays } from 'lucide-react'
 import { ContactCTA } from '@/components/fiche/ContactCTA'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildPersonJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
@@ -138,10 +138,10 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
       )}
 
       {/* Héros de fiche — fond de marque navy (même token que PageHeader) */}
-      <section className="rsn-pagehead" data-tone="navy">
+      <section className="rsn-pagehead rsn-pagehead--compact" data-tone="navy">
         <div className="rsn-pagehead-inner">
           {/* Fil d'Ariane */}
-          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-white/60 flex items-center gap-1.5">
+          <nav aria-label="Fil d'Ariane" className="mb-4 text-xs text-white/60 flex items-center gap-1.5">
             <Link href="/" className="hover:text-white no-underline transition-colors">Accueil</Link>
             <span aria-hidden>/</span>
             <Link href="/reseauteurs" className="hover:text-white no-underline transition-colors">Réseauteurs</Link>
@@ -211,7 +211,6 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                   className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-white/15 bg-white/5 text-sm text-white/85 hover:border-white/40 hover:bg-white/10 transition-colors no-underline"
                   aria-label={`Profil LinkedIn de ${r.prenom} ${r.nom}`}
                 >
-                  <ExternalLink size={13} aria-hidden />
                   LinkedIn
                 </a>
               )}
@@ -340,7 +339,6 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                                   : ''}
                             </p>
                           </div>
-                          <ArrowRight size={14} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />
                         </Link>
                       )
                     })}
@@ -393,9 +391,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
               href={`/carte/reseauteurs?ville=${encodeURIComponent(r.ville ?? '')}`}
               className="rsn-linkrow inline-flex items-center gap-2 text-sm text-[#035AA6] font-medium hover:text-[#02467F] no-underline transition-colors"
             >
-              <MapPin size={14} aria-hidden />
               Voir les réseauteurs à {r.ville} sur la carte
-              <ArrowRight size={13} aria-hidden className="rsn-arrow" />
             </Link>
           </div>
         </article>

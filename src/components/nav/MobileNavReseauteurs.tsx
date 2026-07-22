@@ -15,7 +15,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Users, Calendar, Network, Handshake, LogIn, UserPlus, LayoutDashboard, LogOut, Loader2 } from 'lucide-react'
+import { Menu, X, Users, Calendar, Network, Handshake, LayoutDashboard, Loader2 } from 'lucide-react'
 import { useAuth } from './AuthProvider'
 import ThemeToggle from './ThemeToggle'
 import { SITE_NAME } from '@/lib/site'
@@ -176,7 +176,6 @@ export default function MobileNavReseauteurs() {
                   href="/dashboard"
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(var(--ir-line-rgb),0.12)] px-4 py-3 text-sm font-semibold text-[var(--ir-text-2)] no-underline hover:bg-[var(--ir-surface-inset)] transition-colors"
                 >
-                  <LayoutDashboard size={18} aria-hidden />
                   Mon espace
                 </Link>
                 <button
@@ -184,7 +183,7 @@ export default function MobileNavReseauteurs() {
                   disabled={isPending}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-[var(--ir-text-4)] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {isPending ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} aria-hidden />}
+                  {isPending ? <Loader2 size={18} className="animate-spin" /> : null}
                   Déconnexion
                 </button>
               </div>
@@ -194,14 +193,12 @@ export default function MobileNavReseauteurs() {
                   href="/login"
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(var(--ir-line-rgb),0.12)] px-4 py-3 text-sm font-semibold text-[var(--ir-text-2)] no-underline hover:bg-[var(--ir-surface-inset)] transition-colors"
                 >
-                  <LogIn size={18} aria-hidden />
                   Connexion
                 </Link>
                 <Link
                   href="/inscription"
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#035AA6] px-4 py-3 text-sm font-semibold text-white no-underline hover:bg-[#02467F] transition-colors"
                 >
-                  <UserPlus size={18} aria-hidden />
                   Créer mon profil — gratuit
                 </Link>
               </div>

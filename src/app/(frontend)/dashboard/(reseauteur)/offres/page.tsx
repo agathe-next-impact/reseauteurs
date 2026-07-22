@@ -9,7 +9,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Tag, ExternalLink, Building2, ArrowLeft } from 'lucide-react'
+import { Tag, Building2 } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import type { Partenaire, Media } from '@/types/reseauteurs-domain'
 
@@ -70,7 +70,7 @@ export default async function OffresPartenairesPage() {
             href="/dashboard/profil"
             className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
-            <ArrowLeft size={14} aria-hidden /> Mon profil
+             Mon profil
           </Link>
           <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
             <Tag size={20} className="text-[#8A6D0B]" aria-hidden />
@@ -149,7 +149,7 @@ export default async function OffresPartenairesPage() {
                           rel="noopener noreferrer"
                           className="mt-3 inline-flex items-center gap-1.5 bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm no-underline"
                         >
-                          En profiter <ExternalLink size={13} aria-hidden />
+                          En profiter 
                         </a>
                       )}
                     </div>

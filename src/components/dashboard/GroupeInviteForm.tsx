@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Send, Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui'
 
 export default function GroupeInviteForm() {
@@ -101,10 +101,9 @@ export default function GroupeInviteForm() {
           disabled={emails.length >= 10}
           className="inline-flex items-center gap-1.5 text-sm text-text-medium hover:text-text-dark transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         >
-          <Plus size={13} />
           Ajouter une ligne
         </button>
-        <Button onClick={handleSubmit} loading={sending} iconLeft={Send} size="sm">
+        <Button onClick={handleSubmit} loading={sending} size="sm">
           Envoyer les invitations
         </Button>
       </div>

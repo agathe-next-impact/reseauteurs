@@ -12,18 +12,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import {
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  CreditCard,
-  Loader2,
-  CalendarClock,
-  FileText,
-  TrendingUp,
-  RefreshCw,
-  XCircle,
-} from 'lucide-react'
+import { CheckCircle2, AlertCircle, Clock, CreditCard, Loader2, CalendarClock, XCircle } from 'lucide-react'
 import CancelConfirmModal from '@/components/dashboard/CancelConfirmModal'
 import ReactivateConfirmModal from '@/components/dashboard/ReactivateConfirmModal'
 import { PortalButton } from '@/app/(frontend)/dashboard/(organisateur)/reseau/CheckoutButtons'
@@ -177,7 +166,7 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                   disabled={busy !== null}
                   className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
                 >
-                  {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
+                  {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : null}
                   S’abonner
                 </button>
               </div>
@@ -292,7 +281,6 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                 onClick={() => setSelectedPalier(selectedPalier === null ? (view.palier ?? '') : null)}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[#035AA6] hover:text-[#02467F]"
               >
-                <TrendingUp size={15} aria-hidden />
                 Changer de palier
               </button>
               {selectedPalier !== null && (
@@ -341,7 +329,6 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                   onClick={() => setReactivateOpen(true)}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 border border-green-300 bg-white hover:bg-green-50 p-2.5 rounded-xl transition-colors"
                 >
-                  <RefreshCw size={14} aria-hidden />
                   Réactiver le renouvellement
                 </button>
               ) : (
@@ -350,7 +337,6 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                   onClick={() => setCancelOpen(true)}
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-[#6E7175] border border-[#DFE0E1] bg-white hover:border-red-300 hover:text-red-600 p-2.5 rounded-xl transition-colors"
                 >
-                  <XCircle size={14} aria-hidden />
                   Annuler l’abonnement
                 </button>
               ))}
@@ -369,7 +355,6 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                 href="/dashboard/factures"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[#035AA6] hover:text-[#02467F] no-underline px-1"
               >
-                <FileText size={14} aria-hidden />
                 Mes factures
               </Link>
             )}

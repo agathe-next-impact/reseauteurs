@@ -3,9 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import {
-  Building2, Upload, Loader2, CheckCircle2, ExternalLink, Tag, CreditCard, AlertTriangle, ImageIcon,
-} from 'lucide-react'
+import { Building2, Upload, Loader2, CheckCircle2, ExternalLink, Tag, AlertTriangle, ImageIcon } from 'lucide-react'
 import { updatePartenaire } from './actions'
 import { PRIX_ANNONCEUR_HT } from '@/lib/tarifs'
 
@@ -152,7 +150,6 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
                   href="/dashboard/abonnement"
                   className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-900 no-underline"
                 >
-                  <CreditCard size={14} aria-hidden />
                   Gérer mon abonnement / factures
                 </Link>
               </div>
@@ -175,7 +172,7 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
                   disabled={sub !== null}
                   className="mt-2 inline-flex items-center gap-2 bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm disabled:opacity-60"
                 >
-                  {sub === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
+                  {sub === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : null}
                   Activer mon abonnement
                 </button>
                 <p className="text-[10px] text-[#999A9D] mt-1.5">

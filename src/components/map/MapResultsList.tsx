@@ -13,8 +13,6 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { MapPin } from 'lucide-react'
-
 /** Nombre max de lignes rendues dans le DOM (perf) — le total réel reste affiché. */
 const MAX_VISIBLE_ROWS = 100
 
@@ -109,7 +107,6 @@ export default function MapResultsList({
                     {it.subtitle && <span className="rsn-map-row-sub">{it.subtitle}</span>}
                     {it.meta && (
                       <span className="rsn-map-row-meta">
-                        <MapPin size={10} aria-hidden />
                         {it.meta}
                       </span>
                     )}

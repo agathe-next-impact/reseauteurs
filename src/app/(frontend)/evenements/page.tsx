@@ -17,7 +17,8 @@ import { unstable_cache } from 'next/cache'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, MapPin, ExternalLink } from 'lucide-react'
+import { Calendar, MapPin } from 'lucide-react'
+import { ContactChips } from '@/components/fiche/ContactChips'
 import { buildTogglePageMetadata } from '@/lib/seo-canonical'
 import { withDbRetry } from '@/lib/db-retry'
 import { toFeatureCollection, toFeature } from '@/lib/geojson'
@@ -413,6 +414,7 @@ export default async function EvenementsPage({
                             <div className="flex items-center gap-1.5 text-xs text-[#6E7175]">
                               <MapPin size={11} aria-hidden />
                               {ev.lieuVille}
+                              {ev.lieuDepartement ? ` (${ev.lieuDepartement})` : ''}
                             </div>
                             {/* Ligne organisateur — accent par type (ADR-0013) :
                                 navy = réseau · orange = réseauteur Plus (mêmes couleurs que la carte) */}
@@ -442,10 +444,16 @@ export default async function EvenementsPage({
                                 className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[#8A6D0B] hover:text-[#6E5608] no-underline transition-colors"
                                 aria-label={`S'inscrire à ${ev.titre} (lien externe)`}
                               >
-                                <ExternalLink size={11} aria-hidden />
                                 S&apos;inscrire
                               </a>
                             )}
+                            {/* Contact de l'organisateur pour cet événement (facultatif) */}
+                            <ContactChips
+                              email={ev.contactEmail}
+                              telephone={ev.contactTelephone}
+                              entityName={ev.titre}
+                              className="mt-1"
+                            />
                           </div>
                         </article>
                       )

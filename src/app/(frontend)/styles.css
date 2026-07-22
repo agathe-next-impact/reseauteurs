@@ -2129,6 +2129,16 @@ p {
   border-bottom: 1px solid rgba(var(--ir-line-rgb), 0.1);
   padding: clamp(44px, 7vw, 84px) 0;
 }
+/* Entêtes des fiches (réseauteur, réseau, événement). Contrairement aux pages de
+   liste, leur héros porte déjà du contenu haut — avatar/logo, identité, date et
+   lieu, CTA — donc le rembourrage de la bande n'a pas à être aussi généreux : il
+   repousse le corps de la fiche sous la ligne de flottaison. Modificateur plutôt
+   que changement de `.rsn-pagehead`, qui sert aussi à PageHeader (pages de liste
+   et pages éditoriales) et à la fiche partenaire.
+   Doit rester APRÈS la règle de base : même spécificité, l'ordre tranche. */
+.rsn-pagehead--compact {
+  padding: clamp(24px, 3.5vw, 44px) 0;
+}
 .rsn-pagehead::before {
   content: '';
   position: absolute;

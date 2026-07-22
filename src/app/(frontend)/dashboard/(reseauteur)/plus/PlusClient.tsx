@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { CheckCircle2, CreditCard, Loader2, CalendarPlus, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Loader2, CalendarPlus, ArrowRight } from 'lucide-react'
 
 export function PlusClient({
   actif,
@@ -58,7 +58,6 @@ export function PlusClient({
                   href="/dashboard/abonnement"
                   className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-900 no-underline"
                 >
-                  <CreditCard size={14} aria-hidden />
                   Gérer mon abonnement / factures
                 </Link>
               )}
@@ -107,7 +106,7 @@ export function PlusClient({
           disabled={busy !== null}
           className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
         >
-          {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
+          {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : null}
           S&apos;abonner à Réseauteur Plus
         </button>
       </section>

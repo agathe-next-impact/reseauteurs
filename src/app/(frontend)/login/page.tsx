@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell from '@/components/layout/AuthShell'
 
@@ -148,7 +147,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <Button type="submit" loading={loading} iconLeft={LogIn} className="w-full" size="md">
+        <Button type="submit" loading={loading} className="w-full" size="md">
           Se connecter
         </Button>
 

@@ -574,7 +574,7 @@ export interface Reseauteur {
      */
     keywords?: string | null;
     /**
-     * Image partagee sur les reseaux sociaux. Fallback : banniere puis logo.
+     * Image partagee sur les reseaux sociaux. Fallback : image OpenGraph par defaut du site.
      */
     ogImage?: (number | null) | Media;
     /**
@@ -656,7 +656,7 @@ export interface Reseau {
    */
   typeJuridique?: ('association' | 'prive' | 'franchise' | 'institution' | 'autre') | null;
   /**
-   * Catégorie principale du réseau (Réseaux d'affaires, Afterworks, Congrès…).
+   * [Dormant] Catégorie principale du réseau — non exploitée par le front (fiche, filtres, JSON-LD).
    */
   categorie?: (number | null) | TypesEvenement;
   /**
@@ -664,6 +664,9 @@ export interface Reseau {
    */
   description?: string | null;
   logo?: (number | null) | Media;
+  /**
+   * [Dormant] Non affichée sur la fiche publique. Utilisez le logo et la galerie.
+   */
   banniere?: (number | null) | Media;
   illustrations?:
     | {
@@ -770,7 +773,7 @@ export interface Reseau {
      */
     keywords?: string | null;
     /**
-     * Image partagee sur les reseaux sociaux. Fallback : banniere puis logo.
+     * Image partagee sur les reseaux sociaux. Fallback : image OpenGraph par defaut du site.
      */
     ogImage?: (number | null) | Media;
     /**
@@ -814,7 +817,7 @@ export interface TypesEvenement {
      */
     keywords?: string | null;
     /**
-     * Image partagee sur les reseaux sociaux. Fallback : banniere puis logo.
+     * Image partagee sur les reseaux sociaux. Fallback : image OpenGraph par defaut du site.
      */
     ogImage?: (number | null) | Media;
     /**
@@ -943,7 +946,7 @@ export interface Evenement {
      */
     keywords?: string | null;
     /**
-     * Image partagee sur les reseaux sociaux. Fallback : banniere puis logo.
+     * Image partagee sur les reseaux sociaux. Fallback : image OpenGraph par defaut du site.
      */
     ogImage?: (number | null) | Media;
     /**

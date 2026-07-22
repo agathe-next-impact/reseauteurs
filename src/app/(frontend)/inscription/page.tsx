@@ -1,12 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Check, UserPlus, Sparkles, CalendarPlus, AlertTriangle } from 'lucide-react'
+import { Check, Sparkles, CalendarPlus, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import AuthShell from '@/components/layout/AuthShell'
+import AuthShell, { AUTH_TITLE_ID } from '@/components/layout/AuthShell'
 import { CONTACT_EMAIL } from '@/lib/site'
 
 // Toutes les inscriptions créent un compte gratuit — y compris le choix « Réseauteur+ » :
@@ -72,6 +72,24 @@ export default function InscriptionPage() {
   const [ville, setVille] = useState('')
 
   const pwStrength = getPasswordStrength(password)
+
+  // Chaque écran du tunnel (type de compte → formule → compte → profil → succès)
+  // remplace le précédent sans changer d'URL : le navigateur conserve donc la
+  // position de défilement. Un clic sur un bouton situé en bas d'un écran long
+  // (« Devenir Réseauteur+ ») affichait l'écran suivant au milieu de la page.
+  // On repart du haut à chaque transition, et on déplace le focus sur le titre
+  // pour que le clavier et les lecteurs d'écran suivent le même changement.
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    // Premier rendu exclu : ne pas écraser la restauration de scroll du navigateur
+    // (retour arrière depuis /login, par exemple).
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    document.getElementById(AUTH_TITLE_ID)?.focus({ preventScroll: true })
+  }, [step, accountType, offreReseauteur, success])
 
   // Destination après connexion : code de groupe > activation Réseauteur+ > défaut.
   const postSignupLoginUrl = groupeCodeParam
@@ -763,7 +781,7 @@ export default function InscriptionPage() {
             <Button variant="secondary" onClick={prevStep} className="flex-1">
               Retour
             </Button>
-            <Button onClick={handleSubmit} loading={loading} iconLeft={UserPlus} className="flex-1">
+            <Button onClick={handleSubmit} loading={loading} className="flex-1">
               Créer mon compte
             </Button>
           </div>

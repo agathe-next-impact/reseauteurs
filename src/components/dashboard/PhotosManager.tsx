@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { Upload, Trash2, Loader2, ImageIcon } from 'lucide-react'
+import { Upload, Loader2, ImageIcon } from 'lucide-react'
 import type { Media } from '@/payload-types'
 
 export type PhotoSlot = 'banniere' | 'logo' | 'illustration'
@@ -289,7 +289,7 @@ export default function PhotosManager({
                     className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all disabled:opacity-100"
                     title="Supprimer"
                   >
-                    {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {isDeleting ? <Loader2 size={14} className="animate-spin" /> : null}
                   </button>
                 </div>
               )
@@ -335,7 +335,6 @@ function SlotBlock({
               disabled={busy}
               className="inline-flex items-center gap-1.5 p-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
             >
-              <Trash2 size={14} />
               Retirer
             </button>
           )}

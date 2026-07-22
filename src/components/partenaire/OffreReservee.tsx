@@ -10,7 +10,7 @@
  */
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Tag, Lock, ExternalLink } from 'lucide-react'
+import { Tag, Lock } from 'lucide-react'
 
 interface OffreContenu {
   titre: string
@@ -57,7 +57,7 @@ export default function OffreReservee({ slug }: { slug: string }) {
               rel="noopener noreferrer"
               className="mt-3 inline-flex items-center gap-1.5 bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm no-underline"
             >
-              En profiter <ExternalLink size={13} aria-hidden />
+              En profiter 
             </a>
           )}
         </div>

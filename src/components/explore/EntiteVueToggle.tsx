@@ -11,7 +11,6 @@
  */
 import { useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { List, Map, CalendarDays } from 'lucide-react'
 
 export type Entite = 'reseauteurs' | 'reseaux' | 'evenements'
 export type Vue = 'annuaire' | 'carte' | 'agenda'
@@ -27,12 +26,6 @@ const VUE_LABELS: Record<Vue, string> = {
   annuaire: 'Annuaire',
   agenda: 'Agenda',
   carte: 'Carte',
-}
-
-const VUE_ICONS: Record<Vue, React.ElementType> = {
-  annuaire: List,
-  agenda: CalendarDays,
-  carte: Map,
 }
 
 /**
@@ -78,7 +71,6 @@ export default function EntiteVueToggle({ entite, vue }: EntiteVueToggleProps) {
         aria-label="Basculer entre l'annuaire et la carte"
       >
         {vueOptions.map((v) => {
-          const Icon = VUE_ICONS[v]
           return (
             <button
               key={v}
@@ -91,7 +83,6 @@ export default function EntiteVueToggle({ entite, vue }: EntiteVueToggleProps) {
               }`}
               aria-pressed={vue === v}
             >
-              <Icon size={14} aria-hidden />
               {VUE_LABELS[v]}
             </button>
           )

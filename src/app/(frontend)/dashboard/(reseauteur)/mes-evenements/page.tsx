@@ -7,12 +7,17 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
-import { ArrowLeft, CalendarPlus } from 'lucide-react'
+import { CalendarPlus } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
 import { todayParisDateString } from '@/lib/dates'
 import { listerInscritsParEvenements } from '@/lib/inscriptions'
-import { MesEvenementsClient, type MonEvenement, type TypeEvLite } from './MesEvenementsClient'
+import {
+  MesEvenementsClient,
+  type MonEvenement,
+  type TypeEvLite,
+  type SecteurLite,
+} from './MesEvenementsClient'
 
 export const metadata = {
   title: 'Mes événements — Tableau de bord | RÉSEAUTEURS',
@@ -145,6 +150,12 @@ export default async function MesEvenementsPage() {
     participationInvite: (e.participationInvite as string | null) ?? null,
     niveauPublic: (e.niveauPublic as string | null) ?? null,
     publicConcerne: (e.publicConcerne as string | null) ?? null,
+    secteur: (() => {
+      const s = e.secteur
+      if (s == null) return null
+      const id = typeof s === 'object' ? (s as { id?: unknown }).id : s
+      return Number.isFinite(Number(id)) ? Number(id) : null
+    })(),
     contactNom: (e.contactNom as string | null) ?? null,
     contactEmail: (e.contactEmail as string | null) ?? null,
     contactTelephone: (e.contactTelephone as string | null) ?? null,
@@ -170,17 +181,31 @@ export default async function MesEvenementsPage() {
     }
   })
 
-  const { docs: typesDocs } = await payload.find({
-    collection: 'types-evenement',
-    limit: 50,
-    sort: 'label',
-    depth: 0,
-    overrideAccess: true,
-  })
+  // Référentiels du formulaire : catégories d'événement + secteurs d'activité
+  const [{ docs: typesDocs }, { docs: secteursDocs }] = await Promise.all([
+    payload.find({
+      collection: 'types-evenement',
+      limit: 50,
+      sort: 'label',
+      depth: 0,
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: 'categories',
+      select: { id: true, label: true } as Record<string, boolean>,
+      limit: 200,
+      sort: 'label',
+      depth: 0,
+      overrideAccess: true,
+    }),
+  ])
   const types: TypeEvLite[] = typesDocs.map((t) => ({
     id: t.id as number,
     label: ((t as { label?: string }).label as string) ?? String(t.id),
   }))
+  const secteurs: SecteurLite[] = secteursDocs
+    .map((c) => ({ id: c.id as number, label: ((c as { label?: string }).label as string) ?? '' }))
+    .filter((c) => c.label)
 
   return (
     <div className="rsn-page">
@@ -190,7 +215,7 @@ export default async function MesEvenementsPage() {
             href="/dashboard/plus"
             className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
-            <ArrowLeft size={14} aria-hidden /> Réseauteur Plus
+             Réseauteur Plus
           </Link>
           <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
             <CalendarPlus size={20} aria-hidden />
@@ -202,7 +227,12 @@ export default async function MesEvenementsPage() {
           </p>
         </Reveal>
 
-        <MesEvenementsClient evenements={evenements} types={types} groupesAdmin={groupesAdmin} />
+        <MesEvenementsClient
+          evenements={evenements}
+          types={types}
+          groupesAdmin={groupesAdmin}
+          secteurs={secteurs}
+        />
       </div>
     </div>
   )

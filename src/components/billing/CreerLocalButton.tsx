@@ -11,7 +11,7 @@
  * Attend `reseauNationalId` pour pré-remplir la relation parent dans la Server Action.
  */
 import { useState, useRef, useActionState } from 'react'
-import { Plus, X, Loader2, Network } from 'lucide-react'
+import { X, Loader2, Network } from 'lucide-react'
 import { createLocalReseau } from '@/app/(frontend)/dashboard/locaux/actions'
 
 interface CreerLocalButtonProps {
@@ -60,7 +60,6 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
           onClick={() => setOpen(true)}
           className="flex items-center gap-1.5 text-xs bg-[#3E7CA6] text-white hover:bg-[#2E6389] p-2.5 rounded-lg font-medium transition-colors"
         >
-          <Plus size={13} aria-hidden />
           Nouveau groupe
         </button>
       </div>
@@ -150,7 +149,6 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
               </>
             ) : (
               <>
-                <Plus size={13} aria-hidden />
                 Créer le groupe
               </>
             )}

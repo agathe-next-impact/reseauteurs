@@ -39,6 +39,14 @@ const ProfilSchema = z.object({
   departement: z.string().max(100).optional(),
   region: z.string().max(100).optional(),
   evenementsParMois: z.number().int().min(0).max(999),
+  // Secteur d'activité (relation `categories`) — pilote le filtre /reseauteurs?secteur=
+  // et le maillage interne « même secteur ». null = non renseigné.
+  secteur: z.number().int().positive().nullable().optional(),
+  // Compétences — array de libellés (la collection stocke [{ label }], maxRows 20)
+  competences: z
+    .array(z.string().trim().min(1).max(120))
+    .max(20, 'Maximum 20 compétences')
+    .optional(),
   // Confidentialité RGPD
   noindex: z.boolean().optional(),
   // Affiliation réseaux LOCAUX uniquement (ADR-0012) — validée côté collection serveur
@@ -68,7 +76,7 @@ export async function updateProfilReseauteur(
     return { error: firstError?.message ?? 'Données invalides' }
   }
 
-  const { noindex, reseauxFrequentes, ...profileData } = parsed.data
+  const { noindex, reseauxFrequentes, secteur, competences, ...profileData } = parsed.data
 
   try {
     // L'access.update de la collection vérifie ownership : { user: { equals: user.id } }
@@ -85,6 +93,13 @@ export async function updateProfilReseauteur(
         linkedin: profileData.linkedin || null,
         departement: profileData.departement || null,
         region: profileData.region || null,
+        // Secteur : `undefined` = champ absent du formulaire (on n'écrase pas) ;
+        // `null` = choix explicite « non renseigné ».
+        secteur: secteur === undefined ? undefined : secteur,
+        // Compétences : la collection attend [{ label }] — on ne touche au champ
+        // que s'il a été soumis (undefined = pas de modification).
+        competences:
+          competences === undefined ? undefined : competences.map((label) => ({ label })),
         // noindex : opt-out d'indexation décidé par le réseauteur
         seo: noindex !== undefined ? { noindex } : undefined,
         // Affiliation réseaux (têtes ou groupes locaux — décision 2026-07-17)

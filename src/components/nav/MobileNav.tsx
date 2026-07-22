@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, X, MapPin, Calendar, LogIn, UserPlus, LayoutDashboard, LogOut, Loader2 } from 'lucide-react'
+import { Menu, X, MapPin, Calendar, LogIn, UserPlus, LayoutDashboard, Loader2 } from 'lucide-react'
 import { NAV_ITEMS, filterNavItems } from '@/components/dashboard/nav-items'
 
 interface MobileNavProps {
@@ -83,7 +83,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
               className="p-2.5 rounded-lg text-text-medium hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
               aria-label="Déconnexion"
             >
-              {isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+              {isPending ? <Loader2 size={20} className="animate-spin" /> : null}
             </button>
           </>
         ) : (
@@ -205,7 +205,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
                     disabled={isPending}
                     className="flex items-center gap-3 w-full p-2.5 rounded-lg text-sm font-medium text-text-light hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    {isPending ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+                    {isPending ? <Loader2 size={18} className="animate-spin" /> : null}
                     Déconnexion
                   </button>
                 </div>
@@ -215,14 +215,12 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
                     href="/login"
                     className="flex items-center gap-3 p-2.5 rounded-lg text-sm font-medium text-text-medium no-underline hover:bg-gray-50 hover:text-text-dark transition-colors"
                   >
-                    <LogIn size={18} />
                     Connexion
                   </Link>
                   <Link
                     href="/inscription"
                     className="flex items-center justify-center gap-2 w-full p-2.5 rounded-full bg-primary text-white text-sm font-medium no-underline hover:bg-primary/80 transition-colors"
                   >
-                    <UserPlus size={18} />
                     Inscription
                   </Link>
                 </div>

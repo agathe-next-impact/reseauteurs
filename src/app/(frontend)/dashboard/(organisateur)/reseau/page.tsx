@@ -22,20 +22,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-  Building2,
-  Calendar,
-  CreditCard,
-  FileText,
-  Globe,
-  Mail,
-  Phone,
-  MapPin,
-  CheckCircle,
-  AlertCircle,
-  Network,
-  ExternalLink,
-} from 'lucide-react'
+import { Building2, Calendar, FileText, Globe, Mail, Phone, MapPin, CheckCircle, AlertCircle, Network, ExternalLink } from 'lucide-react'
 import { FicheReseauForm } from './FicheReseauForm'
 import { PortalButton } from './CheckoutButtons'
 import { BadgePartenaire } from '@/components/ui/BadgeReseauteur'
@@ -113,7 +100,6 @@ export default async function DashboardReseauPage() {
             href={`mailto:contact@reseauteurs.com?subject=Rattachement réseau — ${freshUser.email as string}`}
             className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white text-sm font-semibold hover:bg-[#02467F] transition-colors"
           >
-            <Mail size={15} />
             Contacter le support
           </a>
         </div>
@@ -290,7 +276,6 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
               href="/dashboard/factures"
               className="inline-flex items-center gap-1.5 text-xs text-[#035AA6] hover:text-[#02467F] font-medium transition-colors"
             >
-              <CreditCard size={12} aria-hidden />
               Toutes mes factures
             </Link>
           </div>

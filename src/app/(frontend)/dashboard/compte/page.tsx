@@ -126,7 +126,6 @@ export default async function ComptePage() {
                 href="/api/account/export"
                 className="inline-flex items-center gap-1.5 p-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors no-underline shrink-0"
               >
-                <Download size={13} />
                 Télécharger
               </a>
             </div>

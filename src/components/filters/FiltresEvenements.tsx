@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { SlidersHorizontal, X, RotateCcw, CalendarIcon } from 'lucide-react'
+import { X, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -221,7 +221,6 @@ export default function FiltresEvenements({
           onClick={resetFilters}
           className="flex items-center gap-1.5 text-sm text-text-light hover:text-text-dark transition-colors mb-4 cursor-pointer"
         >
-          <RotateCcw size={14} />
           Réinitialiser les filtres
         </button>
       )}
@@ -244,7 +243,6 @@ export default function FiltresEvenements({
         onClick={() => setMobileOpen(true)}
         aria-label="Ouvrir les filtres"
       >
-        <SlidersHorizontal size={16} />
         Filtres
         {hasActiveFilters && (
           <span className="bg-white text-primary text-sm font-bold w-5 h-5 rounded-full flex items-center justify-center">

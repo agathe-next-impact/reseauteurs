@@ -4,7 +4,8 @@
  * Endpoint public pour la prévisualisation d'un réseau (local ou national).
  * Utilisé par SlideOverReseau (carte des réseaux locaux — ADR-0012).
  *
- * Retourne : id, slug, nom, niveau, ville, description, logoUrl, siteWeb,
+ * Retourne : id, slug, nom, niveau, ville, description, logoUrl,
+ *            contacts publics (siteWeb, emailContact, telephone),
  *            partenaire, parent national {id, nom, slug, logoUrl, partenaire},
  *            nbReseauteurs, nbEvenements.
  *
@@ -100,8 +101,12 @@ export async function GET(
     adresse: (doc['adresse'] as string | null | undefined) ?? null,
     codePostal: (doc['codePostal'] as string | null | undefined) ?? null,
     description: (doc['description'] as string | null | undefined) ?? null,
+    departement: (doc['departement'] as string | null | undefined) ?? null,
     logoUrl: pickLogoUrl(logo),
+    // Coordonnées de contact publiques (mêmes canaux que le CTA de la fiche)
     siteWeb: (doc['siteWeb'] as string | null | undefined) ?? null,
+    emailContact: (doc['emailContact'] as string | null | undefined) ?? null,
+    telephone: (doc['telephone'] as string | null | undefined) ?? null,
     // Statut partenaire du réseau lui-même (significatif si national, inerte si local)
     partenaire: (doc['partenaire'] as boolean | null | undefined) === true,
     nbReseauteurs: (doc['nbReseauteurs'] as number | null | undefined) ?? 0,

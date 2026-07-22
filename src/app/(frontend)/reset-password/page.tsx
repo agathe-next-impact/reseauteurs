@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Lock, Check, AlertTriangle, Loader2 } from 'lucide-react'
+import { Check, AlertTriangle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell from '@/components/layout/AuthShell'
 
@@ -153,7 +153,7 @@ function ResetPasswordContent() {
           />
         </div>
 
-        <Button type="submit" loading={loading} iconLeft={Lock} className="w-full" size="md">
+        <Button type="submit" loading={loading} className="w-full" size="md">
           Réinitialiser
         </Button>
       </form>

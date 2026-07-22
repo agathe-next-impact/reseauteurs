@@ -15,7 +15,7 @@
  */
 
 import { useCallback } from 'react'
-import { X, RotateCcw, MapPin } from 'lucide-react'
+import { X, MapPin } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 
 export interface ReseauFilters {
@@ -139,7 +139,6 @@ export default function FiltresReseaux({
           onClick={resetFilters}
           className="flex items-center gap-1.5 text-sm text-[#6E7175] hover:text-[#1D1E21] transition-colors mb-4 cursor-pointer"
         >
-          <RotateCcw size={13} />
           Réinitialiser les filtres
         </button>
       )}

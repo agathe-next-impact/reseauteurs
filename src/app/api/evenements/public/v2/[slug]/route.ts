@@ -103,10 +103,15 @@ export async function GET(
     lieuAdresse: (doc['lieuAdresse'] as string | null | undefined) ?? null,
     lieuCodePostal: (doc['lieuCodePostal'] as string | null | undefined) ?? null,
     lieuVille: (doc['lieuVille'] as string | undefined) ?? null,
+    lieuDepartement: (doc['lieuDepartement'] as string | null | undefined) ?? null,
     lieuLatitude: (doc['lieuLatitude'] as number | null | undefined) ?? null,
     lieuLongitude: (doc['lieuLongitude'] as number | null | undefined) ?? null,
     // CTA d'inscription : lien externe vers le réseau
     lienInscription: (doc['lienInscription'] as string | null | undefined) ?? null,
+    // Contact de l'organisateur pour CET événement (facultatif — mêmes champs que la fiche)
+    contactNom: (doc['contactNom'] as string | null | undefined) ?? null,
+    contactEmail: (doc['contactEmail'] as string | null | undefined) ?? null,
+    contactTelephone: (doc['contactTelephone'] as string | null | undefined) ?? null,
     // Premium
     premium: (doc['premium'] as boolean | undefined) === true,
     // Image de l'événement

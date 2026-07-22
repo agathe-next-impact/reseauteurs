@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Pencil, X, Loader2, MailCheck } from 'lucide-react'
+import { Loader2, MailCheck } from 'lucide-react'
 
 interface Props {
   currentEmail: string
@@ -162,7 +162,6 @@ export default function ChangeEmailForm({ currentEmail }: Props) {
             disabled={submitting}
             className="inline-flex items-center gap-1.5 p-2.5 bg-transparent text-text-medium rounded-lg text-sm hover:text-text-dark transition-colors cursor-pointer border-none disabled:opacity-50"
           >
-            <X size={14} />
             Annuler
           </button>
         </div>
@@ -178,7 +177,6 @@ export default function ChangeEmailForm({ currentEmail }: Props) {
         onClick={() => setMode('editing')}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none p-2.5 shrink-0"
       >
-        <Pencil size={13} />
         Modifier
       </button>
     </div>

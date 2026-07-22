@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Copy, Check, LogOut } from 'lucide-react'
+import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui'
 
 interface GroupeMemberViewProps {
@@ -173,7 +173,7 @@ export default function GroupeMemberView({
       {/* Leave button + confirmation */}
       <div className="pt-4 border-t border-border-light">
         {!confirming ? (
-          <Button variant="ghost" iconLeft={LogOut} onClick={() => setConfirming(true)}>
+          <Button variant="ghost" onClick={() => setConfirming(true)}>
             Quitter le groupe
           </Button>
         ) : (

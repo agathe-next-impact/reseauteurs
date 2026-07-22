@@ -8,8 +8,6 @@
  * Server Component (liens purs) — RGPD : ne rend que les canaux effectivement fournis
  * par l'entité (contacts facultatifs côté réseauteur, ADR-0011 §7).
  */
-import { Mail, Phone, Globe } from 'lucide-react'
-
 /** N'accepte qu'une URL http(s) — évite les schémas dangereux (javascript:, data:…). */
 function safeHttpUrl(raw?: string | null): string | null {
   if (!raw) return null
@@ -58,7 +56,6 @@ export function ContactCTA({
             className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white text-sm font-semibold hover:bg-[#02467F] transition-colors no-underline"
             aria-label={`Envoyer un email à ${entityName}`}
           >
-            <Mail size={15} aria-hidden />
             Envoyer un email
           </a>
         )}
@@ -68,7 +65,6 @@ export function ContactCTA({
             className="inline-flex items-center gap-2 p-2.5 rounded-xl border border-[#DFE0E1] bg-white text-sm font-medium text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] transition-colors no-underline"
             aria-label={`Appeler ${entityName}`}
           >
-            <Phone size={15} aria-hidden />
             {telSafe}
           </a>
         )}
@@ -80,7 +76,6 @@ export function ContactCTA({
             className="inline-flex items-center gap-2 p-2.5 rounded-xl border border-[#DFE0E1] bg-white text-sm font-medium text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] transition-colors no-underline"
             aria-label={`Site web de ${entityName}`}
           >
-            <Globe size={15} aria-hidden />
             {siteLabel}
           </a>
         )}

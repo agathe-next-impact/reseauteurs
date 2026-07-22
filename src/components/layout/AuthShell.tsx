@@ -4,6 +4,13 @@ import Image from 'next/image'
 import { SITE_NAME } from '@/lib/site'
 
 /**
+ * Id du titre de la coquille. Les tunnels multi-écrans (inscription) y déplacent
+ * le focus à chaque changement d'étape : le titre est `tabIndex={-1}`, donc
+ * focusable par script mais hors de l'ordre de tabulation.
+ */
+export const AUTH_TITLE_ID = 'auth-shell-title'
+
+/**
  * Coquille des pages d'authentification (login, inscription, reset…) :
  * carte centrée dans le cadre de marque, theme-adaptative. La logique du
  * formulaire reste dans la page ; on ne fournit que le décor.
@@ -32,7 +39,9 @@ export default function AuthShell({
           </Link>
           {subtitle && <p className="text-sm text-[#6E7175] mt-2">{subtitle}</p>}
         </div>
-        <h1 className="text-xl font-bold text-[#012A4A] mb-6">{title}</h1>
+        <h1 id={AUTH_TITLE_ID} tabIndex={-1} className="text-xl font-bold text-[#012A4A] mb-6">
+          {title}
+        </h1>
         {children}
       </div>
       {footer && <div className="text-center text-sm text-[#6E7175]">{footer}</div>}

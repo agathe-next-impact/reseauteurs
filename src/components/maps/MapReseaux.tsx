@@ -19,7 +19,6 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { List, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 import type { MapRef, MapMouseEvent, MapEvent } from 'react-map-gl/maplibre'
 import type { GeoJSONSource } from 'maplibre-gl'
@@ -315,7 +314,6 @@ export default function MapReseaux({
             aria-pressed={listOpen}
             aria-label={listOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
           >
-            <List size={15} />
             {listOpen ? 'Masquer le panneau' : 'Panneau'}
           </button>
         </div>
@@ -496,16 +494,10 @@ export default function MapReseaux({
                   onClick={() => setFiltersOpen((v) => !v)}
                   aria-expanded={filtersOpen}
                 >
-                  <SlidersHorizontal size={15} aria-hidden />
                   <span className="rsn-acc-label">Filtres</span>
                   {activeCount > 0 && (
                     <span className="rsn-map-topbar-btn-badge">{activeCount}</span>
                   )}
-                  <ChevronDown
-                    size={16}
-                    aria-hidden
-                    className={`rsn-acc-chevron${filtersOpen ? ' is-open' : ''}`}
-                  />
                 </button>
                 {filtersOpen && (
                   <div className="rsn-acc-filters-body">
@@ -527,17 +519,11 @@ export default function MapReseaux({
                   onClick={() => setResultsOpen((v) => !v)}
                   aria-expanded={resultsOpen}
                 >
-                  <List size={15} aria-hidden />
                   <span className="rsn-acc-label">Résultats</span>
                   <span className="rsn-acc-count">
                     {resultCount}
                     {resultCount > 100 ? ' · zoomez' : ''}
                   </span>
-                  <ChevronDown
-                    size={16}
-                    aria-hidden
-                    className={`rsn-acc-chevron${resultsOpen ? ' is-open' : ''}`}
-                  />
                 </button>
                 {resultsOpen && (
                   <MapResultsList

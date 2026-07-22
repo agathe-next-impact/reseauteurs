@@ -77,18 +77,32 @@ export default async function DashboardEvenementsPage() {
     overrideAccess: true,
   })
 
-  // Catégories (select requis du formulaire — type_id NOT NULL)
-  const { docs: typesDocs } = await payload.find({
-    collection: 'types-evenement',
-    limit: 50,
-    sort: 'ordre',
-    depth: 0,
-    overrideAccess: true,
-  })
+  // Référentiels du formulaire : catégories (select requis — type_id NOT NULL)
+  // + secteurs d'activité (facultatif, affiché sur la fiche publique).
+  const [{ docs: typesDocs }, { docs: secteursDocs }] = await Promise.all([
+    payload.find({
+      collection: 'types-evenement',
+      limit: 50,
+      sort: 'ordre',
+      depth: 0,
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: 'categories',
+      select: { id: true, label: true } as Record<string, boolean>,
+      limit: 200,
+      sort: 'label',
+      depth: 0,
+      overrideAccess: true,
+    }),
+  ])
   const types = typesDocs.map((t) => ({
     id: t.id as number,
     label: ((t as { label?: string }).label as string) ?? String(t.id),
   }))
+  const secteurs = secteursDocs
+    .map((c) => ({ id: c.id as number, label: ((c as { label?: string }).label as string) ?? '' }))
+    .filter((c) => c.label)
 
   // Gate serveur : le national effectif doit être partenaire (ADR-0012)
   const peutPublier = peutPublierEvenement(reseau as unknown as ReseauForHierarchy)
@@ -165,7 +179,11 @@ export default async function DashboardEvenementsPage() {
               </p>
             </div>
           ) : (
-            <EvenementsManager evenements={evenements as unknown as Record<string, unknown>[]} types={types} />
+            <EvenementsManager
+              evenements={evenements as unknown as Record<string, unknown>[]}
+              types={types}
+              secteurs={secteurs}
+            />
           )}
         </div>
       </div>

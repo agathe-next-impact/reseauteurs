@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { UserPlus, UserMinus, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 interface ParticiperButtonProps {
   eventId: number
@@ -44,13 +44,7 @@ export default function ParticiperButton({ eventId, initialParticipating }: Part
           : 'bg-primary text-white hover:bg-primary-hover'
       }`}
     >
-      {loading ? (
-        <Loader2 size={15} className="animate-spin" />
-      ) : participating ? (
-        <UserMinus size={15} />
-      ) : (
-        <UserPlus size={15} />
-      )}
+      {loading && <Loader2 size={15} className="animate-spin" />}
       {participating ? 'Annuler ma participation' : 'Je participe'}
     </button>
   )

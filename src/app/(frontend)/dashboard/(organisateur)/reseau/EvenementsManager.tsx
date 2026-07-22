@@ -12,11 +12,13 @@ interface EvenementsManagerProps {
   evenements: Record<string, unknown>[]
   /** Catégories d'événement (select requis — type_id NOT NULL en base). */
   types: Array<{ id: number; label: string }>
+  /** Référentiel des secteurs d'activité (`categories`) — champ facultatif de la fiche. */
+  secteurs?: Array<{ id: number; label: string }>
 }
 
 type FormMode = 'idle' | 'create' | { edit: Record<string, unknown> }
 
-export function EvenementsManager({ evenements, types }: EvenementsManagerProps) {
+export function EvenementsManager({ evenements, types, secteurs = [] }: EvenementsManagerProps) {
   const [mode, setMode] = useState<FormMode>('idle')
   const [isPending, startTransition] = useTransition()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -62,6 +64,9 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
       participationInvite: gs('participationInvite'),
       niveauPublic: gs('niveauPublic'),
       publicConcerne: gs('publicConcerne'),
+      // '' = non renseigné → null. Select non rendu (référentiel vide) → `undefined`,
+      // pour ne pas écraser une valeur posée en administration.
+      secteur: fd.has('secteur') ? (fd.get('secteur') ? Number(fd.get('secteur')) : null) : undefined,
       contactNom: gs('contactNom'),
       contactEmail: gs('contactEmail'),
       contactTelephone: gs('contactTelephone'),
@@ -457,9 +462,32 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                   </select>
                 </div>
               </div>
-              <div>
-                <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
-                <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={editingEvenement?.publicConcerne as string ?? ''} className={inputClass} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
+                  <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={editingEvenement?.publicConcerne as string ?? ''} className={inputClass} />
+                </div>
+                {secteurs.length > 0 && (
+                  <div>
+                    <label htmlFor="secteur" className={labelClass}>Secteur d&apos;activité concerné</label>
+                    <select
+                      id="secteur"
+                      name="secteur"
+                      defaultValue={(() => {
+                        const s = editingEvenement?.secteur
+                        if (s == null) return ''
+                        const id = typeof s === 'object' ? (s as { id?: unknown }).id : s
+                        return id != null ? String(id) : ''
+                      })()}
+                      className={inputClass}
+                    >
+                      <option value="">— Non renseigné —</option>
+                      {secteurs.map((s) => (
+                        <option key={s.id} value={String(s.id)}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([['ouvertATous', 'Ouvert à tous ?'], ['reserveMembres', 'Réservé aux membres ?'], ['participationInvite', 'Invités possibles ?']] as const).map(([name, label]) => (

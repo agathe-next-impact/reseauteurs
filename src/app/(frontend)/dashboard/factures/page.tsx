@@ -92,7 +92,6 @@ export default async function FacturesPage() {
                 type="submit"
                 className="text-sm text-[#035AA6] hover:text-[#02467F] font-medium flex items-center gap-1.5 transition-colors"
               >
-                <ExternalLink size={14} aria-hidden />
                 Portail Stripe
               </button>
             </form>

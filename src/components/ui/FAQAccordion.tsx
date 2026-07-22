@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-
 export type FAQItem = {
   question: string
   answer: React.ReactNode
@@ -25,12 +23,6 @@ function AccordionItem({ item }: { item: FAQItem }) {
         className="w-full flex items-center justify-between gap-4 py-4 text-left text-sm font-medium text-text-dark hover:text-primary transition-colors"
       >
         <span>{item.question}</span>
-        <ChevronDown
-          className={`h-5 w-5 shrink-0 text-text-light transition-transform ${
-            open ? 'rotate-180' : ''
-          }`}
-          aria-hidden="true"
-        />
       </button>
       {open && (
         <div className="pb-4 pr-8 text-sm text-text-medium leading-relaxed space-y-3">

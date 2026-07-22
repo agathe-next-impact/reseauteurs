@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { CalendarDays, MapPin, Pencil, Trash2, Plus, Loader2, ExternalLink, Users, ChevronDown } from 'lucide-react'
+import { CalendarDays, MapPin, Pencil, Trash2, Loader2, ExternalLink } from 'lucide-react'
 import { createMonEvenement, updateMonEvenement, deleteMonEvenement, type EvenementFormData } from './actions'
 import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
 
@@ -25,6 +25,12 @@ export interface InscritLite {
 export interface GroupeAdminLite {
   id: number
   nom: string
+}
+
+/** Secteur d'activité (collection `categories`) pour le sélecteur. */
+export interface SecteurLite {
+  id: number
+  label: string
 }
 
 export interface MonEvenement {
@@ -57,6 +63,8 @@ export interface MonEvenement {
   participationInvite: string | null
   niveauPublic: string | null
   publicConcerne: string | null
+  /** Secteur d'activité concerné (relation `categories`) — ligne « Secteur » de la fiche. */
+  secteur: number | null
   contactNom: string | null
   contactEmail: string | null
   contactTelephone: string | null
@@ -87,11 +95,14 @@ export function MesEvenementsClient({
   evenements,
   types,
   groupesAdmin = [],
+  secteurs = [],
 }: {
   evenements: MonEvenement[]
   types: TypeEvLite[]
   /** Réseaux locaux POSSÉDÉS par le réseauteur Plus (choix d'organisateur à la création — ADR-0014). */
   groupesAdmin?: GroupeAdminLite[]
+  /** Référentiel des secteurs d'activité (`categories`). */
+  secteurs?: SecteurLite[]
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState<MonEvenement | 'new' | null>(null)
@@ -136,6 +147,9 @@ export function MesEvenementsClient({
       participationInvite: s('participationInvite'),
       niveauPublic: s('niveauPublic'),
       publicConcerne: s('publicConcerne'),
+      // '' = non renseigné → null. Select non rendu (référentiel vide) → `undefined`,
+      // pour ne pas écraser une valeur posée en administration.
+      secteur: fd.has('secteur') ? (fd.get('secteur') ? Number(fd.get('secteur')) : null) : undefined,
       contactNom: s('contactNom'),
       contactEmail: s('contactEmail'),
       contactTelephone: s('contactTelephone'),
@@ -316,9 +330,22 @@ export function MesEvenementsClient({
                 </select>
               </div>
             </div>
-            <div>
-              <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
-              <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={current?.publicConcerne ?? ''} className={inputClass} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
+                <input id="publicConcerne" name="publicConcerne" type="text" maxLength={300} placeholder="dirigeants, indépendants…" defaultValue={current?.publicConcerne ?? ''} className={inputClass} />
+              </div>
+              {secteurs.length > 0 && (
+                <div>
+                  <label htmlFor="secteur" className={labelClass}>Secteur d&apos;activité concerné</label>
+                  <select id="secteur" name="secteur" defaultValue={current?.secteur != null ? String(current.secteur) : ''} className={inputClass}>
+                    <option value="">— Non renseigné —</option>
+                    {secteurs.map((s) => (
+                      <option key={s.id} value={String(s.id)}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {([
@@ -401,7 +428,6 @@ export function MesEvenementsClient({
           onClick={() => changeEditing('new')}
           className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm"
         >
-          <Plus size={15} aria-hidden />
           Nouvel événement
         </button>
       )}
@@ -459,15 +485,7 @@ export function MesEvenementsClient({
                     aria-expanded={expandedInscrits === ev.id}
                     disabled={ev.inscrits.length === 0}
                   >
-                    <Users size={12} aria-hidden />
                     {ev.inscrits.length} inscrit{ev.inscrits.length > 1 ? 's' : ''}
-                    {ev.inscrits.length > 0 && (
-                      <ChevronDown
-                        size={12}
-                        aria-hidden
-                        className={`transition-transform ${expandedInscrits === ev.id ? 'rotate-180' : ''}`}
-                      />
-                    )}
                   </button>
                   {expandedInscrits === ev.id && ev.inscrits.length > 0 && (
                     <ul className="mt-2 space-y-1" role="list">

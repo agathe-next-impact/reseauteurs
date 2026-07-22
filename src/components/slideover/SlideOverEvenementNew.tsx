@@ -14,8 +14,9 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { CalendarDays, MapPin, ExternalLink, AlertTriangle, RefreshCw, Calendar } from 'lucide-react'
+import { CalendarDays, MapPin, AlertTriangle, Calendar } from 'lucide-react'
 import SlideOver from './SlideOver'
+import SlideOverContacts from './SlideOverContacts'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 /**
@@ -35,7 +36,12 @@ interface EvenementDetail {
   lieuAdresse: string | null
   lieuCodePostal: string | null
   lieuVille: string | null
+  lieuDepartement: string | null
   lienInscription: string | null
+  /** Contact de l'organisateur pour cet événement (facultatif). */
+  contactNom: string | null
+  contactEmail: string | null
+  contactTelephone: string | null
   image: { url: string | null; cardUrl: string | null; alt: string | null } | null
   reseau: {
     id: number | string
@@ -152,7 +158,6 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
             onClick={() => fetchData(slug)}
             className="inline-flex items-center gap-2 text-sm font-medium text-[#035AA6] hover:text-[#02467F] transition-colors mt-2 cursor-pointer"
           >
-            <RefreshCw size={13} />
             Réessayer
           </button>
         </div>
@@ -224,6 +229,7 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                   {data.lieuAdresse && `${data.lieuAdresse}, `}
                   {data.lieuCodePostal && `${data.lieuCodePostal} `}
                   {data.lieuVille}
+                  {data.lieuDepartement && ` (${data.lieuDepartement})`}
                 </div>
               </div>
             )}
@@ -239,7 +245,6 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                 className="flex items-center justify-center gap-2 w-full bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm"
               >
                 S&apos;inscrire à cet événement
-                <ExternalLink size={14} />
               </a>
               <p className="text-xs text-[#6E7175] text-center mt-1.5">
                 Redirige vers le site de {data.reseau?.nom ?? 'l&apos;organisateur'}
@@ -329,6 +334,13 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
               </div>
             </div>
           )}
+
+          {/* Contact de l'organisateur — email / téléphone (mêmes canaux que la fiche) */}
+          <SlideOverContacts
+            nom={data.contactNom}
+            email={data.contactEmail}
+            telephone={data.contactTelephone}
+          />
 
           {/* Lien vers la fiche événement */}
           {data.slug && (

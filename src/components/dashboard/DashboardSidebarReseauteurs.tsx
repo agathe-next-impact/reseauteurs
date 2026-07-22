@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Loader2, LogOut, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar, CalendarCheck, CalendarDays } from 'lucide-react'
+import { Loader2, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar, CalendarCheck, CalendarDays } from 'lucide-react'
 
 interface DashboardSidebarReseauteursProps {
   role: 'reseauteur' | 'organisateur' | 'partenaire' | 'admin'
@@ -182,7 +182,7 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
           disabled={isPending}
           className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-[#6E7175] hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
         >
-          {isPending ? <Loader2 size={17} className="animate-spin" /> : <LogOut size={17} />}
+          {isPending ? <Loader2 size={17} className="animate-spin" /> : null}
           Déconnexion
         </button>
       </div>

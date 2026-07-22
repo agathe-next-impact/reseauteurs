@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { CalendarDays, MapPin, ExternalLink, Network, ArrowRight, Users } from 'lucide-react'
+import { CalendarDays, MapPin, Network, Users } from 'lucide-react'
 // (Users sert aussi à la section « Organisé par » — ADR-0013)
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildEvenementRsnJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
@@ -221,10 +221,10 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
       />
 
       {/* Héros de fiche — fond de marque navy (même token que PageHeader) */}
-      <section className="rsn-pagehead" data-tone="navy">
+      <section className="rsn-pagehead rsn-pagehead--compact" data-tone="navy">
         <div className="rsn-pagehead-inner">
           {/* Fil d'Ariane */}
-          <nav aria-label="Fil d'Ariane" className="mb-6 text-xs text-white/60 flex items-center gap-1.5">
+          <nav aria-label="Fil d'Ariane" className="mb-4 text-xs text-white/60 flex items-center gap-1.5">
             <Link href="/" className="hover:text-white no-underline transition-colors">Accueil</Link>
             <span aria-hidden>/</span>
             <Link href="/evenements" className="hover:text-white no-underline transition-colors">Événements</Link>
@@ -261,6 +261,8 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                   {e.lieuNom && <p className="text-sm font-medium text-white">{e.lieuNom}</p>}
                   <p className="text-sm text-white/70">
                     {e.lieuAdresse && `${e.lieuAdresse}, `}{e.lieuCodePostal && `${e.lieuCodePostal} `}{e.lieuVille}
+                    {/* Département : saisi et indexé (filtre de l'agenda), désormais visible. */}
+                    {e.lieuDepartement && ` (${e.lieuDepartement})`}
                   </p>
                 </div>
               </div>
@@ -287,7 +289,6 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                     className="ir-atlas-primary rsn-linkrow rsn-shine"
                     aria-label={`S'inscrire à l'événement ${e.titre} (lien externe)`}
                   >
-                    <ExternalLink size={15} aria-hidden />
                     S&apos;inscrire
                     <span className="text-xs opacity-75 font-normal">— sur le site du réseau</span>
                   </a>
@@ -453,7 +454,6 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                         Réseauteur{organisateurRz.ville ? ` · ${organisateurRz.ville}` : ''}
                       </p>
                     </div>
-                    <ArrowRight size={14} className="text-[#999A9D] group-hover:text-[#8A6D0B] transition-colors shrink-0 rsn-arrow" aria-hidden />
                   </Link>
                 </section>
               </Reveal>
@@ -488,7 +488,6 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                       <p className="text-sm font-semibold text-[#1D1E21] group-hover:text-[#035AA6] transition-colors">{reseau.nom}</p>
                       {reseau.ville && <p className="text-xs text-[#6E7175]">{reseau.ville}</p>}
                     </div>
-                    <ArrowRight size={14} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />
                   </Link>
                 </section>
               </Reveal>
@@ -582,7 +581,6 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
               href={`/evenements?vue=carte&ville=${encodeURIComponent(e.lieuVille ?? '')}`}
               className="rsn-linkrow inline-flex items-center gap-1.5 text-sm text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors"
             >
-              <MapPin size={13} aria-hidden />
               Voir sur la carte
             </Link>
           </div>

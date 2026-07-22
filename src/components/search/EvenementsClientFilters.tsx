@@ -2,7 +2,7 @@
 
 import { useCallback, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { SlidersHorizontal, X } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 import { DebouncedFilterInput } from './DebouncedFilterInput'
 
 interface EvenementsClientFiltersProps {
@@ -68,7 +68,6 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
             className="text-xs text-[#6E7175] hover:text-[#8A6D0B] flex items-center gap-1 cursor-pointer transition-colors"
             aria-label="Effacer tous les filtres"
           >
-            <X size={12} aria-hidden />
             Effacer
           </button>
         )}

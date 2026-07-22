@@ -22,6 +22,7 @@ import Reveal from '@/components/home/Reveal'
 import { buildTogglePageMetadata } from '@/lib/seo-canonical'
 import { withDbRetry } from '@/lib/db-retry'
 import { BadgePartenaire } from '@/components/ui/BadgeReseauteur'
+import { ContactChips } from '@/components/fiche/ContactChips'
 import { toFeatureCollection, toFeature } from '@/lib/geojson'
 import { SITE_NAME } from '@/lib/site'
 import type { Metadata } from 'next'
@@ -262,10 +263,17 @@ export default async function ReseauxPage({
                 }
 
                 return (
-                  <article key={r.id} role="listitem">
+                  <article
+                    key={r.id}
+                    role="listitem"
+                    // Le cadre porte le style de carte (et non le <Link>) : les coordonnées
+                    // restent DANS la carte tout en étant des liens frères — un <a> dans
+                    // un <a> est invalide.
+                    className={`flex flex-col bg-white border rsn-lift h-full group ${r.partenaire ? 'border-[#F5E050]/40' : 'border-[#DFE0E1]'}`}
+                  >
                     <Link
                       href={`/reseau/${r.slug}`}
-                      className={`flex flex-col gap-4 p-5 bg-white border rsn-lift no-underline h-full group ${r.partenaire ? 'border-[#F5E050]/40' : 'border-[#DFE0E1]'}`}
+                      className="flex flex-col gap-4 p-5 pb-0 no-underline flex-1"
                     >
                       <div className="flex items-start gap-3">
                         {logoUrl ? (
@@ -312,6 +320,14 @@ export default async function ReseauxPage({
                         )}
                       </div>
                     </Link>
+                    {/* Coordonnées — hors du <Link> (pas d'<a> imbriqué) */}
+                    <ContactChips
+                      email={r.emailContact}
+                      telephone={r.telephone}
+                      site={r.siteWeb}
+                      entityName={r.nom}
+                      className="px-5 pt-3 pb-5"
+                    />
                   </article>
                 )
               })}

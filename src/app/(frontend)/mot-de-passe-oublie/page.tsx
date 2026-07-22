@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Mail, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell from '@/components/layout/AuthShell'
 
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
           />
         </div>
 
-        <Button type="submit" loading={loading} iconLeft={Mail} className="w-full" size="md">
+        <Button type="submit" loading={loading} className="w-full" size="md">
           Envoyer le lien
         </Button>
       </form>
