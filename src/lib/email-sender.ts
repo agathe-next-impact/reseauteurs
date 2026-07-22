@@ -37,6 +37,7 @@ export type EmailKind =
   | 'plus-active'
   | 'plus-expire'
   | 'invitation-national'
+  | 'local-affilie-cree'
 
 export interface SendEmailInput {
   payload: Payload

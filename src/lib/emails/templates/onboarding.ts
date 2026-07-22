@@ -116,6 +116,51 @@ export function invitationNationalEmail(nomReseau: string, inviteurNom: string):
 }
 
 /**
+ * Notification au réseau national qu'un groupe local vient de lui être AFFILIÉ
+ * (décision 2026-07-22). Déclenchée à la création d'un local avec un `parent`,
+ * par un tiers — réseauteur Plus (ADR-0014) ou admin. Jamais quand la tête crée
+ * elle-même le groupe : elle n'a pas à s'auto-notifier.
+ *
+ * Le national garde la main : depuis « Mes groupes » il peut modifier la fiche
+ * de ce groupe ou le supprimer s'il ne correspond pas à son réseau.
+ */
+export function nouveauLocalAffilieEmail(params: {
+  nomNational: string
+  nomLocal: string
+  villeLocal?: string | null
+  createurNom: string
+}): string {
+  const { nomNational, nomLocal, villeLocal, createurNom } = params
+  const gestionUrl = `${SITE_URL}/dashboard/locaux`
+  // `table` échappe ses valeurs (infoRow) : on lui passe le texte brut.
+  const lignes = [
+    { label: 'Groupe local', value: nomLocal },
+    ...(villeLocal ? [{ label: 'Ville', value: villeLocal }] : []),
+    { label: 'Créé par', value: createurNom },
+  ]
+  const content = `
+    ${paragraph(`Bonjour,`)}
+    ${paragraph(`Un nouveau groupe local vient d'être rattaché à votre réseau <strong>${esc(nomNational)}</strong> sur RÉSEAUTEURS.`)}
+    ${table(lignes)}
+    ${card({
+      variant: 'highlight',
+      title: 'Vous gardez la main',
+      body: `<p style="margin:0">Depuis « Mes groupes », vous pouvez modifier la fiche de ce groupe ou le supprimer s'il ne correspond pas à votre réseau.</p>`,
+    })}
+    ${button({ href: gestionUrl, label: 'Gérer mes groupes', variant: 'primary' })}
+    ${fallbackUrl(gestionUrl)}
+    ${paragraph(`<span style="color:#6E7175">Vous recevez cet email car vous gérez la fiche du réseau ${esc(nomNational)} sur RÉSEAUTEURS.</span>`)}
+  `
+  return renderEmail({
+    preheader: `${nomLocal} vient d'être rattaché à ${nomNational} sur RÉSEAUTEURS.`,
+    heading: 'Nouveau groupe affilié à votre réseau',
+    content,
+    footer: 'transactional',
+    accent: 'primary',
+  })
+}
+
+/**
  * Sent ~3 days after signup. Reminds the user to complète the fiche if still sparse.
  * Gated by optInMarketing. Includes unsubscribe footer.
  */

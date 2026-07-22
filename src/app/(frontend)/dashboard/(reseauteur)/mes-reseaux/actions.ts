@@ -26,6 +26,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { hashUserId } from '@/lib/audit'
 import { sendEmail } from '@/lib/email-sender'
 import { invitationNationalEmail } from '@/lib/emails'
+import { notifierNationalNouveauLocal } from '@/lib/notif-local-affilie'
 
 type ActionResult = { ok: true; id?: number | string } | { ok: false; error: string }
 
@@ -128,6 +129,19 @@ export async function createMonReseauLocal(
     })
     revalidatePath('/dashboard/mes-reseaux')
     revalidatePath('/reseaux')
+
+    // Notification de la tête de réseau (décision 2026-07-22) — best-effort :
+    // le helper n'échoue jamais, la création reste acquise même si l'email tombe.
+    await notifierNationalNouveauLocal({
+      payload,
+      parentId,
+      nomLocal: parsed.data.nom.trim(),
+      villeLocal: parsed.data.ville.trim(),
+      createurUserId: userId,
+      createurNom:
+        (freshUser.nomSociete as string | null | undefined) ?? 'Un réseauteur de la plateforme',
+    })
+
     return { ok: true, id: created.id }
   } catch (err) {
     console.error('[action/createMonReseauLocal]', err)

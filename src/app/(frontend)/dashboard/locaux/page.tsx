@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import type { Media } from '@/types/reseauteurs-domain'
 import { CreerLocalButton } from '@/components/billing/CreerLocalButton'
+import { LocalActions } from '@/components/dashboard/LocalActions'
 import { maxLocaux } from '@/lib/reseau-hierarchie'
 import Reveal from '@/components/home/Reveal'
 
@@ -203,7 +204,9 @@ export default async function DashboardLocauxPage() {
                 local.user !== (national.user as unknown)
 
               return (
-                <div key={local.id as string} className="flex items-center gap-3 px-6 py-4">
+                // flex-wrap : en mode édition/confirmation, <LocalActions> renvoie un
+                // panneau `w-full` qui passe seul à la ligne sous les infos du groupe.
+                <div key={local.id as string} className="flex flex-wrap items-center gap-3 px-6 py-4">
                   {logoUrl ? (
                     <Image
                       src={logoUrl}
@@ -259,6 +262,17 @@ export default async function DashboardLocauxPage() {
                       </Link>
                     )}
                   </div>
+
+                  {/* Modifier / supprimer — autorisation revérifiée côté serveur */}
+                  <LocalActions
+                    local={{
+                      id: local.id as string | number,
+                      nom: local.nom as string,
+                      ville: (local.ville as string | null) ?? null,
+                      description: (local.description as string | null) ?? null,
+                    }}
+                    delegue={isDelegue}
+                  />
                 </div>
               )
             })}

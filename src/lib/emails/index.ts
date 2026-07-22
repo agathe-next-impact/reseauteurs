@@ -10,6 +10,7 @@ export {
   forgotPasswordEmail,
   csvInvitationEmail,
   invitationNationalEmail,
+  nouveauLocalAffilieEmail,
   completionReminderEmail,
   upgradeNudgeEmail,
   groupLeverageEmail,

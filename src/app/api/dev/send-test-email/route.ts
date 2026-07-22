@@ -38,6 +38,7 @@ import {
   plusActiveEmail,
   plusExpireEmail,
   invitationNationalEmail,
+  nouveauLocalAffilieEmail,
 } from '@/lib/emails'
 import { sendEmail, type EmailKind } from '@/lib/email-sender'
 import { SITE_URL } from '@/lib/site'
@@ -232,6 +233,15 @@ const TEMPLATES: Record<EmailKind, { subject: string; html: string }> = {
   'invitation-national': {
     subject: 'RÉSEAUTEURS — BNI est invité à créer la fiche de son réseau',
     html: invitationNationalEmail('BNI', FIXTURE_NOM),
+  },
+  'local-affilie-cree': {
+    subject: 'RÉSEAUTEURS — BNI Lyon Part-Dieu vient d\'être rattaché à BNI France',
+    html: nouveauLocalAffilieEmail({
+      nomNational: 'BNI France',
+      nomLocal: 'BNI Lyon Part-Dieu',
+      villeLocal: 'Lyon',
+      createurNom: FIXTURE_NOM,
+    }),
   },
 }
 
