@@ -124,9 +124,15 @@ export function MesEvenementsClient({
     const data: EvenementFormData = {
       titre: s('titre'),
       type: Number(fd.get('type')),
-      // Organisateur (création uniquement) : '' = en mon nom, sinon id d'un réseau local possédé
-      organisateurReseau:
-        editing === 'new' && fd.get('organisateurReseau') ? Number(fd.get('organisateurReseau')) : null,
+      // Organisateur : '' = en mon nom (événement libre), sinon id d'un réseau local
+      // possédé. Modifiable après création (2026-07-22) — le champ absent du
+      // formulaire (aucun réseau possédé) laisse `undefined` : l'action n'y touche pas.
+      organisateurReseau: (() => {
+        const brut = fd.get('organisateurReseau')
+        if (brut === null) return undefined
+        const v = String(brut)
+        return v === '' ? null : Number(v)
+      })(),
       descriptionCourte: s('descriptionCourte'),
       description: s('description'),
       intervenants: s('intervenants'),
@@ -187,6 +193,10 @@ export function MesEvenementsClient({
   }
 
   const current = editing !== null && editing !== 'new' ? editing : null
+  // Événement rattaché à un réseau absent de MES réseaux (créé pour le réseau d'un
+  // tiers, ou réseau cédé/supprimé depuis) : le rattachement n'est pas modifiable ici.
+  const rattachementNonPossede =
+    current?.reseauId != null && !groupesAdmin.some((g) => g.id === current.reseauId)
 
   return (
     <div className="space-y-6">
@@ -197,24 +207,37 @@ export function MesEvenementsClient({
             {current ? `Modifier « ${current.titre} »` : 'Nouvel événement'}
           </h2>
 
-          {/* Organisateur — en mon nom OU pour un groupe admin (création ; figé ensuite) */}
-          {!current && groupesAdmin.length > 0 && (
+          {/* Organisateur — en mon nom (libre) OU pour un de mes réseaux locaux.
+              Modifiable après création : l'invariant XOR et la propriété du réseau
+              sont revérifiés côté serveur à chaque changement. */}
+          {groupesAdmin.length > 0 && !rattachementNonPossede && (
             <div>
               <label htmlFor="organisateurReseau" className={labelClass}>Organisateur</label>
-              <select id="organisateurReseau" name="organisateurReseau" defaultValue="" className={inputClass}>
-                <option value="">En mon nom</option>
+              <select
+                id="organisateurReseau"
+                name="organisateurReseau"
+                defaultValue={current?.reseauId ? String(current.reseauId) : ''}
+                className={inputClass}
+              >
+                <option value="">En mon nom (événement libre)</option>
                 {groupesAdmin.map((g) => (
-                  <option key={g.id} value={g.id}>Pour le groupe : {g.nom}</option>
+                  <option key={g.id} value={g.id}>Pour mon réseau : {g.nom}</option>
                 ))}
               </select>
               <p className="text-xs text-[#999A9D] mt-1">
-                Un événement de groupe apparaît au nom du groupe sur sa fiche et sur la carte.
+                Un événement de réseau apparaît au nom du réseau sur sa fiche et sur la carte ;
+                un événement libre apparaît à votre nom.
               </p>
             </div>
           )}
-          {current?.reseauNom && (
+          {/* Réseau que l'utilisateur ne possède pas / plus : on affiche le
+              rattachement sans proposer de le changer. Sans ce garde-fou, le
+              sélecteur retomberait sur « En mon nom » (aucune option ne
+              correspond) et l'enregistrement détacherait l'événement du réseau
+              de son organisateur — il reste modifiable via `creeParUser`. */}
+          {rattachementNonPossede && current?.reseauNom && (
             <p className="text-xs text-[#6E7175] bg-[#fafafa] border border-[#DFE0E1] rounded-xl px-3 py-2">
-              Événement organisé pour le groupe <strong>{current.reseauNom}</strong> (non modifiable).
+              Événement organisé pour le réseau <strong>{current.reseauNom}</strong>.
             </p>
           )}
 

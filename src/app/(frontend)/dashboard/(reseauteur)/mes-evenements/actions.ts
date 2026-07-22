@@ -16,9 +16,11 @@ export interface EvenementFormData {
   titre: string
   type: number | string
   /**
-   * Organisateur (création uniquement — ADR-0014) : null/absent = en mon nom
-   * (organisateurReseauteur) ; id d'un réseau local = pour ce réseau (reseau). Le hook
-   * serveur vérifie que le réseauteur Plus est PROPRIÉTAIRE du réseau local.
+   * Organisateur (ADR-0014, modifiable après création depuis le 2026-07-22) :
+   *   - `null`      = en mon nom, événement libre (organisateurReseauteur) ;
+   *   - id > 0      = pour ce réseau local (reseau) ;
+   *   - `undefined` = champ absent du formulaire → rattachement inchangé.
+   * Le hook serveur vérifie que le réseauteur Plus est PROPRIÉTAIRE du réseau local.
    */
   organisateurReseau?: number | null
   descriptionCourte?: string
@@ -181,13 +183,35 @@ export async function updateMonEvenement(
   const ctx = await getContext()
   if (!ctx) return { ok: false, error: 'Non authentifié.' }
 
+  // Changement d'organisateur après création (2026-07-22) : un événement peut
+  // passer de « en mon nom » (libre) à « pour un de mes réseaux locaux » et
+  // inversement. L'invariant XOR impose d'écrire les DEUX champs en même temps —
+  // en n'en changeant qu'un, le hook verrait deux organisateurs et refuserait.
+  // Propriété du réseau et gate Plus sont revérifiés par les hooks (overrideAccess: false).
+  // `undefined` = champ absent du formulaire → rattachement inchangé.
+  let organisateurPatch: Record<string, unknown> = {}
+  if (data.organisateurReseau !== undefined) {
+    if (Number(data.organisateurReseau) > 0) {
+      organisateurPatch = { reseau: Number(data.organisateurReseau), organisateurReseauteur: null }
+    } else {
+      if (!ctx.profil) {
+        return { ok: false, error: 'Profil réseauteur introuvable : impossible de publier en votre nom.' }
+      }
+      organisateurPatch = { reseau: null, organisateurReseauteur: Number(ctx.profil.id) }
+    }
+  }
+
   try {
     // L'access control `update` (organisateurReseauteur.user = moi) borne la portée.
     const doc = await ctx.payload.update({
       collection: 'evenements',
       id,
       // imageId absent = visuel inchangé (jamais effacé implicitement)
-      data: { ...sanitize(data), ...imagePatch(data.imageId) } as Record<string, unknown>,
+      data: {
+        ...sanitize(data),
+        ...imagePatch(data.imageId),
+        ...organisateurPatch,
+      } as Record<string, unknown>,
       user: ctx.user,
       overrideAccess: false,
     })

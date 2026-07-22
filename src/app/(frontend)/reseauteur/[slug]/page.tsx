@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Users, Building2, CalendarDays } from 'lucide-react'
+import { MapPin, Users, Building2, CalendarDays, Network } from 'lucide-react'
 import { ContactCTA } from '@/components/fiche/ContactCTA'
 import { buildMetadata, applySeoOverrides } from '@/lib/seo'
 import { buildPersonJsonLd, buildBreadcrumbListJsonLd } from '@/lib/jsonld'
@@ -88,8 +88,37 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
   const photoMedia = r.photo as Media | null | undefined
   const photoUrl = photoMedia?.sizes?.card?.url ?? photoMedia?.url ?? null
   const secteurDoc = r.secteur as Categorie | null | undefined
-  const reseauxFrequentes = (r.reseauxFrequentes as Reseau[] | null | undefined) ?? []
   const competences = (r.competences as Array<{ label: string; id?: string }> | null | undefined) ?? []
+
+  // Réseaux dont ce réseauteur est PROPRIÉTAIRE (fiches qu'il a créées ou revendiquées) —
+  // un Plus peut en posséder jusqu'à 3 (ADR-0014). Publiés uniquement : une fiche
+  // suspendue (abonnement expiré, modération) ne doit pas fuiter par ce chemin.
+  const payload = await getPayload({ config })
+  const compteId: number | string | null =
+    typeof r.user === 'object' && r.user !== null
+      ? ((r.user as { id?: number | string }).id ?? null)
+      : ((r.user as number | null | undefined) ?? null)
+  const { docs: reseauxGeres } =
+    compteId != null
+      ? await payload.find({
+          collection: 'reseaux',
+          where: {
+            and: [{ user: { equals: compteId } }, { statut: { equals: 'publiee' } }],
+          },
+          depth: 1,
+          sort: 'nom',
+          limit: 10,
+          overrideAccess: true,
+        })
+      : { docs: [] as unknown[] }
+  const reseauxResponsable = reseauxGeres as unknown as Reseau[]
+
+  // Un réseau qu'il anime est forcément un réseau qu'il fréquente : on l'affiche
+  // une seule fois, sous le libellé le plus fort (responsable).
+  const idsResponsable = new Set(reseauxResponsable.map((x) => String(x.id)))
+  const reseauxFrequentes = ((r.reseauxFrequentes as Reseau[] | null | undefined) ?? []).filter(
+    (x) => !idsResponsable.has(String(x.id)),
+  )
 
   // Événements auxquels le réseauteur participe (publiés + à venir, triés par date).
   // DEUX sources fusionnées : présence signalée sur le profil (`evenementsParticipes`,
@@ -97,7 +126,7 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
   // réseauteur Plus (ADR-0013 §3bis). Dédoublonnage par id.
   // Borne "aujourd'hui" via lib (le "now" reste hors du rendu — règle de pureté).
   const todayStartMs = new Date(`${todayParisDateString()}T00:00:00.000Z`).getTime()
-  const evenementsInscrits = await listerEvenementsInscrits(await getPayload({ config }), r.id)
+  const evenementsInscrits = await listerEvenementsInscrits(payload, r.id)
   const evenementsParticipes = [
     ...((r.evenementsParticipes as EvenementRsn[] | null | undefined) ?? []),
     ...evenementsInscrits,
@@ -260,6 +289,41 @@ export default async function FicheReseauteurPage({ params }: { params: Promise<
                         {c.label}
                       </span>
                     ))}
+                  </div>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Réseaux dont il est responsable (fiches qu'il a créées) */}
+            {reseauxResponsable.length > 0 && (
+              <Reveal>
+                <section aria-labelledby="reseaux-geres-titre">
+                  <h2
+                    id="reseaux-geres-titre"
+                    className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5"
+                  >
+                    <Network size={14} aria-hidden />
+                    {reseauxResponsable.length > 1 ? 'Réseaux qu’il anime' : 'Réseau qu’il anime'}
+                  </h2>
+                  <div className="flex flex-wrap gap-2" role="list" aria-label="Réseaux dont ce réseauteur est responsable">
+                    {reseauxResponsable.map((reseau) => {
+                      const gLogoMedia = reseau.logo as Media | null | undefined
+                      const gLogoUrl = gLogoMedia?.sizes?.thumbnail?.url ?? gLogoMedia?.url
+                      return (
+                        <Link
+                          key={reseau.id}
+                          href={`/reseau/${reseau.slug}`}
+                          role="listitem"
+                          className="rsn-linkrow inline-flex items-center gap-1.5 p-2.5 rounded-full bg-[#EAF2F8] border border-[#3E7CA6]/30 text-xs font-medium text-[#02467F] hover:border-[#035AA6] no-underline transition-colors"
+                        >
+                          {gLogoUrl && (
+                            <Image src={gLogoUrl} alt="" width={14} height={14} className="w-3.5 h-3.5 rounded-full object-cover" aria-hidden />
+                          )}
+                          {reseau.nom}
+                          <span className="text-[10px] text-[#6E7175] font-normal">· responsable</span>
+                        </Link>
+                      )
+                    })}
                   </div>
                 </section>
               </Reveal>

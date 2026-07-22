@@ -11,8 +11,13 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Network, Pencil, ExternalLink, MapPin, Loader2, Mail, X } from 'lucide-react'
-import { createMonReseauLocal, updateMonReseauLocal, inviterReseauNational } from './actions'
+import { Network, Pencil, Trash2, ExternalLink, MapPin, Loader2, Mail, X } from 'lucide-react'
+import {
+  createMonReseauLocal,
+  updateMonReseauLocal,
+  deleteMonReseauLocal,
+  inviterReseauNational,
+} from './actions'
 
 export interface MonReseauLocal {
   id: number
@@ -49,6 +54,9 @@ export function MesReseauxClient({
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState<MonReseauLocal | 'new' | null>(null)
+  // Suppression en deux temps, dans la ligne : pas de window.confirm (non stylable,
+  // mal restitué par les lecteurs d'écran, bloquant).
+  const [aSupprimer, setASupprimer] = useState<number | null>(null)
   const [pending, startTransition] = useTransition()
 
   const current = editing !== null && editing !== 'new' ? editing : null
@@ -80,6 +88,22 @@ export function MesReseauxClient({
         setEditing(null)
         router.refresh()
       } else {
+        toast.error(res.error)
+      }
+    })
+  }
+
+  const onDelete = (r: MonReseauLocal) => {
+    startTransition(async () => {
+      const res = await deleteMonReseauLocal(r.id)
+      setASupprimer(null)
+      if (res.ok) {
+        toast.success(`« ${r.nom} » a été supprimé.`)
+        // Le formulaire pouvait être ouvert sur la fiche qui vient de disparaître.
+        if (editing !== null && editing !== 'new' && editing.id === r.id) setEditing(null)
+        router.refresh()
+      } else {
+        // Message serveur explicite (ex. « … N événement(s) y sont rattaché(s) »).
         toast.error(res.error)
       }
     })
@@ -243,27 +267,58 @@ export function MesReseauxClient({
                     </span>
                   </div>
                 </div>
-                <div className="shrink-0 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(r)}
-                    className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#3E7CA6] hover:bg-[#E7F0F7]/50 transition-colors"
-                    aria-label={`Modifier ${r.nom}`}
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  {r.slug && (
-                    <Link
-                      href={`/reseau/${r.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#035AA6] hover:text-[#02467F] transition-colors"
-                      aria-label={`Voir la fiche de ${r.nom}`}
+                {aSupprimer === r.id ? (
+                  <div className="shrink-0 flex items-center gap-2">
+                    <span className="text-xs text-[#6E7175]">Supprimer ce réseau ?</span>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(r)}
+                      disabled={pending}
+                      className="inline-flex items-center gap-1.5 text-xs bg-red-600 text-white hover:bg-red-700 p-2.5 rounded-xl font-semibold transition-colors disabled:opacity-60"
                     >
-                      <ExternalLink size={14} aria-hidden />
-                    </Link>
-                  )}
-                </div>
+                      {pending && <Loader2 size={12} className="animate-spin" aria-hidden />}
+                      Oui, supprimer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setASupprimer(null)}
+                      disabled={pending}
+                      className="text-xs text-[#6E7175] hover:text-[#1D1E21] font-medium transition-colors disabled:opacity-40"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                ) : (
+                  <div className="shrink-0 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(r)}
+                      className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#3E7CA6] hover:bg-[#E7F0F7]/50 transition-colors"
+                      aria-label={`Modifier ${r.nom}`}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setASupprimer(r.id)}
+                      className="p-2.5 rounded-lg text-[#6E7175] hover:text-red-600 hover:bg-red-50 transition-colors"
+                      aria-label={`Supprimer ${r.nom}`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    {r.slug && (
+                      <Link
+                        href={`/reseau/${r.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#035AA6] hover:text-[#02467F] transition-colors"
+                        aria-label={`Voir la fiche de ${r.nom}`}
+                      >
+                        <ExternalLink size={14} aria-hidden />
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

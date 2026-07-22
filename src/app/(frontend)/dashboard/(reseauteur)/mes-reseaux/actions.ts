@@ -226,6 +226,66 @@ export async function updateMonReseauLocal(
 }
 
 // ─────────────────────────────────────────────────────────────────
+// Suppression d'un réseau local possédé
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Supprime un réseau local possédé — affilié à une tête ou indépendant, la règle
+ * est la même : seule la PROPRIÉTÉ compte (`user`), jamais l'affiliation.
+ *
+ * Pas de gate Plus : comme pour l'édition, un Plus expiré garde la main sur ses
+ * fiches existantes ; seules les créations sont re-gatées.
+ *
+ * Le refus « des événements y sont rattachés » vient du hook beforeDelete de la
+ * collection Reseaux — son message FR est remonté tel quel à l'utilisateur.
+ */
+export async function deleteMonReseauLocal(reseauId: number | string): Promise<ActionResult> {
+  const ctx = await getReseauteurContext()
+  if (!ctx.ok) return { ok: false, error: ctx.error }
+  const { payload, userId } = ctx
+
+  type ReseauLocalDoc = { id: number | string; niveau?: string | null; user?: unknown; slug?: string | null }
+  let reseau: ReseauLocalDoc | null = null
+  try {
+    reseau = (await payload.findByID({
+      collection: 'reseaux',
+      id: reseauId,
+      depth: 0,
+      overrideAccess: true,
+    })) as unknown as ReseauLocalDoc
+  } catch {
+    reseau = null
+  }
+  if (!reseau) return { ok: false, error: 'Réseau introuvable.' }
+
+  const ownerId =
+    typeof reseau.user === 'object' && reseau.user !== null
+      ? (reseau.user as { id?: number | string }).id
+      : (reseau.user as number | string | null | undefined)
+  if (reseau.niveau !== 'local' || ownerId == null || String(ownerId) !== String(userId)) {
+    return { ok: false, error: 'Vous ne pouvez supprimer que vos propres réseaux locaux.' }
+  }
+
+  const slug = reseau.slug
+  try {
+    await payload.delete({
+      collection: 'reseaux',
+      id: reseauId,
+      overrideAccess: true,
+    })
+  } catch (err) {
+    console.error('[action/deleteMonReseauLocal]', err)
+    const msg = err instanceof Error ? err.message.replace(/^ValidationError:?\s*/i, '') : null
+    return { ok: false, error: msg || 'Erreur lors de la suppression du réseau.' }
+  }
+
+  revalidatePath('/dashboard/mes-reseaux')
+  revalidatePath('/reseaux')
+  if (slug) revalidatePath(`/reseau/${slug}`)
+  return { ok: true, id: reseauId }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Invitation email d'un réseau national absent de la plateforme
 // ─────────────────────────────────────────────────────────────────
 
