@@ -251,15 +251,43 @@ export const Reseaux: CollectionConfig = {
         return data
       },
       // Géocodage automatique si l'adresse change.
+      //
+      // Corrigé le 2026-07-22 : l'ancienne condition exigeait AUSSI que les coordonnées
+      // soient absentes, donc renommer/déplacer un réseau DÉJÀ géocodé laissait son
+      // marqueur à l'ancienne ville (visible depuis « Mes groupes » : un national édite
+      // la ville d'un groupe, la fiche change mais pas la carte).
+      //
+      // On re-géocode désormais dès que l'adresse effective change, ou si les
+      // coordonnées manquent. Seule exception : l'écriture fournit elle-même des
+      // coordonnées (saisie admin — champs lat/lng réservés à l'admin), qu'on respecte.
       async ({ data, originalDoc }) => {
         if (process.env.SEED_DEV === 'true') return data
-        const addressChanged =
-          data.ville !== originalDoc?.ville ||
-          data.adresse !== originalDoc?.adresse ||
-          data.codePostal !== originalDoc?.codePostal
 
-        if (addressChanged && data.ville && (data.latitude == null || data.longitude == null)) {
-          const result = await geocodeAddress(data.adresse, data.codePostal, data.ville)
+        // Valeur effective = champ soumis, sinon valeur existante. Robuste que Payload
+        // transmette un patch partiel ou le document fusionné.
+        const eff = <T,>(incoming: T | undefined, current: T | undefined): T | undefined =>
+          incoming !== undefined ? incoming : current
+        const ville = eff(data.ville, originalDoc?.ville)
+        const adresse = eff(data.adresse, originalDoc?.adresse)
+        const codePostal = eff(data.codePostal, originalDoc?.codePostal)
+
+        const addressChanged =
+          ville !== originalDoc?.ville ||
+          adresse !== originalDoc?.adresse ||
+          codePostal !== originalDoc?.codePostal
+
+        // Coordonnées posées explicitement par cette écriture (admin) → on n'y touche pas.
+        const coordsFournies =
+          data.latitude != null &&
+          data.longitude != null &&
+          (data.latitude !== originalDoc?.latitude || data.longitude !== originalDoc?.longitude)
+
+        const coordsManquantes =
+          eff(data.latitude, originalDoc?.latitude) == null ||
+          eff(data.longitude, originalDoc?.longitude) == null
+
+        if (ville && !coordsFournies && (addressChanged || coordsManquantes)) {
+          const result = await geocodeAddress(adresse, codePostal, ville)
           if (result) {
             data.latitude = result.latitude
             data.longitude = result.longitude
