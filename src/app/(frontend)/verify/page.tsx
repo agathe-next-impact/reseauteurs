@@ -15,7 +15,14 @@ function VerifyContent() {
   useEffect(() => {
     if (!token) return
 
-    fetch(`/api/users/verify/${token}`, { method: 'POST' })
+    // Route maison (et non /api/users/verify/:token) : elle enveloppe la vérification
+    // native de Payload et applique la revendication de fiche mise en attente au
+    // signup — l'email doit être prouvé avant qu'une fiche change de mains.
+    fetch('/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    })
       .then(async (res) => {
         if (res.ok) {
           setStatus('success')
@@ -23,7 +30,8 @@ function VerifyContent() {
           const data = await res.json().catch(() => null)
           setStatus('error')
           setMessage(
-            data?.errors?.[0]?.message ||
+            data?.error ||
+              data?.errors?.[0]?.message ||
               data?.message ||
               'Le lien de vérification est invalide ou a expire.',
           )

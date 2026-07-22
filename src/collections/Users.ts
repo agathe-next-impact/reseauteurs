@@ -607,6 +607,26 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      // Revendication d'une fiche de tête de réseau orpheline, MISE EN ATTENTE jusqu'à
+      // la vérification de l'email (décision 2026-07-22). Sans ce report, une adresse
+      // jetable suffisait à s'approprier une fiche de l'annuaire national et à la
+      // rendre définitivement non revendicable (le compte ne pouvant pas se connecter,
+      // seul un admin pouvait la libérer). Consommée puis vidée par
+      // `resoudreClaimEnAttente` — cf. POST /api/auth/verify.
+      name: 'pendingClaimReseauId',
+      type: 'number',
+      access: {
+        read: isAdmin,
+        create: isAdmin,
+        update: isAdmin,
+      },
+      admin: {
+        position: 'sidebar',
+        description:
+          'Fiche de réseau à rattacher à ce compte une fois son email vérifié. Vide une fois consommée.',
+      },
+    },
+    {
       name: 'nomSociete',
       type: 'text',
       required: true,

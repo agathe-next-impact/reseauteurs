@@ -180,6 +180,10 @@ export interface User {
    * Code d'invitation memorise au signup pour un user gratuit, applique automatiquement au passage en Infinite (webhook checkout.session.completed). Vide une fois consomme.
    */
   pendingGroupeCode?: string | null;
+  /**
+   * Fiche de réseau à rattacher à ce compte une fois son email vérifié. Vide une fois consommée.
+   */
+  pendingClaimReseauId?: number | null;
   nomSociete: string;
   ville: string;
   stripeCustomerId?: string | null;
@@ -1255,6 +1259,7 @@ export interface UsersSelect<T extends boolean = true> {
   plusLicencePack?: T;
   groupe?: T;
   pendingGroupeCode?: T;
+  pendingClaimReseauId?: T;
   nomSociete?: T;
   ville?: T;
   stripeCustomerId?: T;

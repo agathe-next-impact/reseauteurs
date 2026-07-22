@@ -90,6 +90,7 @@ import * as migration_20260717_100000_audit_logs_add_national_invited from './20
 // ── Annuaire réseaux nationaux « nom seul » : ville facultative (2026-07-17)
 import * as migration_20260717_110000_reseaux_ville_nullable from './20260717_110000_reseaux_ville_nullable';
 import * as migration_20260720_100000_partenaires_contact from './20260720_100000_partenaires_contact';
+import * as migration_20260722_100000_users_pending_claim_reseau from './20260722_100000_users_pending_claim_reseau';
 
 export const migrations = [
   {
@@ -469,5 +470,10 @@ export const migrations = [
     up: migration_20260720_100000_partenaires_contact.up,
     down: migration_20260720_100000_partenaires_contact.down,
     name: '20260720_100000_partenaires_contact',
+  },
+  {
+    up: migration_20260722_100000_users_pending_claim_reseau.up,
+    down: migration_20260722_100000_users_pending_claim_reseau.down,
+    name: '20260722_100000_users_pending_claim_reseau',
   },
 ];

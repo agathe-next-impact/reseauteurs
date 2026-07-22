@@ -6,6 +6,7 @@ import { CONTACT_EMAIL, SITE_URL } from '@/lib/site'
 import { userRegisteredAdminEmail, verifyEmailTemplate } from '@/lib/emails'
 import { sendEmail } from '@/lib/email-sender'
 import { rateLimit } from '@/lib/rate-limit'
+import { chargerReseauRevendicable } from '@/lib/revendication-reseau'
 
 /**
  * Jeton de vérification de l'utilisateur, ou un jeton neuf si la colonne est
@@ -84,8 +85,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Body JSON invalide' }, { status: 400 })
   }
 
-  const { email, password, nomSociete, ville, type, cguAccepted, optInMarketing, pendingGroupeCode } =
-    body as {
+  const {
+    email,
+    password,
+    nomSociete,
+    ville,
+    type,
+    cguAccepted,
+    optInMarketing,
+    pendingGroupeCode,
+    claimReseauId,
+  } = body as {
       email?: string
       password?: string
       nomSociete?: string
@@ -98,6 +108,12 @@ export async function POST(request: Request) {
       cguAccepted?: boolean
       optInMarketing?: boolean
       pendingGroupeCode?: string
+      /**
+       * Revendication d'une fiche de tête de réseau orpheline (annuaire seedé).
+       * Force le rôle `organisateur` et fait linker la fiche au nouveau compte par
+       * le hook afterChange de Users (claim atomique via `req.context.claimReseauId`).
+       */
+      claimReseauId?: number | string
     }
 
   if (!email || !password || !nomSociete || !ville) {
@@ -111,10 +127,15 @@ export async function POST(request: Request) {
     )
   }
 
+  // Revendication d'une fiche orpheline : normalisée AVANT le calcul du rôle —
+  // revendiquer une tête de réseau implique nécessairement un compte organisateur.
+  const claimIdRaw = claimReseauId != null ? Number(claimReseauId) : NaN
+  const claimId = Number.isInteger(claimIdRaw) && claimIdRaw > 0 ? claimIdRaw : null
+
   // Rôles ouverts à l'inscription : reseauteur (défaut, gratuit), organisateur, partenaire.
   // 'fournisseur' est un alias legacy redirigé vers 'reseauteur'.
   const role: 'reseauteur' | 'organisateur' | 'partenaire' =
-    type === 'organisateur'
+    claimId != null || type === 'organisateur'
       ? 'organisateur'
       : type === 'partenaire'
         ? 'partenaire'
@@ -126,6 +147,17 @@ export async function POST(request: Request) {
 
   const payload = await getPayload({ config })
   const normalizedEmail = email.trim().toLowerCase()
+
+  // Revendication : on vérifie que la fiche est toujours revendicable AVANT de créer
+  // le compte. Le hook de claim est silencieux en cas d'échec (il se contente de
+  // créer un national neuf) — sans ce contrôle, l'utilisateur croirait avoir
+  // revendiqué la fiche alors qu'il aurait juste un réseau vide de plus.
+  if (claimId != null) {
+    const fiche = await chargerReseauRevendicable(payload, claimId)
+    if (!fiche.ok) {
+      return NextResponse.json({ error: fiche.error }, { status: 400 })
+    }
+  }
 
   // Compte existant : deux situations très différentes.
   //  • connexion possible → 409, il faut se connecter (ou réinitialiser le mot de passe) ;
@@ -214,8 +246,17 @@ export async function POST(request: Request) {
         optInMarketing: optInMarketing === true,
         ...(optInMarketing === true ? { optInMarketingAt: nowIso } : {}),
         ...(normalizedPendingCode ? { pendingGroupeCode: normalizedPendingCode } : {}),
+        ...(claimId != null ? { pendingClaimReseauId: claimId } : {}),
       },
-      context: { webhookTrusted: true },
+      // Revendication : elle n'est PAS appliquée ici (une adresse jetable suffirait à
+      // immobiliser une fiche de l'annuaire). `skipAutoCreateReseau` évite de créer un
+      // réseau vide en attendant ; `pendingClaimReseauId` (posé ci-dessus) est consommé
+      // à la vérification de l'email — POST /api/auth/verify → resoudreClaimEnAttente,
+      // qui crée le réseau de repli si la fiche a été prise entre-temps.
+      context: {
+        webhookTrusted: true,
+        ...(claimId != null ? { skipAutoCreateReseau: true } : {}),
+      },
       disableVerificationEmail: true,
       overrideAccess: true,
     })

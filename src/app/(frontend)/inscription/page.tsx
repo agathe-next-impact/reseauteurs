@@ -35,10 +35,43 @@ export default function InscriptionPage() {
   const searchParams = useSearchParams()
   const groupeCodeParam = (searchParams.get('code') ?? '').trim().slice(0, 20).toUpperCase()
 
+  // Revendication d'une fiche de réseau orpheline (/reseau/<slug> → « C'est votre réseau ? »).
+  // Une revendication implique un compte organisateur : le choix du type est court-circuité.
+  const claimParam = (searchParams.get('claim') ?? '').trim()
+  const claimReseauId = /^\d+$/.test(claimParam) ? claimParam : null
+  // Nom de la fiche revendiquée, résolu côté serveur (jamais depuis l'URL — l'utilisateur
+  // doit voir CE qu'il revendique, et le serveur reste juge de la revendicabilité).
+  const [claimNom, setClaimNom] = useState<string | null>(null)
+  const [claimInvalide, setClaimInvalide] = useState<string | null>(null)
+
   const typeParam = searchParams.get('type')
   const [accountType, setAccountType] = useState<'reseauteur' | 'organisateur' | 'partenaire' | null>(
-    typeParam === 'partenaire' ? 'partenaire' : typeParam === 'organisateur' ? 'organisateur' : null,
+    claimReseauId
+      ? 'organisateur'
+      : typeParam === 'partenaire'
+        ? 'partenaire'
+        : typeParam === 'organisateur'
+          ? 'organisateur'
+          : null,
   )
+
+  useEffect(() => {
+    if (!claimReseauId) return
+    let actif = true
+    fetch(`/api/reseaux/${encodeURIComponent(claimReseauId)}/revendication`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!actif || !j) return
+        if (j.revendicable) setClaimNom(j.nom ?? null)
+        else setClaimInvalide(j.raison ?? 'Cette fiche n\'est plus revendicable.')
+      })
+      .catch(() => {
+        /* silencieux : le formulaire reste utilisable, le serveur revalidera au POST */
+      })
+    return () => {
+      actif = false
+    }
+  }, [claimReseauId])
   // Choix de formule réseauteur (étape immédiatement après le choix « Réseauteur ») :
   // gratuit, ou Réseauteur+ (l'abonnement se souscrit après vérification de l'email).
   const [offreReseauteur, setOffreReseauteur] = useState<'gratuit' | 'plus' | null>(null)
@@ -167,6 +200,9 @@ export default function InscriptionPage() {
               ? { type: 'partenaire' }
               : {}),
           ...(groupeCodeParam ? { pendingGroupeCode: groupeCodeParam } : {}),
+          // Revendication : la route force le rôle organisateur et linke la fiche
+          // au nouveau compte (claim atomique). Elle revalide la revendicabilité.
+          ...(claimReseauId ? { claimReseauId: Number(claimReseauId) } : {}),
         }),
       })
 
@@ -584,6 +620,24 @@ export default function InscriptionPage() {
           </div>
         ))}
       </div>
+
+      {/* Revendication en cours : l'utilisateur doit voir CE qu'il revendique. */}
+      {claimReseauId && claimNom && (
+        <div className="mb-4 px-4 py-3 bg-[#FEFBE6] border border-[#EFE08F] rounded-lg text-sm">
+          <p className="font-semibold text-[#8A6D0B]">
+            Vous revendiquez la fiche de {claimNom}
+          </p>
+          <p className="text-[#4E5155] mt-0.5">
+            Cette fiche vous sera rattachée dès que vous aurez vérifié votre email —
+            vous pourrez ensuite la compléter depuis votre tableau de bord.
+          </p>
+        </div>
+      )}
+      {claimReseauId && claimInvalide && (
+        <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm">
+          {claimInvalide} Vous pouvez poursuivre : un réseau sera créé pour votre compte.
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">

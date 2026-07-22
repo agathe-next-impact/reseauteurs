@@ -18,6 +18,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { MaillageReseau } from '@/components/seo/MaillageReseau'
 import { BadgePartenaire, BadgeReseauteur } from '@/components/ui/BadgeReseauteur'
 import MiniMapLoader from '@/components/maps/MiniMapLoader'
+import RevendiquerReseau from '@/components/reseau/RevendiquerReseau'
 import { SITE_NAME } from '@/lib/site'
 import Reveal from '@/components/home/Reveal'
 import BarMini, { type BarDatum } from '@/components/home/BarMini'
@@ -94,9 +95,19 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   // PUBLIÉE — une tête suspendue (abonnement expiré) renverrait un 404 public.
   const parentDoc = parentBrut && parentBrut.statut === 'publiee' ? parentBrut : null
 
+  // Compte propriétaire de la fiche (celui qui a créé ou revendiqué le réseau).
+  // Populé à depth 1 sous forme d'objet user ; on n'en garde que l'id pour
+  // retrouver SON profil public de réseauteur.
+  const proprietaireRel = reseau.user
+  const proprietaireUserId: number | string | null =
+    typeof proprietaireRel === 'object' && proprietaireRel !== null
+      ? ((proprietaireRel as { id?: number | string }).id ?? null)
+      : ((proprietaireRel as number | null | undefined) ?? null)
+
   // Réseauteurs et événements liés (affichage limité à 12/6 en fiche)
   // + locaux du national (pour subOrganization JSON-LD — ADR-0012)
-  const [{ docs: reseauteurs }, { docs: evenements }, locauxRes] = await Promise.all([
+  // + fiche réseauteur du propriétaire (bloc « responsable »)
+  const [{ docs: reseauteurs }, { docs: evenements }, locauxRes, responsableRes] = await Promise.all([
     withDbRetry(
       () => payload.find({
         collection: 'reseauteurs',
@@ -155,7 +166,40 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
           { label: `reseau:find locaux ${slug}` },
         )
       : Promise.resolve(null),
+    // Profil public du propriétaire. Volontairement filtré sur `statut: valide` :
+    // un compte organisateur n'a pas de fiche réseauteur, et un profil non validé
+    // ne doit pas être exposé — dans ces cas on retombe sur le responsable saisi.
+    proprietaireUserId != null
+      ? withDbRetry(
+          () =>
+            payload.find({
+              collection: 'reseauteurs',
+              where: {
+                and: [
+                  { user: { equals: proprietaireUserId } },
+                  { statut: { equals: 'valide' } },
+                ],
+              },
+              depth: 1,
+              limit: 1,
+              overrideAccess: true,
+            }),
+          { label: `reseau:find responsable ${slug}` },
+        )
+      : Promise.resolve(null),
   ])
+
+  const responsableCompte = (responsableRes?.docs?.[0] as Reseauteur | undefined) ?? null
+  const responsablePhotoMedia = responsableCompte?.photo as Media | null | undefined
+  const responsableComptePhotoUrl =
+    responsablePhotoMedia?.sizes?.thumbnail?.url ?? responsablePhotoMedia?.url
+  // Le responsable saisi à la main n'est réaffiché que s'il désigne quelqu'un
+  // d'autre que le propriétaire du compte (sinon la même personne apparaîtrait deux fois).
+  const memeResponsable =
+    responsableCompte != null &&
+    typeof reseau.responsableNom === 'string' &&
+    reseau.responsableNom.trim().toLowerCase() ===
+      `${responsableCompte.prenom} ${responsableCompte.nom}`.trim().toLowerCase()
 
   const logoMedia = reseau.logo as Media | null | undefined
   const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url ?? null
@@ -175,6 +219,15 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
   )
   const ouiNon = (v: 'oui' | 'non' | null | undefined): string | null =>
     v === 'oui' ? 'Oui' : v === 'non' ? 'Non' : null
+
+  // Fiche de tête ORPHELINE (annuaire seedé « nom seul ») : revendicable depuis le front.
+  // Booléen strictement public — l'état per-user est hydraté par le composant client,
+  // donc la page reste en ISR.
+  const proprietaireId =
+    typeof reseau.user === 'object' && reseau.user !== null
+      ? ((reseau.user as { id?: number | string }).id ?? null)
+      : (reseau.user ?? null)
+  const estRevendicable = reseau.niveau !== 'local' && proprietaireId == null
   const TYPE_JURIDIQUE_LABEL: Record<string, string> = {
     association: 'Association', prive: 'Privé / société', franchise: 'Franchise', institution: 'Institution', autre: 'Autre',
   }
@@ -614,6 +667,17 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               </Reveal>
             )}
 
+          {/* Revendication — uniquement sur une tête sans compte propriétaire */}
+            {estRevendicable && (
+              <Reveal>
+                <RevendiquerReseau
+                  reseauId={reseau.id}
+                  slug={reseau.slug ?? null}
+                  nom={reseau.nom}
+                />
+              </Reveal>
+            )}
+
           {/* CTA prendre contact — email + téléphone + site web */}
             <Reveal>
               <ContactCTA
@@ -625,12 +689,48 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             </Reveal>
 
           {/* Contact & responsable local — détails complémentaires (responsable, plaquette, réseaux sociaux) */}
-            {(reseau.responsableNom || socials.length > 0 || plaquetteSafe) && (
+            {(responsableCompte || reseau.responsableNom || socials.length > 0 || plaquetteSafe) && (
               <Reveal>
                 <section aria-labelledby="contact-titre">
                   <h2 id="contact-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">Responsable &amp; ressources</h2>
 
-                  {reseau.responsableNom && (
+                  {/* Propriétaire du compte : celui qui a créé la fiche du réseau.
+                      Maillage interne vers son profil (§9 — chaque fiche est un actif SEO). */}
+                  {responsableCompte?.slug && (
+                    <Link
+                      href={`/reseauteur/${responsableCompte.slug}`}
+                      className="rsn-linkrow flex items-center gap-3 mb-3 p-3 rounded-xl border border-[#DFE0E1] no-underline hover:border-[#035AA6] transition-colors"
+                    >
+                      {responsableComptePhotoUrl ? (
+                        <Image
+                          src={responsableComptePhotoUrl}
+                          alt={`Photo de ${responsableCompte.prenom} ${responsableCompte.nom}`}
+                          width={44}
+                          height={44}
+                          className="w-11 h-11 rounded-full object-cover border border-[#DFE0E1] shrink-0"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center text-[#035AA6] shrink-0" aria-hidden>
+                          <User size={18} />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#1D1E21] truncate">
+                          {responsableCompte.prenom} {responsableCompte.nom}
+                        </p>
+                        {(responsableCompte.fonction || responsableCompte.entreprise) && (
+                          <p className="text-xs text-[#6E7175] truncate">
+                            {[responsableCompte.fonction, responsableCompte.entreprise]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </p>
+                        )}
+                        <p className="text-[11px] text-[#999A9D]">Responsable de cette fiche</p>
+                      </div>
+                    </Link>
+                  )}
+
+                  {reseau.responsableNom && !memeResponsable && (
                     <div className="flex items-center gap-3 mb-3 p-3 rounded-xl border border-[#DFE0E1]">
                       {respPhotoUrl ? (
                         <Image src={respPhotoUrl} alt={`Photo de ${reseau.responsableNom}`} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-[#DFE0E1] shrink-0" />
