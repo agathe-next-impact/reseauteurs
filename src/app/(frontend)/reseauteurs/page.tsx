@@ -314,7 +314,7 @@ export default async function ReseauteursPage({
   return (
     <div className="rsn-page min-h-screen">
       {/* Barre de navigation entité + vue */}
-      <div className="bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-2.5 flex items-center gap-3">
+      <div className="bg-white border-b border-[#DFE0E1] px-4 sm:px-6 py-2.5 flex items-center gap-3">
         <Suspense fallback={null}>
           <EntiteVueToggle entite="reseauteurs" vue="annuaire" />
         </Suspense>
@@ -327,10 +327,10 @@ export default async function ReseauteursPage({
             <Users size={13} aria-hidden />
             Annuaire des réseauteurs
           </p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16284f] mb-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#012A4A] mb-1">
             Réseauteurs
           </h1>
-          <p className="text-sm text-[#71717a]">
+          <p className="text-sm text-[#6E7175]">
             {totalDocs > 0
               ? `${totalDocs.toLocaleString('fr-FR')} réseauteur${totalDocs > 1 ? 's' : ''} référencé${totalDocs > 1 ? 's' : ''}`
               : 'Aucun réseauteur pour l\'instant'}
@@ -342,7 +342,7 @@ export default async function ReseauteursPage({
           <aside className="lg:w-64 shrink-0" aria-label="Filtres de recherche">
             <Suspense
               fallback={
-                <div className="h-64 rounded-2xl bg-white border border-[#e4e4e7] animate-pulse" />
+                <div className="h-64 rounded-2xl bg-white border border-[#DFE0E1] animate-pulse" />
               }
             >
               <ReseauteursFilters categories={categoriesListe} reseaux={reseauxListe} />
@@ -352,17 +352,17 @@ export default async function ReseauteursPage({
           {/* Résultats */}
           <section className="flex-1 min-w-0" aria-label="Résultats de recherche">
             {docs.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-[#e4e4e7] p-12 text-center">
-                <Users size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-                <p className="text-sm font-medium text-[#52525b] mb-2">
+              <div className="bg-white rounded-2xl border border-dashed border-[#DFE0E1] p-12 text-center">
+                <Users size={32} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+                <p className="text-sm font-medium text-[#4E5155] mb-2">
                   Aucun réseauteur ne correspond à ces critères
                 </p>
-                <p className="text-sm text-[#71717a] mb-4">
+                <p className="text-sm text-[#6E7175] mb-4">
                   Vous êtes professionnel et vous réseautez ? Soyez le premier dans votre zone.
                 </p>
                 <Link
                   href="/inscription"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] transition-colors no-underline"
+                  className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] transition-colors no-underline"
                 >
                   Créer mon profil — gratuit
                 </Link>
@@ -382,7 +382,7 @@ export default async function ReseauteursPage({
                         <article key={r.id} role="listitem">
                           <Link
                             href={`/reseauteur/${r.slug}`}
-                            className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-[#e4e4e7] hover:border-[#2563EB]/30 no-underline h-full group rsn-lift"
+                            className="flex flex-col gap-3 p-4 bg-white rounded-2xl border border-[#DFE0E1] hover:border-[#035AA6]/30 no-underline h-full group rsn-lift"
                           >
                             <div className="flex items-start gap-3">
                               {photoUrl ? (
@@ -391,29 +391,29 @@ export default async function ReseauteursPage({
                                   alt={`Photo de profil de ${r.prenom} ${r.nom}`}
                                   width={48}
                                   height={48}
-                                  className="w-12 h-12 rounded-xl object-cover border border-[#e4e4e7] shrink-0"
+                                  className="w-12 h-12 rounded-xl object-cover border border-[#DFE0E1] shrink-0"
                                 />
                               ) : (
-                                <div className="w-12 h-12 rounded-xl bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold shrink-0" aria-hidden>
+                                <div className="w-12 h-12 rounded-xl bg-[#A9C9E4]/30 flex items-center justify-center text-[#035AA6] font-bold shrink-0" aria-hidden>
                                   {r.prenom.charAt(0)}
                                   {r.nom.charAt(0)}
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-[#16284f] leading-tight group-hover:text-[#2563EB] transition-colors">
+                                <p className="text-sm font-bold text-[#012A4A] leading-tight group-hover:text-[#035AA6] transition-colors">
                                   {r.prenom} {r.nom}
                                 </p>
                                 {r.fonction && (
-                                  <p className="text-xs text-[#52525b] truncate">{r.fonction}</p>
+                                  <p className="text-xs text-[#4E5155] truncate">{r.fonction}</p>
                                 )}
                                 {r.entreprise && (
-                                  <p className="text-xs text-[#71717a] truncate">{r.entreprise}</p>
+                                  <p className="text-xs text-[#6E7175] truncate">{r.entreprise}</p>
                                 )}
                               </div>
                               {r.badge && <BadgeReseauteur badge={r.badge} size="sm" />}
                             </div>
                             {r.ville && (
-                              <p className="text-xs text-[#71717a] flex items-center gap-1">
+                              <p className="text-xs text-[#6E7175] flex items-center gap-1">
                                 <MapPin size={11} aria-hidden />
                                 {r.ville}
                                 {r.departement ? `, ${r.departement}` : ''}
@@ -432,19 +432,19 @@ export default async function ReseauteursPage({
                     {page > 1 && (
                       <Link
                         href={`/reseauteurs?${new URLSearchParams({ ...sp, page: String(page - 1) }).toString()}`}
-                        className="px-4 py-2 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors"
+                        className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors"
                         aria-label="Page précédente"
                       >
                         ← Précédente
                       </Link>
                     )}
-                    <span className="text-sm text-[#71717a]">
+                    <span className="text-sm text-[#6E7175]">
                       Page {page} / {totalPages}
                     </span>
                     {page < totalPages && (
                       <Link
                         href={`/reseauteurs?${new URLSearchParams({ ...sp, page: String(page + 1) }).toString()}`}
-                        className="px-4 py-2 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors"
+                        className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors"
                         aria-label="Page suivante"
                       >
                         Suivante →

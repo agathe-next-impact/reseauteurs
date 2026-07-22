@@ -56,7 +56,7 @@ export default function AuthNav() {
       <button
         onClick={handleLogout}
         disabled={isPending}
-        className="bg-transparent border-none text-text-light cursor-pointer p-0 hover:text-text-dark transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
+        className="bg-transparent border-none text-text-light cursor-pointer p-2.5 hover:text-text-dark transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
       >
         {isPending && <Loader2 size={14} className="animate-spin" />}
         Déconnexion

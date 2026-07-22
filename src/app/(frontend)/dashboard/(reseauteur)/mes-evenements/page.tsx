@@ -188,15 +188,15 @@ export default async function MesEvenementsPage() {
         <Reveal>
           <Link
             href="/dashboard/plus"
-            className="text-sm text-[#71717a] hover:text-[#2563EB] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
+            className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
             <ArrowLeft size={14} aria-hidden /> Réseauteur Plus
           </Link>
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2 mb-2">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
             <CalendarPlus size={20} aria-hidden />
             Mes événements
           </h1>
-          <p className="text-sm text-[#71717a] mb-8">
+          <p className="text-sm text-[#6E7175] mb-8">
             Vos événements sont publiés en votre nom (« Organisé par ») ou au nom d&apos;un groupe
             local dont vous êtes admin, et apparaissent sur la carte et dans l&apos;agenda.
           </p>

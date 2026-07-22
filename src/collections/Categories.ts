@@ -73,7 +73,7 @@ export const Categories: CollectionConfig = {
       type: 'text',
       label: 'Couleur (hex)',
       admin: {
-        description: 'Code couleur hexadécimal, ex : #1e40af.',
+        description: 'Code couleur hexadécimal, ex : #01365F.',
       },
     },
     {

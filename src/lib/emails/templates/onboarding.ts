@@ -15,7 +15,7 @@ export function welcomeEmail(nomSociete: string): string {
       body: `<p style="margin:0">Completez votre fiche pour être visible auprès des acheteurs qui consultent la carte chaque jour.</p>`,
     })}
     ${button({ href: `${SITE_URL}/dashboard/fiche`, label: 'Compléter ma fiche', variant: 'primary' })}
-    ${paragraph(`<span style="color:#6b7280">Besoin d'aide ? Répondez simplement à cet email, notre équipe vous accompagné.</span>`)}
+    ${paragraph(`<span style="color:#6E7175">Besoin d'aide ? Répondez simplement à cet email, notre équipe vous accompagné.</span>`)}
   `
   return renderEmail({
     preheader: 'Votre compte est actif — completez votre fiche en 2 minutes pour être visible.',
@@ -35,7 +35,7 @@ export function verifyEmailTemplate(nomSociete: string, verifyUrl: string): stri
     ${paragraph(`Pour activer votre compte RÉSEAUTEURS, confirmez votre adresse email en cliquant sur le bouton ci-dessous.`)}
     ${button({ href: verifyUrl, label: 'Vérifier mon email', variant: 'primary' })}
     ${fallbackUrl(verifyUrl)}
-    ${paragraph(`<span style="color:#6b7280">Ce lien est valable 24 heures. Si vous n'avez pas cree de compte, ignorez cet email.</span>`)}
+    ${paragraph(`<span style="color:#6E7175">Ce lien est valable 24 heures. Si vous n'avez pas cree de compte, ignorez cet email.</span>`)}
   `
   return renderEmail({
     preheader: 'Confirmez votre adresse email pour activer votre compte RÉSEAUTEURS.',
@@ -55,7 +55,7 @@ export function forgotPasswordEmail(resetUrl: string): string {
     ${paragraph(`Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.`)}
     ${button({ href: resetUrl, label: 'Réinitialiser mon mot de passe', variant: 'primary' })}
     ${fallbackUrl(resetUrl)}
-    ${paragraph(`<span style="color:#6b7280">Ce lien est valable 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email — votre mot de passe actuel reste valide.</span>`)}
+    ${paragraph(`<span style="color:#6E7175">Ce lien est valable 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email — votre mot de passe actuel reste valide.</span>`)}
   `
   return renderEmail({
     preheader: 'Reinitialisez votre mot de passe RÉSEAUTEURS — lien valable 1 heure.',
@@ -76,7 +76,7 @@ export function csvInvitationEmail(nomSociete: string, email: string, tempPasswo
       { label: 'Mot de passe temporaire', value: tempPassword },
     ])}
     ${button({ href: `${SITE_URL}/login`, label: 'Me connecter', variant: 'primary' })}
-    ${paragraph(`<span style="color:#6b7280">Nous vous recommandons de modifier ce mot de passe temporaire des votre première connexion, depuis votre espace personnel.</span>`)}
+    ${paragraph(`<span style="color:#6E7175">Nous vous recommandons de modifier ce mot de passe temporaire des votre première connexion, depuis votre espace personnel.</span>`)}
   `
   return renderEmail({
     preheader: 'Votre compte RÉSEAUTEURS a été cree — identifiants et mot de passe temporaire ci-dessous.',
@@ -104,7 +104,7 @@ export function invitationNationalEmail(nomReseau: string, inviteurNom: string):
     })}
     ${button({ href: inscriptionUrl, label: 'Créer le compte de mon réseau', variant: 'primary' })}
     ${fallbackUrl(inscriptionUrl)}
-    ${paragraph(`<span style="color:#6b7280">Vous recevez cet email car un réseauteur a indiqué votre adresse comme contact du réseau ${esc(nomReseau)}. Si vous n'êtes pas concerné, ignorez simplement ce message.</span>`)}
+    ${paragraph(`<span style="color:#6E7175">Vous recevez cet email car un réseauteur a indiqué votre adresse comme contact du réseau ${esc(nomReseau)}. Si vous n'êtes pas concerné, ignorez simplement ce message.</span>`)}
   `
   return renderEmail({
     preheader: `${nomReseau} est attendu sur RÉSEAUTEURS — créez la fiche de votre réseau.`,

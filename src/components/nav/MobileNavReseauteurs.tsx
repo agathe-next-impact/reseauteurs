@@ -58,7 +58,7 @@ export default function MobileNavReseauteurs() {
         {user ? (
           <Link
             href="/dashboard"
-            className="p-2.5 rounded-lg text-[#52525b] hover:text-[#2563EB] hover:bg-[#bfdbfe]/30 transition-colors"
+            className="p-2.5 rounded-lg text-[#4E5155] hover:text-[#035AA6] hover:bg-[#A9C9E4]/30 transition-colors"
             aria-label="Mon espace"
           >
             <LayoutDashboard size={20} />
@@ -66,13 +66,13 @@ export default function MobileNavReseauteurs() {
         ) : (
           <Link
             href="/inscription"
-            className="px-3 py-1.5 rounded-full bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors no-underline"
+            className="p-2.5 rounded-full bg-[#035AA6] text-white text-sm font-semibold hover:bg-[#02467F] transition-colors no-underline"
           >
             S&apos;inscrire
           </Link>
         )}
         <button
-          className="p-2.5 rounded-lg text-[#52525b] hover:text-[#18181b] hover:bg-[#f4f4f5] transition-colors cursor-pointer"
+          className="p-2.5 rounded-lg text-[#4E5155] hover:text-[#1D1E21] hover:bg-[#E9E9EA] transition-colors cursor-pointer"
           onClick={() => setOpen(true)}
           aria-label="Ouvrir le menu"
           aria-expanded={open}
@@ -85,16 +85,16 @@ export default function MobileNavReseauteurs() {
         <div className="lg:hidden fixed inset-0 z-[9990]">
           <div className="absolute inset-0 bg-black/40" onClick={close} aria-hidden />
           <nav
-            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#e4e4e7] flex flex-col"
+            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#DFE0E1] flex flex-col"
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navigation"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e4e4e7]">
-              <span className="text-sm font-bold text-[#16284f]">Menu</span>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#DFE0E1]">
+              <span className="text-sm font-bold text-[#012A4A]">Menu</span>
               <button
                 onClick={close}
-                className="p-1.5 rounded-md hover:bg-[#f4f4f5] text-[#71717a] cursor-pointer"
+                className="p-2.5 rounded-md hover:bg-[#E9E9EA] text-[#6E7175] cursor-pointer"
                 aria-label="Fermer le menu"
               >
                 <X size={18} />
@@ -108,8 +108,8 @@ export default function MobileNavReseauteurs() {
                   href={href}
                   className={`flex items-center gap-3 px-5 py-3 text-sm font-medium no-underline transition-colors ${
                     isActive(href)
-                      ? 'bg-[#bfdbfe]/30 text-[#2563EB] border-r-2 border-[#2563EB]'
-                      : 'text-[#52525b] hover:bg-[#f4f4f5] hover:text-[#18181b]'
+                      ? 'bg-[#A9C9E4]/30 text-[#035AA6] border-r-2 border-[#035AA6]'
+                      : 'text-[#4E5155] hover:bg-[#E9E9EA] hover:text-[#1D1E21]'
                   }`}
                 >
                   <Icon size={18} />
@@ -118,12 +118,12 @@ export default function MobileNavReseauteurs() {
               ))}
             </div>
 
-            <div className="border-t border-[#e4e4e7] p-4">
+            <div className="border-t border-[#DFE0E1] p-4">
               {user ? (
                 <div className="space-y-1">
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[#52525b] hover:bg-[#f4f4f5] hover:text-[#18181b] no-underline transition-colors"
+                    className="flex items-center gap-3 w-full p-2.5 rounded-lg text-sm font-medium text-[#4E5155] hover:bg-[#E9E9EA] hover:text-[#1D1E21] no-underline transition-colors"
                   >
                     <LayoutDashboard size={18} />
                     Mon espace
@@ -131,7 +131,7 @@ export default function MobileNavReseauteurs() {
                   <button
                     onClick={handleLogout}
                     disabled={isPending}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[#71717a] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex items-center gap-3 w-full p-2.5 rounded-lg text-sm font-medium text-[#6E7175] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {isPending ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
                     Déconnexion
@@ -141,14 +141,14 @@ export default function MobileNavReseauteurs() {
                 <div className="space-y-2">
                   <Link
                     href="/login"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#52525b] no-underline hover:bg-[#f4f4f5] hover:text-[#18181b] transition-colors"
+                    className="flex items-center gap-3 p-2.5 rounded-lg text-sm font-medium text-[#4E5155] no-underline hover:bg-[#E9E9EA] hover:text-[#1D1E21] transition-colors"
                   >
                     <LogIn size={18} />
                     Connexion
                   </Link>
                   <Link
                     href="/inscription"
-                    className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-full bg-[#2563EB] text-white text-sm font-semibold no-underline hover:bg-[#1d4ed8] transition-colors"
+                    className="flex items-center justify-center gap-2 w-full p-2.5 rounded-full bg-[#035AA6] text-white text-sm font-semibold no-underline hover:bg-[#02467F] transition-colors"
                   >
                     <UserPlus size={18} />
                     Créer mon profil — gratuit

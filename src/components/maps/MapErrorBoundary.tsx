@@ -34,7 +34,7 @@ export default class MapErrorBoundary extends Component<Props, State> {
             </p>
             <button
               onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 bg-primary text-white rounded-lg text-sm cursor-pointer hover:opacity-90 transition-opacity"
+              className="p-2.5 bg-primary text-white rounded-lg text-sm cursor-pointer hover:opacity-90 transition-opacity"
             >
               Réessayer
             </button>

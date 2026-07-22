@@ -80,12 +80,12 @@ export async function MaillageReseau({
   return (
     <section
       aria-labelledby="maillage-national-titre"
-      className="px-6 py-5 border-t border-[#e4e4e7]"
+      className="px-6 py-5 border-t border-[#DFE0E1]"
     >
       <div className="flex items-center justify-between mb-3">
         <h2
           id="maillage-national-titre"
-          className="text-xs font-semibold text-[#71717a] uppercase tracking-wide flex items-center gap-1.5"
+          className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide flex items-center gap-1.5"
         >
           <Network size={12} aria-hidden />
           Autres groupes {nationalNom}
@@ -93,7 +93,7 @@ export async function MaillageReseau({
         {nationalSlug && (
           <Link
             href={`/reseau/${nationalSlug}`}
-            className="text-xs text-[#2563EB] hover:text-[#1d4ed8] no-underline font-medium transition-colors"
+            className="text-xs text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
           >
             Voir {nationalNom}
           </Link>
@@ -104,16 +104,16 @@ export async function MaillageReseau({
           <li key={r.id}>
             <Link
               href={`/reseau/${r.slug}`}
-              className="flex items-center gap-2 text-sm text-[#52525b] hover:text-[#2563EB] no-underline transition-colors group"
+              className="flex items-center gap-2 text-sm text-[#4E5155] hover:text-[#035AA6] no-underline transition-colors group"
             >
               <ArrowRight
                 size={12}
-                className="text-[#a1a1aa] group-hover:text-[#2563EB] shrink-0 transition-colors"
+                className="text-[#999A9D] group-hover:text-[#035AA6] shrink-0 transition-colors"
                 aria-hidden
               />
               <span className="font-medium">{r.nom}</span>
               {r.ville && (
-                <span className="text-[#a1a1aa] text-xs ml-auto shrink-0">{r.ville}</span>
+                <span className="text-[#999A9D] text-xs ml-auto shrink-0">{r.ville}</span>
               )}
             </Link>
           </li>

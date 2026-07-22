@@ -69,7 +69,7 @@ function VerifyContent() {
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
+              className="inline-flex items-center justify-center p-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
             >
               Se connecter
             </Link>
@@ -93,7 +93,7 @@ export default function VerifyPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[calc(100vh-56px)] bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+        <div className="min-h-[calc(100vh-56px)] bg-[#F2F2F2] flex items-center justify-center">
           <Loader2 size={32} className="animate-spin text-primary" />
         </div>
       }

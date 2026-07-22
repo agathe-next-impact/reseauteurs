@@ -281,7 +281,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
           </nav>
 
           <Reveal>
-            <p className="rsn-eyebrow" style={{ color: '#fdba74' }}>Réseau d&apos;affaires</p>
+            <p className="rsn-eyebrow" style={{ color: '#EAD673' }}>Réseau d&apos;affaires</p>
 
             <div className="flex items-start gap-5 mt-3.5">
               {logoUrl ? (
@@ -293,7 +293,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                   className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain border border-white/15 shrink-0 bg-white p-1"
                 />
               ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 flex items-center justify-center text-white font-extrabold text-xl border border-white/15 shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center text-white font-extrabold text-xl border border-white/15 shrink-0">
                   <Network size={24} aria-hidden />
                 </div>
               )}
@@ -323,18 +323,18 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                 {/* Compteurs — agrégés pour un national, directs pour un local */}
                 <div className="flex items-center gap-4 mt-3 flex-wrap">
                   <span className="flex items-center gap-1.5 text-sm text-white/80">
-                    <Users size={14} className="text-[#93c5fd]" aria-hidden />
+                    <Users size={14} className="text-[#8BB4D9]" aria-hidden />
                     <strong className="font-semibold text-white">{aggNbReseauteurs}</strong>
                     <span>réseauteur{aggNbReseauteurs > 1 ? 's' : ''}</span>
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-white/80">
-                    <Calendar size={14} className="text-[#7dd3fc]" aria-hidden />
+                    <Calendar size={14} className="text-[#8BB4D9]" aria-hidden />
                     <strong className="font-semibold text-white">{aggNbEvenements}</strong>
                     <span>événement{aggNbEvenements > 1 ? 's' : ''}</span>
                   </span>
                   {isNational && (locauxDocs?.length ?? 0) > 0 && (
                     <span className="flex items-center gap-1.5 text-sm text-white/80">
-                      <Network size={14} className="text-[#d8b4fe]" aria-hidden />
+                      <Network size={14} className="text-[#A9C9E4]" aria-hidden />
                       <strong className="font-semibold text-white">{locauxDocs!.length}</strong>
                       <span>groupe{(locauxDocs?.length ?? 0) > 1 ? 's' : ''}</span>
                     </span>
@@ -355,8 +355,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {reseau.description && (
               <Reveal>
                 <section aria-labelledby="desc-reseau-titre">
-                  <h2 id="desc-reseau-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed">{reseau.description}</p>
+                  <h2 id="desc-reseau-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">À propos</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed">{reseau.description}</p>
                 </section>
               </Reveal>
             )}
@@ -365,8 +365,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {reseau.presentation && (
               <Reveal>
                 <section aria-labelledby="pres-reseau-titre">
-                  <h2 id="pres-reseau-titre" className="text-sm font-semibold text-[#18181b] mb-2">Présentation</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{reseau.presentation}</p>
+                  <h2 id="pres-reseau-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">Présentation</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{reseau.presentation}</p>
                 </section>
               </Reveal>
             )}
@@ -375,8 +375,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {reseau.objectif && (
               <Reveal>
                 <section aria-labelledby="objectif-titre">
-                  <h2 id="objectif-titre" className="text-sm font-semibold text-[#18181b] mb-2">Objectif du réseau</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{reseau.objectif}</p>
+                  <h2 id="objectif-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">Objectif du réseau</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{reseau.objectif}</p>
                 </section>
               </Reveal>
             )}
@@ -385,8 +385,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {reseau.differenciateur && (
               <Reveal>
                 <section aria-labelledby="diff-titre">
-                  <h2 id="diff-titre" className="text-sm font-semibold text-[#18181b] mb-2">Ce qui le différencie</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{reseau.differenciateur}</p>
+                  <h2 id="diff-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">Ce qui le différencie</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{reseau.differenciateur}</p>
                 </section>
               </Reveal>
             )}
@@ -395,12 +395,12 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {fonctionnementRows.length > 0 && (
               <Reveal>
                 <section aria-labelledby="fonctionnement-titre">
-                  <h2 id="fonctionnement-titre" className="text-sm font-semibold text-[#18181b] mb-3">Fonctionnement</h2>
+                  <h2 id="fonctionnement-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">Fonctionnement</h2>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                     {fonctionnementRows.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between gap-3 border-b border-[#f4f4f5] py-1.5">
-                        <dt className="text-xs text-[#71717a]">{row.label}</dt>
-                        <dd className="text-xs font-semibold text-[#18181b] text-right">{row.value}</dd>
+                      <div key={row.label} className="flex items-center justify-between gap-3 border-b border-[#E9E9EA] py-1.5">
+                        <dt className="text-xs text-[#6E7175]">{row.label}</dt>
+                        <dd className="text-xs font-semibold text-[#1D1E21] text-right">{row.value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -412,10 +412,10 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {illustrations.length > 0 && (
               <Reveal>
                 <section aria-labelledby="galerie-titre">
-                  <h2 id="galerie-titre" className="text-sm font-semibold text-[#18181b] mb-3">En images</h2>
+                  <h2 id="galerie-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">En images</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {illustrations.map((url, i) => (
-                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#e4e4e7]">
+                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#DFE0E1]">
                         <Image src={url} alt={`Photo ${i + 1} du réseau ${reseau.nom}`} fill className="object-cover" sizes="(max-width: 640px) 50vw, 240px" />
                       </div>
                     ))}
@@ -428,8 +428,8 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {ytId && (
               <Reveal>
                 <section aria-labelledby="video-titre">
-                  <h2 id="video-titre" className="text-sm font-semibold text-[#18181b] mb-3">Vidéo de présentation</h2>
-                  <div className="relative aspect-video rounded-xl overflow-hidden border border-[#e4e4e7] bg-black">
+                  <h2 id="video-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">Vidéo de présentation</h2>
+                  <div className="relative aspect-video rounded-xl overflow-hidden border border-[#DFE0E1] bg-black">
                     <iframe
                       src={`https://www.youtube-nocookie.com/embed/${ytId}`}
                       title={`Vidéo de présentation du réseau ${reseau.nom}`}
@@ -452,7 +452,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                     <span className="rsn-tag">par réseauteurs</span>
                   </div>
                   <div className="rsn-panel-body">
-                    <BarMini bars={groupesBars} height={180} color="#a855f7" valueSuffix=" membres" />
+                    <BarMini bars={groupesBars} height={180} color="#3E7CA6" valueSuffix=" membres" />
                   </div>
                 </div>
               </Reveal>
@@ -463,14 +463,14 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               <Reveal>
                 <section aria-labelledby="membres-titre">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 id="membres-titre" className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+                    <h2 id="membres-titre" className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
                       <Users size={14} aria-hidden />
                       Réseauteurs membres
                     </h2>
                     {(reseau.nbReseauteurs ?? 0) > 12 && (
                       <Link
                         href={`/reseauteurs?reseau=${reseau.slug}`}
-                        className="rsn-linkrow text-xs text-[#2563EB] hover:text-[#1d4ed8] no-underline font-medium transition-colors"
+                        className="rsn-linkrow text-xs text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
                       >
                         Voir tous ({reseau.nbReseauteurs})
                         <ArrowRight size={12} aria-hidden className="rsn-arrow inline-block ml-0.5" />
@@ -486,7 +486,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                           key={r.id}
                           href={`/reseauteur/${r.slug}`}
                           role="listitem"
-                          className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                          className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#035AA6]/40 transition-colors no-underline group"
                         >
                           {photoUrl ? (
                             <Image
@@ -494,18 +494,18 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                               alt={`Photo de ${r.prenom} ${r.nom}`}
                               width={36}
                               height={36}
-                              className="w-9 h-9 rounded-full object-cover border border-[#e4e4e7] shrink-0"
+                              className="w-9 h-9 rounded-full object-cover border border-[#DFE0E1] shrink-0"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-[#bfdbfe]/40 flex items-center justify-center text-[#2563EB] font-bold text-xs shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-[#A9C9E4]/40 flex items-center justify-center text-[#035AA6] font-bold text-xs shrink-0">
                               {r.prenom.charAt(0)}{r.nom.charAt(0)}
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-[#18181b] truncate group-hover:text-[#2563EB] transition-colors">
+                            <p className="text-xs font-semibold text-[#1D1E21] truncate group-hover:text-[#035AA6] transition-colors">
                               {r.prenom} {r.nom}
                             </p>
-                            {r.fonction && <p className="text-xs text-[#71717a] truncate">{r.fonction}</p>}
+                            {r.fonction && <p className="text-xs text-[#6E7175] truncate">{r.fonction}</p>}
                           </div>
                           {r.badge && <BadgeReseauteur badge={r.badge} size="sm" />}
                         </Link>
@@ -518,9 +518,9 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
 
             {reseauteursDocs.length === 0 && (
               <Reveal>
-                <div className="py-4 text-center bg-[#faf9f5] rounded-xl border border-dashed border-[#e4e4e7]">
-                  <p className="text-sm text-[#71717a] mb-2">Aucun réseauteur dans ce réseau pour l&apos;instant.</p>
-                  <Link href="/inscription" className="rsn-linkrow text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors">
+                <div className="py-4 text-center bg-[#F2F2F2] rounded-xl border border-dashed border-[#DFE0E1]">
+                  <p className="text-sm text-[#6E7175] mb-2">Aucun réseauteur dans ce réseau pour l&apos;instant.</p>
+                  <Link href="/inscription" className="rsn-linkrow text-sm text-[#035AA6] font-medium hover:text-[#02467F] no-underline transition-colors">
                     Créer mon profil et rejoindre ce réseau
                     <ArrowRight size={13} aria-hidden className="rsn-arrow inline-block ml-1" />
                   </Link>
@@ -533,14 +533,14 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               <Reveal>
                 <section aria-labelledby="events-titre">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 id="events-titre" className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+                    <h2 id="events-titre" className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
                       <Calendar size={14} aria-hidden />
                       Prochains événements
                     </h2>
                     {(reseau.nbEvenements ?? 0) > 6 && (
                       <Link
                         href={`/evenements?reseau=${reseau.slug}`}
-                        className="rsn-linkrow text-xs text-[#2563EB] hover:text-[#1d4ed8] no-underline font-medium transition-colors"
+                        className="rsn-linkrow text-xs text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
                       >
                         Voir tous ({reseau.nbEvenements})
                         <ArrowRight size={12} aria-hidden className="rsn-arrow inline-block ml-0.5" />
@@ -553,21 +553,21 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         key={ev.id}
                         href={`/evenement/${ev.slug}`}
                         role="listitem"
-                        className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                        className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#035AA6]/40 transition-colors no-underline group"
                       >
-                        <div className="shrink-0 flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-[#e0f2fe]/50 text-[#0284c7]">
+                        <div className="shrink-0 flex flex-col items-center justify-center text-[#8A6D0B]">
                           <Calendar size={16} aria-hidden />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#18181b] truncate group-hover:text-[#2563EB] transition-colors">
+                          <p className="text-sm font-semibold text-[#1D1E21] truncate group-hover:text-[#035AA6] transition-colors">
                             {ev.titre}
                           </p>
-                          <p className="text-xs text-[#71717a]">
+                          <p className="text-xs text-[#6E7175]">
                             {new Date(ev.dateDebut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                             {ev.lieuVille && ` · ${ev.lieuVille}`}
                           </p>
                         </div>
-                        <ArrowRight size={13} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                        <ArrowRight size={13} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />
                       </Link>
                     ))}
                   </div>
@@ -580,15 +580,15 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
               <Reveal>
                 <section aria-labelledby="locaux-titre">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 id="locaux-titre" className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-                      <Network size={14} className="text-[#a855f7]" aria-hidden />
+                    <h2 id="locaux-titre" className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
+                      <Network size={14} className="text-[#3E7CA6]" aria-hidden />
                       Groupes locaux
-                      <span className="text-[#a1a1aa] font-normal">({locauxDocs.length})</span>
+                      <span className="text-[#999A9D] font-normal">({locauxDocs.length})</span>
                     </h2>
                     {locauxDocs.length > 8 && (
                       <Link
                         href={`/reseaux?vue=carte`}
-                        className="rsn-linkrow text-xs text-[#a855f7] hover:text-[#9333ea] no-underline font-medium transition-colors"
+                        className="rsn-linkrow text-xs text-[#3E7CA6] hover:text-[#2E6389] no-underline font-medium transition-colors"
                       >
                         Voir sur la carte
                         <ArrowRight size={12} aria-hidden className="rsn-arrow inline-block ml-0.5" />
@@ -601,19 +601,19 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                         key={local.id}
                         href={`/reseau/${local.slug ?? ''}`}
                         role="listitem"
-                        className="rsn-lift flex items-center gap-2 p-2.5 rounded-xl border border-[#e4e4e7] hover:border-[#a855f7]/40 transition-colors no-underline group"
+                        className="rsn-lift flex items-center gap-2 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#3E7CA6]/40 transition-colors no-underline group"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-[#f3e8ff]/50 flex items-center justify-center text-[#a855f7] shrink-0" aria-hidden>
+                        <div className="flex items-center justify-center text-[#3E7CA6] shrink-0" aria-hidden>
                           <Network size={13} />
                         </div>
-                        <p className="text-xs font-semibold text-[#18181b] truncate group-hover:text-[#a855f7] transition-colors">
+                        <p className="text-xs font-semibold text-[#1D1E21] truncate group-hover:text-[#3E7CA6] transition-colors">
                           {local.nom}
                         </p>
                       </Link>
                     ))}
                   </div>
                   {locauxDocs.length > 8 && (
-                    <p className="text-xs text-[#a1a1aa] mt-2 text-center">
+                    <p className="text-xs text-[#999A9D] mt-2 text-center">
                       et {locauxDocs.length - 8} autre{locauxDocs.length - 8 > 1 ? 's' : ''} groupe{locauxDocs.length - 8 > 1 ? 's' : ''}
                     </p>
                   )}
@@ -635,28 +635,28 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {(reseau.responsableNom || socials.length > 0 || plaquetteSafe) && (
               <Reveal>
                 <section aria-labelledby="contact-titre">
-                  <h2 id="contact-titre" className="text-sm font-semibold text-[#18181b] mb-3">Responsable &amp; ressources</h2>
+                  <h2 id="contact-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">Responsable &amp; ressources</h2>
 
                   {reseau.responsableNom && (
-                    <div className="flex items-center gap-3 mb-3 p-3 rounded-xl border border-[#e4e4e7]">
+                    <div className="flex items-center gap-3 mb-3 p-3 rounded-xl border border-[#DFE0E1]">
                       {respPhotoUrl ? (
-                        <Image src={respPhotoUrl} alt={`Photo de ${reseau.responsableNom}`} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-[#e4e4e7] shrink-0" />
+                        <Image src={respPhotoUrl} alt={`Photo de ${reseau.responsableNom}`} width={44} height={44} className="w-11 h-11 rounded-full object-cover border border-[#DFE0E1] shrink-0" />
                       ) : (
-                        <div className="w-11 h-11 rounded-full bg-[#eff6ff] flex items-center justify-center text-[#2563EB] shrink-0" aria-hidden>
+                        <div className="flex items-center justify-center text-[#035AA6] shrink-0" aria-hidden>
                           <User size={18} />
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#18181b] truncate">{reseau.responsableNom}</p>
-                        {reseau.responsableFonction && <p className="text-xs text-[#71717a] truncate">{reseau.responsableFonction}</p>}
-                        <p className="text-[11px] text-[#a1a1aa]">Responsable local</p>
+                        <p className="text-sm font-semibold text-[#1D1E21] truncate">{reseau.responsableNom}</p>
+                        {reseau.responsableFonction && <p className="text-xs text-[#6E7175] truncate">{reseau.responsableFonction}</p>}
+                        <p className="text-[11px] text-[#999A9D]">Responsable local</p>
                       </div>
                     </div>
                   )}
 
                   {plaquetteSafe && (
                     <div className="flex flex-wrap gap-2">
-                      <a href={plaquetteSafe} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                      <a href={plaquetteSafe} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors">
                         <FileText size={13} aria-hidden />Plaquette PDF
                       </a>
                     </div>
@@ -665,7 +665,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
                   {socials.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2" aria-label="Réseaux sociaux">
                       {socials.map((s, i) => (
-                        <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors capitalize">
+                        <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors capitalize">
                           <ExternalLink size={13} aria-hidden />{s.plateforme}
                         </a>
                       ))}
@@ -679,12 +679,12 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
             {typeof reseau.latitude === 'number' && typeof reseau.longitude === 'number' && (
               <Reveal>
                 <section aria-labelledby="loc-reseau-titre">
-                  <h2 id="loc-reseau-titre" className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
+                  <h2 id="loc-reseau-titre" className="text-sm font-semibold text-[#1D1E21] mb-2 flex items-center gap-1.5">
                     <MapPin size={14} aria-hidden />
                     Localisation
                   </h2>
                   {(reseau.adresse || reseau.codePostal) && (
-                    <p className="text-xs text-[#71717a] mb-2">
+                    <p className="text-xs text-[#6E7175] mb-2">
                       {[reseau.adresse, [reseau.codePostal, reseau.ville].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
                     </p>
                   )}
@@ -710,17 +710,17 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
           )}
 
           {/* Pied de fiche */}
-          <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5] flex flex-wrap gap-4 justify-between items-center">
+          <div className="px-6 py-5 border-t border-[#DFE0E1] bg-[#F2F2F2] flex flex-wrap gap-4 justify-between items-center">
             <Link
               href="/reseaux"
-              className="rsn-linkrow text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors"
+              className="rsn-linkrow text-sm text-[#035AA6] font-medium hover:text-[#02467F] no-underline transition-colors"
             >
               ← Tous les réseaux
             </Link>
             {reseau.partenaire && (
-              <span className="text-xs text-[#71717a]">
+              <span className="text-xs text-[#6E7175]">
                 Réseau partenaire{' '}
-                <Link href="/partenaires" className="text-[#f5851f] hover:text-[#e07710] no-underline font-medium transition-colors">
+                <Link href="/partenaires" className="text-[#8A6D0B] hover:text-[#E3CB2E] no-underline font-medium transition-colors">
                   RÉSEAUTEURS
                 </Link>
               </span>
@@ -728,7 +728,7 @@ export default async function FicheReseauPage({ params }: { params: Promise<{ sl
           </div>
           {/* Ligne de validation (dernière mise à jour + auteur de la fiche) */}
           {(reseau.updatedAt || reseau.rempliPar) && (
-            <div className="px-6 py-2.5 border-t border-[#e4e4e7] bg-white text-[11px] text-[#a1a1aa] flex flex-wrap gap-x-3 gap-y-0.5">
+            <div className="px-6 py-2.5 border-t border-[#DFE0E1] bg-white text-[11px] text-[#999A9D] flex flex-wrap gap-x-3 gap-y-0.5">
               {reseau.updatedAt && (
                 <span>Mis à jour le {new Date(reseau.updatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               )}

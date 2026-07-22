@@ -104,14 +104,14 @@ export default async function DashboardReseauPage() {
     return (
       <div className="rsn-page">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
-          <Building2 size={48} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-          <p className="text-sm font-medium text-[#52525b] mb-2">Aucun réseau associé</p>
-          <p className="text-sm text-[#71717a] mb-6">
+          <Building2 size={48} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+          <p className="text-sm font-medium text-[#4E5155] mb-2">Aucun réseau associé</p>
+          <p className="text-sm text-[#6E7175] mb-6">
             Votre compte organisateur n&apos;est pas encore rattaché à un réseau. Contactez-nous pour configurer votre espace.
           </p>
           <a
             href={`mailto:contact@reseauteurs.com?subject=Rattachement réseau — ${freshUser.email as string}`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors"
+            className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white text-sm font-semibold hover:bg-[#02467F] transition-colors"
           >
             <Mail size={15} />
             Contacter le support
@@ -178,7 +178,7 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
       <Reveal>
         <p className="rsn-eyebrow mb-2">Espace connecté</p>
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
             <Building2 size={20} aria-hidden />
             Mon réseau national
           </h1>
@@ -187,7 +187,7 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
               href={`/reseau/${national.slug as string}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors flex items-center gap-1"
+              className="text-sm text-[#035AA6] hover:text-[#02467F] font-medium no-underline transition-colors flex items-center gap-1"
             >
               Voir la fiche publique
               <ExternalLink size={12} aria-hidden />
@@ -205,23 +205,23 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
               alt={`Logo ${national.nom as string}`}
               width={48}
               height={48}
-              className="w-11 h-11 rounded-lg object-contain border border-[#e4e4e7] bg-white p-0.5 shrink-0"
+              className="w-11 h-11 rounded-lg object-contain border border-[#DFE0E1] bg-white p-0.5 shrink-0"
             />
           ) : (
-            <div className="w-11 h-11 rounded-lg bg-[#ffedd5]/40 flex items-center justify-center text-[#f5851f] shrink-0" aria-hidden>
+            <div className="flex items-center justify-center text-[#8A6D0B] shrink-0" aria-hidden>
               <Building2 size={20} />
             </div>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="font-bold text-[#16284f]">{national.nom as string}</p>
+              <p className="font-bold text-[#012A4A]">{national.nom as string}</p>
               {estPartenaire && <BadgePartenaire />}
             </div>
-            <p className="text-xs text-[#a855f7] font-medium mt-0.5">Réseau national</p>
+            <p className="text-xs text-[#3E7CA6] font-medium mt-0.5">Réseau national</p>
           </div>
-          <div className="shrink-0 flex gap-3 text-xs text-[#71717a]">
+          <div className="shrink-0 flex gap-3 text-xs text-[#6E7175]">
             <span className="flex items-center gap-1">
-              <Network size={11} className="text-[#a855f7]" aria-hidden />
+              <Network size={11} className="text-[#3E7CA6]" aria-hidden />
               {totalLocaux} groupe{totalLocaux !== 1 ? 's' : ''}
             </span>
             <span className="flex items-center gap-1">
@@ -240,26 +240,26 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
 
       {/* Édition fiche nationale */}
       <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+        <div className="px-6 py-4 border-b border-[#DFE0E1] flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
             <Globe size={14} aria-hidden />
             Informations du réseau
           </h2>
-          <div className="flex gap-3 text-xs text-[#71717a]">
+          <div className="flex gap-3 text-xs text-[#6E7175]">
             {(national.siteWeb as string | null | undefined) && (
-              <a href={national.siteWeb as string} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-[#2563EB] transition-colors">
+              <a href={national.siteWeb as string} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-[#035AA6] transition-colors">
                 <Globe size={11} />
                 Site
               </a>
             )}
             {(national.emailContact as string | null | undefined) && (
-              <a href={`mailto:${national.emailContact as string}`} className="flex items-center gap-1 hover:text-[#2563EB] transition-colors">
+              <a href={`mailto:${national.emailContact as string}`} className="flex items-center gap-1 hover:text-[#035AA6] transition-colors">
                 <Mail size={11} />
                 Email
               </a>
             )}
             {(national.telephone as string | null | undefined) && (
-              <a href={`tel:${national.telephone as string}`} className="flex items-center gap-1 hover:text-[#2563EB] transition-colors">
+              <a href={`tel:${national.telephone as string}`} className="flex items-center gap-1 hover:text-[#035AA6] transition-colors">
                 <Phone size={11} />
                 Tél.
               </a>
@@ -275,20 +275,20 @@ async function NationalDashboard({ national }: { national: Record<string, unknow
       {/* POINT D'INSERTION accounts-and-billing (vague 3) : composant FacturesList */}
       {estPartenaire && (
         <div className="rsn-card rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+          <h2 className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
             <FileText size={14} aria-hidden />
             Factures
           </h2>
-          <p className="text-xs text-[#71717a] mb-3">
+          <p className="text-xs text-[#6E7175] mb-3">
             Accédez à vos factures depuis le portail Stripe ou la page dédiée.
           </p>
           <div className="flex flex-wrap gap-3">
-            <PortalButton className="text-xs text-[#71717a] border border-[#e4e4e7] hover:border-[#2563EB] hover:text-[#2563EB] px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-60">
+            <PortalButton className="text-xs text-[#6E7175] border border-[#DFE0E1] hover:border-[#035AA6] hover:text-[#035AA6] px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-60">
               Portail Stripe
             </PortalButton>
             <Link
               href="/dashboard/factures"
-              className="inline-flex items-center gap-1.5 text-xs text-[#2563EB] hover:text-[#1d4ed8] font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-[#035AA6] hover:text-[#02467F] font-medium transition-colors"
             >
               <CreditCard size={12} aria-hidden />
               Toutes mes factures
@@ -335,8 +335,8 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
       <Reveal>
         <p className="rsn-eyebrow mb-2">Espace connecté</p>
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
-            <Network size={20} className="text-[#a855f7]" aria-hidden />
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
+            <Network size={20} className="text-[#3E7CA6]" aria-hidden />
             Mon groupe local
           </h1>
           {!!local.slug && (
@@ -344,7 +344,7 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
               href={`/reseau/${local.slug as string}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors flex items-center gap-1"
+              className="text-sm text-[#035AA6] hover:text-[#02467F] font-medium no-underline transition-colors flex items-center gap-1"
             >
               Voir la fiche publique
               <ExternalLink size={12} aria-hidden />
@@ -355,18 +355,18 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
 
       {/* Référence au national */}
       {parentDoc && (
-        <div className="bg-[#f3e8ff]/30 border border-[#a855f7]/20 rounded-2xl p-4 flex items-center gap-3">
-          <Network size={16} className="text-[#a855f7] shrink-0" aria-hidden />
+        <div className="bg-[#E7F0F7]/30 border border-[#3E7CA6]/20 rounded-2xl p-4 flex items-center gap-3">
+          <Network size={16} className="text-[#3E7CA6] shrink-0" aria-hidden />
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-[#71717a] mb-0.5">Rattaché au réseau national</p>
+            <p className="text-xs text-[#6E7175] mb-0.5">Rattaché au réseau national</p>
             <Link
               href={`/reseau/${(parentDoc.slug as string | null | undefined) ?? ''}`}
-              className="text-sm font-semibold text-[#a855f7] hover:text-[#9333ea] no-underline transition-colors"
+              className="text-sm font-semibold text-[#3E7CA6] hover:text-[#2E6389] no-underline transition-colors"
             >
               {parentDoc.nom as string}
             </Link>
           </div>
-          <p className="text-xs text-[#71717a] shrink-0">
+          <p className="text-xs text-[#6E7175] shrink-0">
             {nationalPartenaire ? (
               <span className="text-green-700 flex items-center gap-1">
                 <CheckCircle size={12} aria-hidden />
@@ -391,23 +391,23 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
               alt={`Logo ${local.nom as string}`}
               width={48}
               height={48}
-              className="w-11 h-11 rounded-lg object-contain border border-[#e4e4e7] bg-white p-0.5 shrink-0"
+              className="w-11 h-11 rounded-lg object-contain border border-[#DFE0E1] bg-white p-0.5 shrink-0"
             />
           ) : (
-            <div className="w-11 h-11 rounded-lg bg-[#f3e8ff]/40 flex items-center justify-center text-[#a855f7] shrink-0" aria-hidden>
+            <div className="flex items-center justify-center text-[#3E7CA6] shrink-0" aria-hidden>
               <Network size={20} />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-[#16284f]">{local.nom as string}</p>
+            <p className="font-bold text-[#012A4A]">{local.nom as string}</p>
             {(local.ville as string | null | undefined) && (
-              <p className="text-xs text-[#71717a] flex items-center gap-1 mt-0.5">
+              <p className="text-xs text-[#6E7175] flex items-center gap-1 mt-0.5">
                 <MapPin size={10} aria-hidden />
                 {local.ville as string}
               </p>
             )}
           </div>
-          <div className="shrink-0 text-xs text-[#71717a]">
+          <div className="shrink-0 text-xs text-[#6E7175]">
             <span className="flex items-center gap-1">
               <Calendar size={11} aria-hidden />
               {totalEvenements} événement{totalEvenements !== 1 ? 's' : ''}
@@ -418,8 +418,8 @@ async function LocalDashboard({ local }: { local: Record<string, unknown> }) {
 
       {/* Édition fiche locale */}
       <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+        <div className="px-6 py-4 border-b border-[#DFE0E1] flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
             <Globe size={14} aria-hidden />
             Informations du groupe
           </h2>

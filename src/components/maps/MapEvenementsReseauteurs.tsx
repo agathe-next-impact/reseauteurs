@@ -64,8 +64,8 @@ const clusterCircleColor = [
     'step',
     ['get', 'point_count'],
     MAP_COLORS.evenement,  // 1–9 points : navy
-    10, '#1a3d8f',         // 10–29
-    30, '#16284f',         // 30+
+    10, '#02467F',         // 10–29
+    30, '#012A4A',         // 30+
   ],
 ]
 /** Rayon du cercle de cluster par taille — partagé avec le halo mixte (+5 px). */
@@ -375,7 +375,7 @@ export default function MapEvenementsReseauteurs({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-2.5 h-2.5 rounded-full bg-[#16284f]"
+                className="w-2.5 h-2.5 rounded-full bg-[#012A4A]"
                 style={{ animation: `dotBounce 1.4s ease-in-out ${i * 0.16}s infinite` }}
               />
             ))}
@@ -388,8 +388,8 @@ export default function MapEvenementsReseauteurs({
             className="absolute inset-0 z-[600] bg-white/30 flex items-start justify-center pt-4 pointer-events-none"
             aria-hidden="true"
           >
-            <div className="bg-white rounded-full px-3 py-1 border border-[#e4e4e7] text-xs text-[#16284f] font-medium flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#16284f] animate-pulse" />
+            <div className="bg-white rounded-full px-3 py-1 border border-[#DFE0E1] text-xs text-[#012A4A] font-medium flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-[#012A4A] animate-pulse" />
               Mise à jour...
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function MapEvenementsReseauteurs({
               <div>
                 <strong className="text-sm block">{tooltip.title}</strong>
                 {tooltip.subtitle && (
-                  <div className="text-xs text-[#71717a] mt-0.5">{tooltip.subtitle}</div>
+                  <div className="text-xs text-[#6E7175] mt-0.5">{tooltip.subtitle}</div>
                 )}
               </div>
             </MapPopupLibre>

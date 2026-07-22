@@ -5,105 +5,131 @@
 
 /* ============================================================
    RÉSEAUTEURS — Tokens design (DESIGN.md §1–§4)
-   Police : Hanken Grotesk (next/font, variable --font-sans)
-   Canvas clair #faf9f5 | bleu #2563EB | orange #f5851f
-   navy #16284f | bleu ciel #0284c7 | bandes sombres #0d0d10
+   Polices : Inter (corps/UI, --font-sans) + Inter Tight (titres, --font-display)
+   Les deux sont chargées en variable font via next/font (voir (frontend)/layout.tsx).
+
+   PALETTE DE MARQUE (source : palette fournie 2026-07-22)
+     #035AA6  bleu profond   — primaire, réseauteurs, liens, clusters
+     #8BB4D9  bleu clair     — tints, dégradés, états survolés
+     #F5E050  jaune          — accent vif : CTA, partenaires, événements Plus
+     #999A9D  gris           — texte secondaire, marqueurs neutres
+     #F2F2F2  gris très clair— canvas
+
+   Tons dérivés (mêmes teintes, luminosités calées pour l'accessibilité) :
+     #012A4A navy (titres/bandeaux) · #02467F bleu hover · #3E7CA6 bleu médian
+     (entité Réseaux) · #8A6D0B or foncé (le jaune en TEXTE : 4,9:1 sur blanc)
+     · #0C1219 bandes sombres.
+   Règle : le jaune #F5E050 ne sert JAMAIS de couleur de texte — en aplat il
+   porte du navy #012A4A, en texte il devient #8A6D0B.
    ============================================================ */
 
 /* Fallbacks hex pour navigateurs anciens (WebViews FB/LinkedIn, Samsung < 21, Safari < 16.4) */
 :root {
   /* shadcn tokens */
-  --background: #faf9f5;
-  --foreground: #18181b;
+  --background: #F2F2F2;
+  --foreground: #1D1E21;
   --card: #ffffff;
-  --card-foreground: #18181b;
+  --card-foreground: #1D1E21;
   --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --primary: #2563eb;
+  --popover-foreground: #1D1E21;
+  --primary: #035AA6;
   --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
+  --secondary: #E9E9EA;
+  --secondary-foreground: #1D1E21;
+  --muted: #E9E9EA;
+  --muted-foreground: #6E7175;
+  --accent: #E9E9EA;
+  --accent-foreground: #1D1E21;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #2563eb;
+  --border: #DFE0E1;
+  --input: #DFE0E1;
+  --ring: #035AA6;
   --radius: 0.75rem;
   /* sidebar */
   --sidebar: #ffffff;
-  --sidebar-foreground: #18181b;
-  --sidebar-primary: #2563eb;
+  --sidebar-foreground: #1D1E21;
+  --sidebar-primary: #035AA6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #2563eb;
+  --sidebar-accent: #E9E9EA;
+  --sidebar-accent-foreground: #1D1E21;
+  --sidebar-border: #DFE0E1;
+  --sidebar-ring: #035AA6;
 }
 
 @theme inline {
-  /* ── Police ── */
-  --font-sans: var(--font-hanken);
+  /* ── Polices ──
+     sans    : Inter — corps, UI, libellés (défaut hérité du <body>)
+     display : Inter Tight — titres (appliqué à h1/h2/h3 en @layer base) */
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter-tight);
 
   /* ── Canvas et surfaces ── */
-  --color-background: #faf9f5;
-  --color-background-secondary: #f4f4f5;
+  --color-background: #F2F2F2;
+  --color-background-secondary: #E9E9EA;
   --color-surface: #ffffff;
 
-  /* ── Primaire bleu ── */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #bfdbfe;
+  /* ── Primaire bleu (palette #035AA6 / #8BB4D9) ── */
+  --color-primary: #035AA6;
+  --color-primary-hover: #02467F;
+  --color-primary-light: #A9C9E4;
+  --color-primary-soft: #8BB4D9;
 
-  /* ── Accent orange (conversion / B2B / partenaires) ── */
-  --color-brand-orange: #f5851f;
-  --color-brand-orange-hover: #e07710;
-  --color-brand-orange-light: #ffedd5;
+  /* ── Accent jaune (conversion / B2B / partenaires) — palette #F5E050 ──
+     `brand-orange-*` : nom historique conservé pour ne pas casser les usages. */
+  --color-brand-orange: #F5E050;
+  --color-brand-orange-hover: #E3CB2E;
+  --color-brand-orange-light: #FBF4D3;
+  /* Le jaune en TEXTE / icône (AA sur blanc) — ne jamais utiliser #F5E050 ici. */
+  --color-brand-accent-text: #8A6D0B;
+  /* Texte à poser SUR un aplat jaune. */
+  --color-brand-accent-on: #012A4A;
 
   /* ── Navy ── */
-  --color-brand-navy: #16284f;
+  --color-brand-navy: #012A4A;
 
-  /* ── Bleu ciel secondaire (entité Événements) ── */
-  --color-brand-event: #0284c7;
-  --color-brand-event-light: #e0f2fe;
+  /* ── Bleu médian secondaire (entité Réseaux) ── */
+  --color-brand-reseau: #3E7CA6;
+  --color-brand-reseau-light: #E7F0F7;
+
+  /* ── Accent événements (jaune : aplat vif, texte or foncé) ── */
+  --color-brand-event: #8A6D0B;
+  --color-brand-event-light: #FBF4D3;
 
   /* ── Texte ── */
-  --color-text-dark: #18181b;
-  --color-text-medium: #52525b;
-  --color-text-light: #71717a;
+  --color-text-dark: #1D1E21;
+  --color-text-medium: #4E5155;
+  --color-text-light: #6E7175;
 
-  /* ── Neutres zinc ── */
+  /* ── Neutres — rampe ancrée sur #999A9D et #F2F2F2 (noms `zinc-*` conservés) ── */
   --color-zinc-50: #fafafa;
-  --color-zinc-100: #f4f4f5;
-  --color-zinc-200: #e4e4e7;
-  --color-zinc-300: #d4d4d8;
-  --color-zinc-400: #a1a1aa;
-  --color-zinc-500: #71717a;
-  --color-zinc-600: #52525b;
-  --color-zinc-700: #3f3f46;
-  --color-zinc-800: #27272a;
-  --color-zinc-900: #18181b;
+  --color-zinc-100: #E9E9EA;
+  --color-zinc-200: #DFE0E1;
+  --color-zinc-300: #CFD0D2;
+  --color-zinc-400: #999A9D;
+  --color-zinc-500: #6E7175;
+  --color-zinc-600: #4E5155;
+  --color-zinc-700: #3F4247;
+  --color-zinc-800: #2A2C30;
+  --color-zinc-900: #1D1E21;
 
   /* ── Bordure ── */
-  --color-border: #e4e4e7;
-  --color-border-light: #f4f4f5;
+  --color-border: #DFE0E1;
+  --color-border-light: #E9E9EA;
 
   /* ── Bandes sombres ── */
-  --color-dark-band: #0d0d10;
-  --color-dark-band-alt: #111114;
+  --color-dark-band: #0C1219;
+  --color-dark-band-alt: #101720;
 
-  /* ── Badges réseauteur ── */
-  --color-badge-bronze: #a16207;
-  --color-badge-bronze-bg: #fef9c3;
-  --color-badge-argent: #52525b;
-  --color-badge-argent-bg: #f4f4f5;
-  --color-badge-gold: #b45309;
-  --color-badge-gold-bg: #fff7ed;
-  --color-badge-platinum: #1d4ed8;
-  --color-badge-platinum-bg: #dbeafe;
+  /* ── Badges réseauteur (progression or sourd → argent → or vif → bleu) ── */
+  --color-badge-bronze: #6E5608;
+  --color-badge-bronze-bg: #F3EFDC;
+  --color-badge-argent: #3F4247;
+  --color-badge-argent-bg: #E9E9EA;
+  --color-badge-gold: #8A6D0B;
+  --color-badge-gold-bg: #FBF4D3;
+  --color-badge-platinum: #02467F;
+  --color-badge-platinum-bg: #DCEAF5;
 
   /* ── Rayons ── */
   --radius: 0.75rem;
@@ -120,13 +146,27 @@
   --animate-count-up: countUp 0.8s ease-out forwards;
 }
 
+/* ── Titres en Inter Tight ────────────────────────────────────────────
+   Le <body> porte Inter ; les titres héritent d'Inter Tight ici, sans
+   toucher aux composants. Inter Tight partage le squelette d'Inter (même
+   dessin, chasse resserrée) : la bascule reste invisible sur les petits
+   h2/h3 de carte et ne se lit vraiment qu'en grande taille, là où elle
+   resserre le hero et les H1 de fiche. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
 /* Bandes sombres : classe utilitaire pour les sections near-black */
 .section-dark {
-  background: #0d0d10;
+  background: #0C1219;
   color: #fafafa;
 }
 .section-dark-alt {
-  background: #111114;
+  background: #101720;
   color: #fafafa;
 }
 
@@ -199,13 +239,13 @@
 
 @keyframes pulseRing {
   0% {
-    box-shadow: 0 0 0 0 rgba(30, 64, 175, 0.5);
+    box-shadow: 0 0 0 0 rgba(3, 90, 166, 0.5);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(30, 64, 175, 0);
+    box-shadow: 0 0 0 8px rgba(3, 90, 166, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(30, 64, 175, 0);
+    box-shadow: 0 0 0 0 rgba(3, 90, 166, 0);
   }
 }
 
@@ -222,6 +262,14 @@
   box-sizing: border-box;
 }
 
+/* ── Jeu d'icônes LIGHT ────────────────────────────────────────────
+   lucide-react pose la classe `.lucide` sur chaque <svg>. On abaisse
+   l'épaisseur de trait globalement plutôt que prop par prop.
+   `svg[stroke-width]` inclus : la règle CSS prime sur l'attribut. */
+.lucide {
+  stroke-width: 1.25;
+}
+
 html {
   font-size: 16px;
   line-height: 1.5;
@@ -236,8 +284,8 @@ body {
 
 body {
   font-family: inherit;
-  color: #262522;
-  background: #faf9f5;
+  color: #1D1E21;
+  background: #F2F2F2;
   overflow-x: hidden;
 }
 
@@ -250,40 +298,33 @@ body {
    Bascule : bouton header → ajoute/retire .ir-plasma + localStorage.
    ============================================================ */
 :root {
-  --ir-bg: #faf9f5;
-  --ir-bg-2: #f4f4f3;
-  --ir-bg-3: #efeee9;
+  --ir-bg: #F2F2F2;
+  --ir-bg-2: #ECECEC;
+  --ir-bg-3: #E5E5E5;
   --ir-surface: #ffffff;
   --ir-surface-2: #fafafa;
   --ir-surface-control: #ffffff;
-  --ir-surface-inset: #f4f4f5;
-  --ir-text: #18181b;
-  --ir-text-2: #27272a;
-  --ir-text-3: #52525b;
-  --ir-text-4: #71717a;
-  --ir-line-rgb: 13, 13, 16;
-  --ir-accent-rgb: 37, 99, 235;
-  --ir-accent-2-rgb: 56, 189, 248;
-  --ir-accent-3-rgb: 34, 211, 238;
+  --ir-surface-inset: #E9E9EA;
+  --ir-text: #1D1E21;
+  --ir-text-2: #2A2C30;
+  --ir-text-3: #4E5155;
+  --ir-text-4: #6E7175;
+  --ir-line-rgb: 12, 18, 25;
+  /* Thème CLAIR : le dégradé sert aussi de couleur de TEXTE (titres en
+     background-clip). Les 3 arrêts restent donc dans la zone lisible sur
+     canvas #F2F2F2 — le bleu clair #8BB4D9 est réservé au thème sombre. */
+  --ir-accent-rgb: 3, 90, 166; /* #035AA6 */
+  --ir-accent-2-rgb: 2, 70, 127; /* #02467F */
+  --ir-accent-3-rgb: 62, 124, 166; /* #3E7CA6 */
   --ir-accent: rgb(var(--ir-accent-rgb));
   --ir-accent-2: rgb(var(--ir-accent-2-rgb));
   --ir-accent-3: rgb(var(--ir-accent-3-rgb));
-  --ir-accent-text: #1d4ed8;
-  --ir-grad-main: linear-gradient(
-    135deg,
-    rgb(var(--ir-accent-rgb)),
-    rgb(var(--ir-accent-2-rgb)) 58%,
-    rgb(var(--ir-accent-3-rgb))
-  );
-  --ir-grad-soft: linear-gradient(
-    145deg,
-    rgba(var(--ir-accent-rgb), 0.16),
-    rgba(var(--ir-accent-2-rgb), 0.1) 52%,
-    rgba(var(--ir-accent-3-rgb), 0.08)
-  );
+  --ir-accent-text: #02467F;
+  /* Couleur du surlignement partiel des titres (aplat uni). */
+  --ir-mark: #F5E050;
   /* Surfaces composites pilotées par thème (clair par défaut) */
   --ir-header-bg: rgba(255, 255, 255, 0.82);
-  --ir-chip-bg: rgba(13, 13, 16, 0.04);
+  --ir-chip-bg: rgba(12, 18, 25, 0.04);
 }
 
 /* ============================================================
@@ -292,40 +333,33 @@ body {
    Mode sombre + accent Plasma (bleu -> bleu ciel -> cyan).
    ============================================================ */
 .ir-plasma {
-  --ir-bg: #09090b;
-  --ir-bg-2: #0b0b0e;
-  --ir-bg-3: #070708;
-  --ir-surface: #111114;
-  --ir-surface-2: #161619;
-  --ir-surface-control: #18181b;
-  --ir-surface-inset: #0d0d10;
+  --ir-bg: #080C11;
+  --ir-bg-2: #0A1016;
+  --ir-bg-3: #05080B;
+  --ir-surface: #101720;
+  --ir-surface-2: #141B24;
+  --ir-surface-control: #1D1E21;
+  --ir-surface-inset: #0C1219;
   --ir-text: #fafafa;
-  --ir-text-2: #d4d4d8;
-  --ir-text-3: #a1a1aa;
-  --ir-text-4: #71717a;
+  --ir-text-2: #CFD0D2;
+  --ir-text-3: #999A9D;
+  --ir-text-4: #6E7175;
   --ir-line-rgb: 255, 255, 255;
-  --ir-accent-rgb: 37, 99, 235;
-  --ir-accent-2-rgb: 56, 189, 248;
-  --ir-accent-3-rgb: 34, 211, 238;
+  --ir-accent-rgb: 3, 90, 166;
+  --ir-accent-2-rgb: 62, 124, 166;
+  --ir-accent-3-rgb: 139, 180, 217;
   --ir-accent: rgb(var(--ir-accent-rgb));
   --ir-accent-2: rgb(var(--ir-accent-2-rgb));
   --ir-accent-3: rgb(var(--ir-accent-3-rgb));
-  --ir-accent-text: #93c5fd;
-  /* Surfaces composites — valeurs sombres (inchangées vs avant) */
-  --ir-header-bg: rgba(9, 9, 11, 0.78);
+  --ir-accent-text: #8BB4D9;
+  /* Surfaces composites — valeurs sombres */
+  --ir-header-bg: rgba(8, 12, 17, 0.78);
   --ir-chip-bg: rgba(255, 255, 255, 0.045);
-  --ir-grad-main: linear-gradient(
-    135deg,
-    rgb(var(--ir-accent-rgb)),
-    rgb(var(--ir-accent-2-rgb)) 58%,
-    rgb(var(--ir-accent-3-rgb))
-  );
-  --ir-grad-soft: linear-gradient(
-    145deg,
-    rgba(var(--ir-accent-rgb), 0.22),
-    rgba(var(--ir-accent-2-rgb), 0.14) 52%,
-    rgba(var(--ir-accent-3-rgb), 0.1)
-  );
+  /* Sur fond sombre (texte clair), la bande passe SOUS les lettres :
+     un jaune plein y reste lisible là où un recouvrement ne le serait pas. */
+  --ir-mark: #F5E050;
+  --ir-mark-size: 0.13em;
+  --ir-mark-offset: 0.1em;
   --background: var(--ir-bg);
   --foreground: var(--ir-text);
   --card: var(--ir-surface);
@@ -335,10 +369,7 @@ body {
   --border: rgba(var(--ir-line-rgb), 0.1);
   --ring: var(--ir-accent);
   color: var(--ir-text);
-  background:
-    linear-gradient(115deg, rgba(var(--ir-accent-rgb), 0.13), transparent 30%),
-    linear-gradient(245deg, rgba(var(--ir-accent-3-rgb), 0.1), transparent 28%),
-    linear-gradient(180deg, var(--ir-bg), var(--ir-bg-2) 52%, var(--ir-bg-3));
+  background: var(--ir-bg);
 }
 
 .ir-plasma main {
@@ -373,22 +404,22 @@ body {
   color: var(--ir-text);
 }
 
-.ir-plasma :where(.bg-\[\#faf9f5\], .bg-white) {
+.ir-plasma :where(.bg-\[\#F2F2F2\], .bg-white) {
   background-color: transparent;
 }
 
-.ir-plasma :where(.border-\[\#e4e4e7\], .border-gray-200, .border-gray-100) {
+.ir-plasma :where(.border-\[\#DFE0E1\], .border-gray-200, .border-gray-100) {
   border-color: rgba(var(--ir-line-rgb), 0.1);
 }
 
-.ir-plasma :where(.text-\[\#16284f\], .text-\[\#18181b\], .text-gray-900, .text-gray-800) {
+.ir-plasma :where(.text-\[\#012A4A\], .text-\[\#1D1E21\], .text-gray-900, .text-gray-800) {
   color: var(--ir-text);
 }
 
 .ir-plasma
   :where(
-    .text-\[\#52525b\],
-    .text-\[\#71717a\],
+    .text-\[\#4E5155\],
+    .text-\[\#6E7175\],
     .text-gray-600,
     .text-gray-500,
     .text-text-medium,
@@ -397,20 +428,20 @@ body {
   color: var(--ir-text-3);
 }
 
-.ir-plasma :where(.text-\[\#18181b\], .text-text-dark, .hover\:text-text-dark:hover) {
+.ir-plasma :where(.text-\[\#1D1E21\], .text-text-dark, .hover\:text-text-dark:hover) {
   color: var(--ir-text);
 }
 
-.ir-plasma :where(.text-\[\#2563EB\], .hover\:text-\[\#2563EB\]:hover) {
+.ir-plasma :where(.text-\[\#035AA6\], .hover\:text-\[\#035AA6\]:hover) {
   color: var(--ir-accent-text);
 }
 
-.ir-plasma :where(.bg-\[\#2563EB\], .bg-primary) {
-  background: var(--ir-grad-main);
+.ir-plasma :where(.bg-\[\#035AA6\], .bg-primary) {
+  background: var(--ir-accent);
   color: #fff;
 }
 
-.ir-plasma :where(.hover\:bg-\[\#1d4ed8\]:hover, .hover\:bg-primary\/80:hover) {
+.ir-plasma :where(.hover\:bg-\[\#02467F\]:hover, .hover\:bg-primary\/80:hover) {
   filter: brightness(1.08);
 }
 
@@ -433,11 +464,9 @@ body {
     div.bg-white,
     article.bg-white,
     .bg-white.border,
-    .bg-\[\#faf9f5\].border
+    .bg-\[\#F2F2F2\].border
   ) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.025)),
-    var(--ir-surface);
+  background: var(--ir-surface);
   border-color: rgba(var(--ir-line-rgb), 0.1);
   color: var(--ir-text);
 }
@@ -455,19 +484,16 @@ body {
 
 .ir-plasma .section-dark,
 .ir-plasma .section-dark-alt {
-  background:
-    linear-gradient(135deg, rgba(var(--ir-accent-rgb), 0.12), transparent 40%), var(--ir-bg-3);
+  background: var(--ir-bg-3);
 }
 
 .ir-plasma .ir-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
-    var(--ir-surface);
+  background: var(--ir-surface);
   border-color: rgba(var(--ir-line-rgb), 0.1);
 }
 
 .ir-plasma .ir-btn-plasma {
-  background: var(--ir-grad-main);
+  background: var(--ir-accent);
   color: #fff;
 }
 
@@ -478,15 +504,12 @@ body {
 }
 
 .ir-plasma-footer {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--ir-bg-3);
+  background: var(--ir-bg-3);
   border-color: rgba(var(--ir-line-rgb), 0.08);
 }
 
 .ir-atlas-page {
-  background:
-    radial-gradient(circle at 78% 8%, rgba(var(--ir-accent-rgb), 0.18), transparent 24rem),
-    radial-gradient(circle at 12% 20%, rgba(var(--ir-accent-3-rgb), 0.12), transparent 18rem),
-    var(--ir-bg);
+  background: var(--ir-bg);
 }
 
 .ir-atlas-hero {
@@ -525,16 +548,16 @@ body {
   padding: clamp(32px, 7vw, 86px);
 }
 
+/* Surtitre : texte seul — pas d'encadré (bordure/fond retirés). */
 .ir-atlas-eyebrow {
   width: fit-content;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin: 0 0 22px;
-  padding: 7px 11px;
-  border: 1px solid rgba(var(--ir-accent-rgb), 0.28);
-  border-radius: 0;
-  background: var(--ir-chip-bg);
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--ir-accent-text);
   font-size: 12px;
   font-weight: 700;
@@ -552,13 +575,27 @@ body {
   letter-spacing: 0;
 }
 
+/* ── Surlignement partiel des titres ──────────────────────────────
+   Bande d'aplat uni (aucun dégradé) recouvrant le bas des lettres :
+   le mot mis en avant est « surligné » comme au marqueur.
+   Posé via text-decoration → indépendant du line-height du titre,
+   et suit les retours à la ligne. */
+.rsn-mark,
+.ir-atlas-title span,
+.rsn-pagehead-title span,
+.rsn-h2 span {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--ir-mark);
+  text-decoration-thickness: var(--ir-mark-size, 0.3em);
+  text-underline-offset: var(--ir-mark-offset, -0.055em);
+  text-decoration-skip-ink: none;
+}
+
 .ir-atlas-title span {
   display: block;
   width: fit-content;
   margin-top: 8px;
-  background: var(--ir-grad-main);
-  background-clip: text;
-  color: transparent;
 }
 
 .ir-atlas-lead {
@@ -585,7 +622,7 @@ body {
   justify-content: center;
   gap: 9px;
   border-radius: 0;
-  padding: 12px 16px;
+  padding: 10px;
   font-size: 14px;
   font-weight: 750;
   text-decoration: none;
@@ -596,7 +633,7 @@ body {
 }
 
 .ir-atlas-primary {
-  background: var(--ir-grad-main);
+  background: var(--ir-accent);
   color: #fff;
 }
 
@@ -624,14 +661,13 @@ body {
      lisibles en mode clair (no-op en mode sombre). */
   --ir-line-rgb: 255, 255, 255;
   --ir-text: #fafafa;
-  --ir-text-3: #a1a1aa;
-  --ir-text-4: #71717a;
+  --ir-text-3: #999A9D;
+  --ir-text-4: #6E7175;
   min-height: 520px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #0a0a0d;
+  background: #090E14;
 }
 
 .ir-atlas-map-toolbar {
@@ -655,12 +691,11 @@ body {
 .ir-atlas-map-canvas {
   position: relative;
   min-height: 360px;
-  background:
-    radial-gradient(circle at 47% 43%, rgba(var(--ir-accent-rgb), 0.2), transparent 14rem),
+  background-color: #090E14;
+  background-image:
     linear-gradient(rgba(var(--ir-line-rgb), 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(var(--ir-line-rgb), 0.055) 1px, transparent 1px);
   background-size:
-    auto,
     42px 42px,
     42px 42px;
 }
@@ -676,7 +711,7 @@ body {
   height: 18px;
   border: 3px solid rgba(255, 255, 255, 0.86);
   border-radius: 999px;
-  background: var(--ir-grad-main);
+  background: var(--ir-accent);
 }
 
 .ir-atlas-map-node-a {
@@ -699,12 +734,7 @@ body {
 .ir-atlas-route {
   height: 2px;
   transform-origin: left center;
-  background: linear-gradient(
-    90deg,
-    rgba(var(--ir-accent-rgb), 0),
-    rgba(var(--ir-accent-rgb), 0.8),
-    rgba(var(--ir-accent-3-rgb), 0)
-  );
+  background: rgba(var(--ir-accent-rgb), 0.55);
 }
 
 .ir-atlas-route-a {
@@ -738,7 +768,7 @@ body {
 
 .ir-atlas-map-dock div {
   padding: 16px;
-  background: rgba(13, 13, 16, 0.82);
+  background: rgba(12, 18, 25, 0.82);
 }
 
 .ir-atlas-map-dock span,
@@ -787,7 +817,7 @@ body {
   gap: 0;
 }
 
-.ir-atlas-page :where(.bg-white, .bg-\[\#faf9f5\], .bg-\[\#fff7ed\]) {
+.ir-atlas-page :where(.bg-white, .bg-\[\#F2F2F2\], .bg-\[\#FEFBE6\]) {
   border-radius: 0;
 }
 
@@ -795,19 +825,16 @@ body {
   border-radius: 0;
 }
 
-.ir-atlas-page :where(.grid > .bg-white, .flex > a.bg-\[\#faf9f5\], .flex > span.bg-\[\#faf9f5\]) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
-    var(--ir-surface);
+.ir-atlas-page :where(.grid > .bg-white, .flex > a.bg-\[\#F2F2F2\], .flex > span.bg-\[\#F2F2F2\]) {
+  background: var(--ir-surface);
   border-color: rgba(var(--ir-line-rgb), 0.1);
 }
 
-.ir-atlas-page :where(.bg-\[\#fff7ed\]) {
-  background:
-    linear-gradient(135deg, rgba(var(--ir-accent-3-rgb), 0.12), transparent 42%), var(--ir-surface);
+.ir-atlas-page :where(.bg-\[\#FEFBE6\]) {
+  background: var(--ir-surface);
 }
 
-.ir-atlas-page :where(.border-\[\#fed7aa\]) {
+.ir-atlas-page :where(.border-\[\#EFE08F\]) {
   border-color: rgba(var(--ir-accent-3-rgb), 0.2);
 }
 
@@ -850,7 +877,7 @@ p {
 
 /* Legal pages prose styling */
 .legal-prose {
-  color: #262522;
+  color: #1D1E21;
   font-size: 0.95rem;
   line-height: 1.7;
 }
@@ -887,11 +914,11 @@ p {
   margin: 0.25rem 0;
 }
 .legal-prose a {
-  color: #eda82f;
+  color: #02467F;
   text-decoration: underline;
 }
 .legal-prose a:hover {
-  color: #eda21f;
+  color: #035AA6;
 }
 .legal-prose strong {
   font-weight: 600;
@@ -903,7 +930,7 @@ p {
   border-radius: 0.25rem;
   font-family: ui-monospace, monospace;
   font-size: 0.85em;
-  color: #92400e;
+  color: #6E5608;
 }
 .legal-prose table {
   width: 100%;
@@ -913,12 +940,12 @@ p {
 }
 .legal-prose th,
 .legal-prose td {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #DFE0E1;
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
 .legal-prose th {
-  background: #f9fafb;
+  background: #FAFAFA;
   font-weight: 600;
 }
 
@@ -1521,28 +1548,15 @@ p {
 
 /* ── Micro-interactions génériques ──────────────────────────── */
 
+/* .rsn-shine : conservé comme conteneur neutre — le balayage en dégradé
+   a été retiré (design à aplats unis). */
 .rsn-shine {
   position: relative;
   overflow: hidden;
 }
-.rsn-shine::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 -130%;
-  width: 55%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  transform: skewX(-20deg);
-  pointer-events: none;
-}
-.rsn-shine:hover::after {
-  animation: shine 0.85s ease-out;
-}
 @media (prefers-reduced-motion: reduce) {
   .rsn-lift:hover {
     transform: none;
-  }
-  .rsn-shine:hover::after {
-    animation: none;
   }
 }
 .rsn-arrow {
@@ -1565,18 +1579,15 @@ p {
 .rsn-hero-dash {
   --ir-line-rgb: 255, 255, 255;
   --ir-text: #fafafa;
-  --ir-text-2: #d4d4d8;
-  --ir-text-3: #a1a1aa;
-  --ir-text-4: #8a8a94;
-  --ir-surface: #0a0a0d;
+  --ir-text-2: #CFD0D2;
+  --ir-text-3: #999A9D;
+  --ir-text-4: #999A9D;
+  --ir-surface: #090E14;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background:
-    radial-gradient(circle at 78% 12%, rgba(var(--ir-accent-rgb), 0.24), transparent 16rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    #0a0a0d;
+  background: #090E14;
 }
 .rsn-hero-dash-bar {
   display: flex;
@@ -1771,14 +1782,12 @@ p {
 .rsn-strip-cell:hover {
   background: rgba(var(--ir-accent-rgb), 0.05);
 }
+/* Icône sans pastille de fond. */
 .rsn-strip-ico {
-  width: 40px;
-  height: 40px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   flex: none;
-  background: rgba(var(--ir-accent-rgb), 0.1);
+  background: none;
   color: var(--ir-accent-text);
 }
 .rsn-strip-title {
@@ -2098,10 +2107,7 @@ p {
 .rsn-page {
   position: relative;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 82% 6%, rgba(var(--ir-accent-rgb), 0.1), transparent 22rem),
-    radial-gradient(circle at 8% 18%, rgba(var(--ir-accent-3-rgb), 0.07), transparent 18rem),
-    var(--ir-bg);
+  background: var(--ir-bg);
 }
 
 /* En-tête de page standard */
@@ -2126,13 +2132,11 @@ p {
 }
 .rsn-pagehead[data-tone='orange']::before {
   background-image:
-    linear-gradient(rgba(245, 133, 31, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 133, 31, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(245, 224, 80, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 224, 80, 0.06) 1px, transparent 1px);
 }
 .rsn-pagehead[data-tone='navy'] {
-  background:
-    radial-gradient(circle at 80% 0%, rgba(var(--ir-accent-rgb), 0.28), transparent 20rem),
-    #16284f;
+  background: #012A4A;
 }
 .rsn-pagehead[data-tone='navy'] .rsn-pagehead-title,
 .rsn-pagehead[data-tone='navy'] .rsn-eyebrow {
@@ -2148,7 +2152,7 @@ p {
   padding: 0 clamp(20px, 4vw, 56px);
 }
 .rsn-pagehead-eyebrow--orange {
-  color: #c2410c;
+  color: #8A6D0B;
 }
 .rsn-pagehead-title {
   margin: 14px 0 0;
@@ -2158,8 +2162,10 @@ p {
   letter-spacing: -0.015em;
   color: var(--ir-text);
 }
-.rsn-pagehead-title span {
-  color: var(--ir-accent-text);
+.rsn-pagehead[data-tone='navy'] {
+  --ir-mark: #F5E050;
+  --ir-mark-size: 0.13em;
+  --ir-mark-offset: 0.1em;
 }
 .rsn-pagehead-lead {
   margin: 16px 0 0;
@@ -2214,10 +2220,7 @@ p {
   justify-content: center;
   gap: 20px;
   padding: clamp(28px, 6vw, 56px) 20px;
-  background:
-    radial-gradient(circle at 82% 6%, rgba(var(--ir-accent-rgb), 0.12), transparent 22rem),
-    radial-gradient(circle at 8% 90%, rgba(var(--ir-accent-3-rgb), 0.08), transparent 18rem),
-    var(--ir-bg);
+  background: var(--ir-bg);
 }
 .rsn-auth-card {
   width: 100%;

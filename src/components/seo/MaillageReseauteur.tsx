@@ -84,12 +84,12 @@ export async function MaillageReseauteur({ villeActuelle, secteurId, excludeId }
   if (villeList.length === 0 && secteurList.length === 0) return null
 
   return (
-    <div className="px-6 py-5 border-t border-[#e4e4e7] space-y-5">
+    <div className="px-6 py-5 border-t border-[#DFE0E1] space-y-5">
       {villeList.length > 0 && (
         <section aria-labelledby="maillage-ville-titre">
           <h2
             id="maillage-ville-titre"
-            className="text-xs font-semibold text-[#71717a] uppercase tracking-wide mb-2.5"
+            className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide mb-2.5"
           >
             Réseauteurs à {villeActuelle}
           </h2>
@@ -98,11 +98,11 @@ export async function MaillageReseauteur({ villeActuelle, secteurId, excludeId }
               <li key={r.id}>
                 <Link
                   href={`/reseauteur/${r.slug}`}
-                  className="text-sm text-[#2563EB] hover:text-[#1d4ed8] no-underline font-medium transition-colors"
+                  className="text-sm text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
                 >
                   {r.prenom} {r.nom}
                   {r.fonction && (
-                    <span className="text-[#a1a1aa] font-normal"> — {r.fonction}</span>
+                    <span className="text-[#999A9D] font-normal"> — {r.fonction}</span>
                   )}
                 </Link>
               </li>
@@ -115,7 +115,7 @@ export async function MaillageReseauteur({ villeActuelle, secteurId, excludeId }
         <section aria-labelledby="maillage-secteur-titre">
           <h2
             id="maillage-secteur-titre"
-            className="text-xs font-semibold text-[#71717a] uppercase tracking-wide mb-2.5"
+            className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide mb-2.5"
           >
             Même secteur d&apos;activité
           </h2>
@@ -124,11 +124,11 @@ export async function MaillageReseauteur({ villeActuelle, secteurId, excludeId }
               <li key={r.id}>
                 <Link
                   href={`/reseauteur/${r.slug}`}
-                  className="text-sm text-[#2563EB] hover:text-[#1d4ed8] no-underline font-medium transition-colors"
+                  className="text-sm text-[#035AA6] hover:text-[#02467F] no-underline font-medium transition-colors"
                 >
                   {r.prenom} {r.nom}
                   {r.ville && (
-                    <span className="text-[#a1a1aa] font-normal"> — {r.ville}</span>
+                    <span className="text-[#999A9D] font-normal"> — {r.ville}</span>
                   )}
                 </Link>
               </li>

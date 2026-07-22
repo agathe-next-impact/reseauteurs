@@ -30,12 +30,12 @@ export default function AuthShell({
             <Image src="/img/logo.png" alt="" width={34} height={34} priority />
             <span>{SITE_NAME.toUpperCase()}</span>
           </Link>
-          {subtitle && <p className="text-sm text-[#71717a] mt-2">{subtitle}</p>}
+          {subtitle && <p className="text-sm text-[#6E7175] mt-2">{subtitle}</p>}
         </div>
-        <h1 className="text-xl font-bold text-[#16284f] mb-6">{title}</h1>
+        <h1 className="text-xl font-bold text-[#012A4A] mb-6">{title}</h1>
         {children}
       </div>
-      {footer && <div className="text-center text-sm text-[#71717a]">{footer}</div>}
+      {footer && <div className="text-center text-sm text-[#6E7175]">{footer}</div>}
     </div>
   )
 }

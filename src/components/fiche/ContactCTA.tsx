@@ -44,18 +44,18 @@ export function ContactCTA({
   return (
     <section
       aria-labelledby="contact-cta-titre"
-      className="rounded-2xl border border-[#e4e4e7] bg-[#faf9f5] p-5"
+      className="rounded-2xl border border-[#DFE0E1] bg-[#F2F2F2] p-5"
     >
-      <h2 id="contact-cta-titre" className="text-sm font-semibold text-[#18181b] mb-1">
+      <h2 id="contact-cta-titre" className="text-sm font-semibold text-[#1D1E21] mb-1">
         Prendre contact
       </h2>
-      <p className="text-xs text-[#71717a] mb-3">Entrez en relation avec {entityName}.</p>
+      <p className="text-xs text-[#6E7175] mb-3">Entrez en relation avec {entityName}.</p>
 
       <div className="flex flex-wrap gap-2">
         {emailSafe && (
           <a
             href={`mailto:${emailSafe}`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors no-underline"
+            className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white text-sm font-semibold hover:bg-[#02467F] transition-colors no-underline"
             aria-label={`Envoyer un email à ${entityName}`}
           >
             <Mail size={15} aria-hidden />
@@ -65,7 +65,7 @@ export function ContactCTA({
         {telSafe && (
           <a
             href={`tel:${telSafe.replace(/\s+/g, '')}`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#e4e4e7] bg-white text-sm font-medium text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors no-underline"
+            className="inline-flex items-center gap-2 p-2.5 rounded-xl border border-[#DFE0E1] bg-white text-sm font-medium text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] transition-colors no-underline"
             aria-label={`Appeler ${entityName}`}
           >
             <Phone size={15} aria-hidden />
@@ -77,7 +77,7 @@ export function ContactCTA({
             href={siteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#e4e4e7] bg-white text-sm font-medium text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors no-underline"
+            className="inline-flex items-center gap-2 p-2.5 rounded-xl border border-[#DFE0E1] bg-white text-sm font-medium text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] transition-colors no-underline"
             aria-label={`Site web de ${entityName}`}
           >
             <Globe size={15} aria-hidden />

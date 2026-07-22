@@ -68,15 +68,15 @@ export default async function OffresPartenairesPage() {
         <Reveal>
           <Link
             href="/dashboard/profil"
-            className="text-sm text-[#71717a] hover:text-[#2563EB] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
+            className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
             <ArrowLeft size={14} aria-hidden /> Mon profil
           </Link>
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2 mb-2">
-            <Tag size={20} className="text-[#f5851f]" aria-hidden />
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
+            <Tag size={20} className="text-[#8A6D0B]" aria-hidden />
             Offres entreprises
           </h1>
-          <p className="text-sm text-[#71717a] mb-8">
+          <p className="text-sm text-[#6E7175] mb-8">
             Des avantages exclusifs proposés par les entreprises partenaires de RÉSEAUTEURS,
             réservés aux réseauteurs.
           </p>
@@ -84,11 +84,11 @@ export default async function OffresPartenairesPage() {
 
         {offres.length === 0 ? (
           <div className="rsn-card rounded-2xl border-dashed p-10 text-center">
-            <Tag size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-            <p className="text-sm font-medium text-[#52525b] mb-1">
+            <Tag size={32} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+            <p className="text-sm font-medium text-[#4E5155] mb-1">
               Aucune offre pour l&apos;instant
             </p>
-            <p className="text-sm text-[#71717a]">
+            <p className="text-sm text-[#6E7175]">
               Revenez bientôt : nos partenaires ajoutent régulièrement des avantages.
             </p>
           </div>
@@ -108,11 +108,11 @@ export default async function OffresPartenairesPage() {
                           alt={`Logo ${p.nom}`}
                           width={40}
                           height={40}
-                          className="w-10 h-10 rounded-lg object-contain bg-[#faf9f5] p-1 border border-[#e4e4e7]"
+                          className="w-10 h-10 rounded-lg object-contain bg-[#F2F2F2] p-1 border border-[#DFE0E1]"
                         />
                       ) : (
                         <span
-                          className="w-10 h-10 rounded-lg bg-[#fff7ed] text-[#f5851f] flex items-center justify-center"
+                          className="text-[#8A6D0B] flex items-center justify-center shrink-0"
                           aria-hidden
                         >
                           <Building2 size={18} />
@@ -122,23 +122,23 @@ export default async function OffresPartenairesPage() {
                         {p.slug ? (
                           <Link
                             href={`/partenaire/${p.slug}`}
-                            className="text-sm font-semibold text-[#16284f] hover:text-[#f5851f] no-underline transition-colors truncate block"
+                            className="text-sm font-semibold text-[#012A4A] hover:text-[#8A6D0B] no-underline transition-colors truncate block"
                           >
                             {p.nom}
                           </Link>
                         ) : (
-                          <p className="text-sm font-semibold text-[#16284f] truncate">{p.nom}</p>
+                          <p className="text-sm font-semibold text-[#012A4A] truncate">{p.nom}</p>
                         )}
-                        <p className="text-xs text-[#a1a1aa]">Partenaire</p>
+                        <p className="text-xs text-[#999A9D]">Partenaire</p>
                       </div>
                     </div>
-                    <div className="rounded-xl border border-[#fed7aa] bg-[#fff7ed] p-4">
-                      <p className="text-sm font-bold text-[#c2410c] flex items-center gap-1.5">
+                    <div className="rounded-xl border border-[#EFE08F] bg-[#FEFBE6] p-4">
+                      <p className="text-sm font-bold text-[#8A6D0B] flex items-center gap-1.5">
                         <Tag size={13} aria-hidden />
                         {offre!.titre}
                       </p>
                       {offre!.description && (
-                        <p className="text-sm text-[#9a3412] mt-1.5 whitespace-pre-line">
+                        <p className="text-sm text-[#6E5608] mt-1.5 whitespace-pre-line">
                           {offre!.description}
                         </p>
                       )}
@@ -147,7 +147,7 @@ export default async function OffresPartenairesPage() {
                           href={offreLien}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-3 inline-flex items-center gap-1.5 bg-[#f5851f] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#e07710] transition-colors text-sm no-underline"
+                          className="mt-3 inline-flex items-center gap-1.5 bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm no-underline"
                         >
                           En profiter <ExternalLink size={13} aria-hidden />
                         </a>

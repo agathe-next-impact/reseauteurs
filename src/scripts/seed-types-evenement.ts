@@ -11,16 +11,16 @@ dotenv.config({ path: path.join(process.cwd(), '.env.local') })
 dotenv.config({ path: path.join(process.cwd(), '.env') })
 
 const TYPES = [
-  { label: 'Petit-déjeuner', value: 'petit-dejeuner', couleur: '#f5851f', ordre: 1 },
+  { label: 'Petit-déjeuner', value: 'petit-dejeuner', couleur: '#F5E050', ordre: 1 },
   { label: 'Déjeuner', value: 'dejeuner', couleur: '#f59e0b', ordre: 2 },
-  { label: 'Afterwork', value: 'afterwork', couleur: '#2563EB', ordre: 3 },
-  { label: 'Conférence', value: 'conference', couleur: '#7c3aed', ordre: 4 },
-  { label: 'Atelier', value: 'atelier', couleur: '#0ea5e9', ordre: 5 },
+  { label: 'Afterwork', value: 'afterwork', couleur: '#035AA6', ordre: 3 },
+  { label: 'Conférence', value: 'conference', couleur: '#2E6389', ordre: 4 },
+  { label: 'Atelier', value: 'atelier', couleur: '#8BB4D9', ordre: 5 },
   { label: 'Formation', value: 'formation', couleur: '#059669', ordre: 6 },
   { label: "Visite d'entreprise", value: 'visite-entreprise', couleur: '#0d9488', ordre: 7 },
   { label: 'Speed Business', value: 'speed-business', couleur: '#e11d48', ordre: 8 },
-  { label: 'Salon', value: 'salon', couleur: '#a855f7', ordre: 9 },
-  { label: 'Autre', value: 'autre', couleur: '#71717a', ordre: 10 },
+  { label: 'Salon', value: 'salon', couleur: '#3E7CA6', ordre: 9 },
+  { label: 'Autre', value: 'autre', couleur: '#6E7175', ordre: 10 },
 ]
 
 async function main() {

@@ -83,11 +83,11 @@ export default async function AbonnementPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <Reveal className="mb-6">
           <p className="rsn-eyebrow mb-2">Espace connecté</p>
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
             <CreditCard size={22} aria-hidden />
             Mon abonnement
           </h1>
-          <p className="text-sm text-[#71717a] mt-1">{ctx.label}</p>
+          <p className="text-sm text-[#6E7175] mt-1">{ctx.label}</p>
         </Reveal>
 
         <AbonnementManager view={view} />

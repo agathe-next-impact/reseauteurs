@@ -100,7 +100,7 @@ export default function MapResultsList({
                   ) : (
                     <span
                       className="rsn-map-row-dot"
-                      style={{ background: it.accent ?? '#2563EB' }}
+                      style={{ background: it.accent ?? '#035AA6' }}
                       aria-hidden
                     />
                   )}

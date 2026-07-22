@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <Reveal className="mb-6">
           <p className="rsn-eyebrow mb-2">Espace connecté</p>
-          <h1 className="text-2xl font-extrabold text-[#16284f]">Tableau de bord</h1>
+          <h1 className="text-2xl font-extrabold text-[#012A4A]">Tableau de bord</h1>
         </Reveal>
 
         {/* Rôle réseauteur */}
@@ -76,11 +76,11 @@ export default async function DashboardPage() {
             {!reseauteur ? (
               <Reveal>
                 <div className="rsn-card rounded-2xl border-dashed p-8 text-center">
-                  <User size={32} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-                  <p className="text-sm font-medium text-[#52525b] mb-4">Bienvenue ! Créez votre profil réseauteur pour apparaître sur la carte.</p>
+                  <User size={32} className="text-[#CFD0D2] mx-auto mb-3" aria-hidden />
+                  <p className="text-sm font-medium text-[#4E5155] mb-4">Bienvenue ! Créez votre profil réseauteur pour apparaître sur la carte.</p>
                   <Link
                     href="/dashboard/profil"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] transition-colors no-underline"
+                    className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] transition-colors no-underline"
                   >
                     Créer mon profil
                     <ArrowRight size={14} aria-hidden />
@@ -95,12 +95,12 @@ export default async function DashboardPage() {
                     href="/dashboard/profil"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
                       <User size={13} aria-hidden />
                       Mon profil
                     </h2>
-                    <p className="font-bold text-[#16284f] mb-1">{reseauteur.prenom} {reseauteur.nom}</p>
-                    {reseauteur.ville && <p className="text-sm text-[#71717a]">{reseauteur.ville}</p>}
+                    <p className="font-bold text-[#012A4A] mb-1">{reseauteur.prenom} {reseauteur.nom}</p>
+                    {reseauteur.ville && <p className="text-sm text-[#6E7175]">{reseauteur.ville}</p>}
                     <div className={`mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       reseauteur.statut === 'valide'
                         ? 'bg-green-50 text-green-700 border border-green-200'
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
                       {reseauteur.statut === 'valide' ? 'Publié' : 'À compléter'}
                     </div>
                     <div className="mt-4">
-                      <span className="text-sm text-[#2563EB] font-medium flex items-center gap-1">
+                      <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
                         Modifier mon profil <ArrowRight size={12} aria-hidden className="rsn-arrow" />
                       </span>
                     </div>
@@ -120,13 +120,13 @@ export default async function DashboardPage() {
                     href="/dashboard/offres"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
                       <Tag size={13} aria-hidden />
                       Offres entreprises
                     </h2>
-                    <p className="text-sm text-[#52525b]">Avantages exclusifs réservés aux réseauteurs.</p>
+                    <p className="text-sm text-[#4E5155]">Avantages exclusifs réservés aux réseauteurs.</p>
                     <div className="mt-4">
-                      <span className="text-sm text-[#f5851f] font-medium flex items-center gap-1">
+                      <span className="text-sm text-[#8A6D0B] font-medium flex items-center gap-1">
                         Découvrir les offres <ArrowRight size={12} aria-hidden className="rsn-arrow" />
                       </span>
                     </div>
@@ -143,13 +143,13 @@ export default async function DashboardPage() {
                     href="/dashboard/participations"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
                       <CalendarCheck size={13} aria-hidden />
                       Mes participations
                     </h3>
-                    <p className="text-sm text-[#52525b]">Signalez votre présence aux événements de vos réseaux.</p>
+                    <p className="text-sm text-[#4E5155]">Signalez votre présence aux événements de vos réseaux.</p>
                     <div className="mt-4">
-                      <span className="text-sm text-[#2563EB] font-medium flex items-center gap-1">
+                      <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
                         Voir mes participations <ArrowRight size={12} aria-hidden className="rsn-arrow" />
                       </span>
                     </div>
@@ -160,13 +160,13 @@ export default async function DashboardPage() {
                     href="/dashboard/plus"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
                       <Sparkles size={13} aria-hidden />
                       Réseauteur Plus
                     </h3>
-                    <p className="text-sm text-[#52525b]">Créez vos propres événements avec l&apos;abonnement Réseauteur Plus.</p>
+                    <p className="text-sm text-[#4E5155]">Créez vos propres événements avec l&apos;abonnement Réseauteur Plus.</p>
                     <div className="mt-4">
-                      <span className="text-sm text-[#f5851f] font-medium flex items-center gap-1">
+                      <span className="text-sm text-[#8A6D0B] font-medium flex items-center gap-1">
                         Mes événements Plus <ArrowRight size={12} aria-hidden className="rsn-arrow" />
                       </span>
                     </div>
@@ -184,11 +184,11 @@ export default async function DashboardPage() {
             {!reseau ? (
               <Reveal>
                 <div className="rsn-card rounded-2xl border-dashed p-8 text-center">
-                  <Network size={32} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-                  <p className="text-sm font-medium text-[#52525b] mb-4">Créez la fiche de votre réseau pour commencer.</p>
+                  <Network size={32} className="text-[#CFD0D2] mx-auto mb-3" aria-hidden />
+                  <p className="text-sm font-medium text-[#4E5155] mb-4">Créez la fiche de votre réseau pour commencer.</p>
                   <Link
                     href="/dashboard/reseau"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f5851f] text-white font-semibold text-sm hover:bg-[#e07710] transition-colors no-underline"
+                    className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#F5E050] text-[#012A4A] font-semibold text-sm hover:bg-[#E3CB2E] transition-colors no-underline"
                   >
                     Créer ma fiche réseau
                     <ArrowRight size={14} aria-hidden />
@@ -202,17 +202,17 @@ export default async function DashboardPage() {
                     href="/dashboard/reseau"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
                       <Network size={13} aria-hidden />
                       Mon réseau
                     </h2>
-                    <p className="font-bold text-[#16284f] mb-1">{reseau.nom}</p>
-                    <div className="flex gap-3 text-xs text-[#71717a] mt-1">
+                    <p className="font-bold text-[#012A4A] mb-1">{reseau.nom}</p>
+                    <div className="flex gap-3 text-xs text-[#6E7175] mt-1">
                       <span>{reseau.nbReseauteurs ?? 0} réseauteurs</span>
                       <span>{reseau.nbEvenements ?? 0} événements</span>
                     </div>
                     {reseau.partenaire ? (
-                      <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]">
+                      <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEFBE6] text-[#8A6D0B] border border-[#EFE08F]">
                         Partenaire actif
                       </div>
                     ) : (
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
                       </div>
                     )}
                     <div className="mt-4">
-                      <span className="text-sm text-[#2563EB] font-medium flex items-center gap-1">
+                      <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
                         Gérer mon réseau <ArrowRight size={12} aria-hidden className="rsn-arrow" />
                       </span>
                     </div>
@@ -232,19 +232,19 @@ export default async function DashboardPage() {
                     href="/dashboard/reseau"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-3 flex items-center gap-1.5">
+                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
                       <Calendar size={13} aria-hidden />
                       Événements
                     </h2>
-                    <p className="text-sm text-[#52525b]">{reseau.nbEvenements ?? 0} événement{(reseau.nbEvenements ?? 0) !== 1 ? 's' : ''} publié{(reseau.nbEvenements ?? 0) !== 1 ? 's' : ''}</p>
+                    <p className="text-sm text-[#4E5155]">{reseau.nbEvenements ?? 0} événement{(reseau.nbEvenements ?? 0) !== 1 ? 's' : ''} publié{(reseau.nbEvenements ?? 0) !== 1 ? 's' : ''}</p>
                     <div className="mt-4">
-                      <span className="text-sm text-[#2563EB] font-medium flex items-center gap-1">
+                      <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
                         Gérer mes événements <ArrowRight size={12} aria-hidden className="rsn-arrow" />
                       </span>
                     </div>
                     {!reseau.partenaire && (
                       <div className="mt-3">
-                        <span className="text-xs text-[#f5851f] font-medium">
+                        <span className="text-xs text-[#8A6D0B] font-medium">
                           Devenir réseau partenaire →
                         </span>
                       </div>
@@ -260,10 +260,10 @@ export default async function DashboardPage() {
         {role === 'admin' && (
           <Reveal>
             <div className="rsn-card rounded-2xl p-6 text-center">
-              <p className="text-sm text-[#52525b] mb-4">Vous êtes administrateur. Accédez au back-office Payload pour gérer la plateforme.</p>
+              <p className="text-sm text-[#4E5155] mb-4">Vous êtes administrateur. Accédez au back-office Payload pour gérer la plateforme.</p>
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16284f] text-white font-semibold text-sm hover:bg-[#1e3a6e] transition-colors no-underline"
+                className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#012A4A] text-white font-semibold text-sm hover:bg-[#02467F] transition-colors no-underline"
               >
                 Accéder au back-office
                 <ArrowRight size={14} aria-hidden />

@@ -181,7 +181,7 @@ export default function InscriptionPage() {
           )}
           <Link
             href={postSignupLoginUrl}
-            className="inline-flex items-center justify-center px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
+            className="inline-flex items-center justify-center p-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
           >
             Aller à la connexion
           </Link>
@@ -230,7 +230,7 @@ export default function InscriptionPage() {
           </button>
           <button
             onClick={() => setAccountType('partenaire')}
-            className="p-5 border border-gray-200 rounded-xl hover:border-[#f5851f] hover:bg-[#fff7ed] transition-all text-left cursor-pointer"
+            className="p-5 border border-gray-200 rounded-xl hover:border-[#F5E050] hover:bg-[#FEFBE6] transition-all text-left cursor-pointer"
           >
             <h3 className="font-semibold text-text-dark mb-1">Entreprise (annonceur)</h3>
             <p className="text-sm text-text-light">
@@ -291,17 +291,17 @@ export default function InscriptionPage() {
           {/* ── Offre gratuite ── */}
           <section
             aria-label="Offre Réseauteur gratuit"
-            className="flex flex-col rounded-2xl border border-[#e4e4e7] bg-white p-6"
+            className="flex flex-col rounded-2xl border border-[#DFE0E1] bg-white p-6"
           >
-            <h2 className="text-lg font-bold text-[#16284f]">Réseauteur</h2>
-            <p className="text-2xl font-extrabold text-[#16284f] mt-1">Gratuit</p>
-            <p className="text-sm text-[#71717a] mt-2 mb-4">
+            <h2 className="text-lg font-bold text-[#012A4A]">Réseauteur</h2>
+            <p className="text-2xl font-extrabold text-[#012A4A] mt-1">Gratuit</p>
+            <p className="text-sm text-[#6E7175] mt-2 mb-4">
               Pour les personnes qui souhaitent développer leur réseau professionnel.
             </p>
-            <ul className="space-y-2 text-sm text-[#52525b] flex-1">
+            <ul className="space-y-2 text-sm text-[#4E5155] flex-1">
               {AVANTAGES_GRATUIT.map((a) => (
                 <li key={a} className="flex items-start gap-2">
-                  <Check size={15} className="text-[#2563EB] shrink-0 mt-0.5" aria-hidden />
+                  <Check size={15} className="text-[#035AA6] shrink-0 mt-0.5" aria-hidden />
                   {a}
                 </li>
               ))}
@@ -309,7 +309,7 @@ export default function InscriptionPage() {
             <button
               type="button"
               onClick={() => setOffreReseauteur('gratuit')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl border border-[#d4d4d8] text-sm font-semibold text-[#16284f] bg-white hover:bg-[#f4f4f5] transition-colors cursor-pointer"
+              className="mt-6 w-full p-2.5 rounded-xl border border-[#CFD0D2] text-sm font-semibold text-[#012A4A] bg-white hover:bg-[#E9E9EA] transition-colors cursor-pointer"
             >
               S&apos;inscrire gratuitement
             </button>
@@ -318,57 +318,57 @@ export default function InscriptionPage() {
           {/* ── Offre Réseauteur+ (mise en avant) ── */}
           <section
             aria-label="Offre Réseauteur+ recommandée"
-            className="relative flex flex-col rounded-2xl border-2 border-[#f5851f] bg-[#fffbf5] p-6 shadow-lg shadow-[#f5851f]/15"
+            className="relative flex flex-col rounded-2xl border-2 border-[#F5E050] bg-[#FEFDF3] p-6 shadow-lg shadow-[#F5E050]/15"
           >
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#f5851f] text-white text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F5E050] text-[#012A4A] text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
               Recommandé
             </span>
-            <h2 className="text-lg font-bold text-[#16284f]">⭐ Réseauteur+</h2>
-            <p className="text-2xl font-extrabold text-[#c2410c] mt-1">
+            <h2 className="text-lg font-bold text-[#012A4A]">⭐ Réseauteur+</h2>
+            <p className="text-2xl font-extrabold text-[#8A6D0B] mt-1">
               39 € <span className="text-base font-semibold">HT / an</span>
             </p>
-            <p className="text-sm font-semibold text-[#16284f] mt-3">
+            <p className="text-sm font-semibold text-[#012A4A] mt-3">
               Tout ce qui est inclus dans le compte Réseauteur, <strong>PLUS :</strong>
             </p>
             <div className="mt-3 flex-1">
-              <p className="text-sm font-bold text-[#16284f] flex items-center gap-1.5">
-                <CalendarPlus size={15} className="text-[#c2410c]" aria-hidden />
+              <p className="text-sm font-bold text-[#012A4A] flex items-center gap-1.5">
+                <CalendarPlus size={15} className="text-[#8A6D0B]" aria-hidden />
                 Créez vos propres événements
               </p>
-              <p className="text-sm text-[#52525b] mt-1">
+              <p className="text-sm text-[#4E5155] mt-1">
                 Vous pouvez organiser librement vos propres rencontres, sans passer par un réseau
                 ou une association.
               </p>
-              <p className="text-xs font-semibold text-[#71717a] uppercase tracking-wide mt-3 mb-1.5">
+              <p className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide mt-3 mb-1.5">
                 Par exemple
               </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5 text-sm text-[#52525b]">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5 text-sm text-[#4E5155]">
                 {EXEMPLES_EVENEMENTS.map((e) => (
                   <li key={e} className="flex items-start gap-2">
-                    <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+                    <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
                     {e}
                   </li>
                 ))}
               </ul>
-              <p className="text-xs font-semibold text-[#71717a] uppercase tracking-wide mt-4 mb-1.5">
+              <p className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide mt-4 mb-1.5">
                 Lors de la création d&apos;un événement, le membre peut définir
               </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-sm text-[#52525b]">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-sm text-[#4E5155]">
                 {CHAMPS_EVENEMENT.map((c) => (
                   <li key={c} className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-[#f5851f] shrink-0 mt-2" aria-hidden />
+                    <span className="w-1 h-1 rounded-full bg-[#F5E050] shrink-0 mt-2" aria-hidden />
                     {c}
                   </li>
                 ))}
               </ul>
-              <p className="text-sm text-[#52525b] mt-3">
+              <p className="text-sm text-[#4E5155] mt-3">
                 Les autres Réseauteurs peuvent ensuite s&apos;inscrire directement à cet événement.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setOffreReseauteur('plus')}
-              className="mt-6 w-full py-3 px-4 rounded-xl bg-[#f5851f] text-white text-base font-bold hover:bg-[#e47318] transition-colors shadow-md shadow-[#f5851f]/30 cursor-pointer"
+              className="mt-6 w-full p-2.5 rounded-xl bg-[#F5E050] text-[#012A4A] text-base font-bold hover:bg-[#E3CB2E] transition-colors shadow-md shadow-[#F5E050]/30 cursor-pointer"
             >
               Devenir Réseauteur+
             </button>
@@ -378,7 +378,7 @@ export default function InscriptionPage() {
         {/* ── Encadré : devenez créateur de connexions ── */}
         <aside
           aria-label="Devenez créateur de connexions"
-          className="mt-5 rounded-2xl bg-[#16284f] text-white p-6"
+          className="mt-5 rounded-2xl bg-[#012A4A] text-white p-6"
         >
           <h2 className="text-base font-bold">🚀 Devenez créateur de connexions</h2>
           <p className="text-sm text-white/85 mt-2">
@@ -388,23 +388,23 @@ export default function InscriptionPage() {
           <p className="text-sm text-white/85 mt-3">Invitez les membres de Réseauteurs à venir :</p>
           <ul className="mt-1.5 space-y-1 text-sm text-white/85">
             <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
               découvrir votre entreprise,
             </li>
             <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
               partager un café,
             </li>
             <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
               participer à un déjeuner,
             </li>
             <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
               échanger lors d&apos;un afterwork,
             </li>
             <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
               ou organiser toute autre rencontre professionnelle.
             </li>
           </ul>
@@ -417,7 +417,7 @@ export default function InscriptionPage() {
           <button
             type="button"
             onClick={() => setAccountType(null)}
-            className="text-sm text-[#71717a] hover:text-[#16284f] transition-colors cursor-pointer"
+            className="text-sm text-[#6E7175] hover:text-[#012A4A] transition-colors cursor-pointer"
           >
             ← Choisir un autre type de compte
           </button>
@@ -473,8 +473,8 @@ export default function InscriptionPage() {
       )}
 
       {accountType === 'reseauteur' && offreReseauteur === 'plus' && (
-        <div className="mb-6 bg-[#fff7ed] border border-[#fed7aa] rounded-xl p-4 flex items-start gap-3">
-          <Sparkles size={20} className="text-[#c2410c] shrink-0 mt-0.5" />
+        <div className="mb-6 bg-[#FEFBE6] border border-[#EFE08F] rounded-xl p-4 flex items-start gap-3">
+          <Sparkles size={20} className="text-[#8A6D0B] shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium text-text-dark">
               Formule choisie : ⭐ Réseauteur+ — 39 € HT / an

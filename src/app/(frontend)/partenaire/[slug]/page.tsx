@@ -95,7 +95,7 @@ export default async function FichePartenairePage({ params }: { params: Promise<
             <span className="text-[var(--ir-text-3)]" aria-current="page">{p.nom}</span>
           </nav>
           <Reveal>
-            <p className="rsn-eyebrow" style={{ color: '#fed7aa' }}>Entreprise</p>
+            <p className="rsn-eyebrow" style={{ color: '#8A6D0B' }}>Entreprise</p>
             <div className="flex items-center gap-4 mt-3.5">
               {logoUrl ? (
                 <Image src={logoUrl} alt={`Logo ${p.nom}`} width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-white p-2 border border-white/15" priority />
@@ -116,8 +116,8 @@ export default async function FichePartenairePage({ params }: { params: Promise<
             {p.description && (
               <Reveal>
                 <section aria-labelledby="pres-titre">
-                  <h2 id="pres-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{p.description}</p>
+                  <h2 id="pres-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">À propos</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{p.description}</p>
                 </section>
               </Reveal>
             )}
@@ -143,8 +143,8 @@ export default async function FichePartenairePage({ params }: { params: Promise<
             </Reveal>
           </div>
 
-          <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5]">
-            <Link href="/partenaires" className="rsn-linkrow text-sm text-[#f5851f] font-medium hover:text-[#c2410c] no-underline transition-colors flex items-center gap-1">
+          <div className="px-6 py-5 border-t border-[#DFE0E1] bg-[#F2F2F2]">
+            <Link href="/partenaires" className="rsn-linkrow text-sm text-[#8A6D0B] font-medium hover:text-[#8A6D0B] no-underline transition-colors flex items-center gap-1">
               ← Toutes les entreprises
             </Link>
           </div>

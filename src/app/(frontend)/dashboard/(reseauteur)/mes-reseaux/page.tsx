@@ -95,18 +95,18 @@ export default async function MesReseauxPage() {
         <Reveal>
           <p className="rsn-eyebrow mb-2">Espace connecté</p>
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
-              <Network size={20} className="text-[#a855f7]" aria-hidden />
+            <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
+              <Network size={20} className="text-[#3E7CA6]" aria-hidden />
               Mes réseaux
             </h1>
             <Link
               href="/dashboard/mes-evenements"
-              className="text-sm text-[#71717a] hover:text-[#18181b] no-underline transition-colors"
+              className="text-sm text-[#6E7175] hover:text-[#1D1E21] no-underline transition-colors"
             >
               Mes événements →
             </Link>
           </div>
-          <p className="text-sm text-[#71717a]">
+          <p className="text-sm text-[#6E7175]">
             Créez jusqu&apos;à {MAX_LOCAUX_PLUS} fiches de réseaux locaux — affiliées à un réseau
             national ou indépendantes — et publiez leurs événements sur la carte.
           </p>

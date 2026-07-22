@@ -43,13 +43,13 @@ import MapResultsList, { type MapListItem } from '@/components/map/MapResultsLis
 /** Durée de debounce pour le refetch sur déplacement carte (ms) */
 const MAP_MOVE_DEBOUNCE = 400
 
-// ── Expressions MapLibre — couleur des clusters (violet) ───────────────────
+// ── Expressions MapLibre — couleur des clusters (paliers d'aplats unis) ────
 const clusterCircleColor = [
   'step',
   ['get', 'point_count'],
-  MAP_COLORS.reseau,  // 1–19 : violet
-  20, '#9333ea',      // 20–49
-  50, '#7c3aed',      // 50+
+  MAP_COLORS.reseau,  // 1–19 : bleu médian
+  20, '#2E6389',      // 20–49
+  50, '#012A4A',      // 50+ : navy
 ]
 
 interface MapReseauxProps {
@@ -337,7 +337,7 @@ export default function MapReseaux({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-2.5 h-2.5 rounded-full bg-[#a855f7]"
+                className="w-2.5 h-2.5 rounded-full bg-[#3E7CA6]"
                 style={{ animation: `dotBounce 1.4s ease-in-out ${i * 0.16}s infinite` }}
               />
             ))}
@@ -350,8 +350,8 @@ export default function MapReseaux({
             className="absolute inset-0 z-[600] bg-white/30 flex items-start justify-center pt-4 pointer-events-none"
             aria-hidden="true"
           >
-            <div className="bg-white rounded-full px-3 py-1 border border-[#e4e4e7] text-xs text-[#a855f7] font-medium flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#a855f7] animate-pulse" />
+            <div className="bg-white rounded-full px-3 py-1 border border-[#DFE0E1] text-xs text-[#3E7CA6] font-medium flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-[#3E7CA6] animate-pulse" />
               Mise à jour...
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function MapReseaux({
               clusterMaxZoom={13}
               clusterRadius={40}
             >
-              {/* Cercles des clusters — gradient violet selon densité */}
+              {/* Cercles des clusters — aplat uni par palier de densité */}
               <Layer
                 id="reseaux-clusters"
                 type="circle"
@@ -463,7 +463,7 @@ export default function MapReseaux({
               <div>
                 <strong className="text-sm">{tooltip.title}</strong>
                 {tooltip.subtitle && (
-                  <div className="text-xs text-[#71717a] mt-0.5">{tooltip.subtitle}</div>
+                  <div className="text-xs text-[#6E7175] mt-0.5">{tooltip.subtitle}</div>
                 )}
               </div>
             </MapPopupLibre>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Courbe de tendance SVG (aire + ligne) avec tracé animé au scroll.
@@ -12,7 +12,7 @@ export default function TrendArea({
   data,
   width = 520,
   height = 180,
-  color = '#2563EB',
+  color = '#035AA6',
   className = '',
   showDots = true,
 }: {
@@ -23,7 +23,6 @@ export default function TrendArea({
   className?: string
   showDots?: boolean
 }) {
-  const gradientId = useId().replace(/:/g, '')
   const svgRef = useRef<SVGSVGElement | null>(null)
   const [inView, setInView] = useState(false)
   const [reduce, setReduce] = useState(false)
@@ -80,16 +79,10 @@ export default function TrendArea({
       aria-label="Tendance de croissance de la communauté"
       preserveAspectRatio="none"
     >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.28" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
       <path
         d={areaPath}
-        fill={`url(#${gradientId})`}
+        fill={color}
+        fillOpacity={0.16}
         style={{
           opacity: inView ? 1 : 0,
           transition: reduce ? 'none' : 'opacity .9s ease .3s',
@@ -99,7 +92,7 @@ export default function TrendArea({
         d={linePath}
         fill="none"
         stroke={color}
-        strokeWidth={2.5}
+        strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
         style={{

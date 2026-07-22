@@ -29,28 +29,28 @@ export default function FooterReseauteurs() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="ir-plasma-footer bg-white border-t border-[#e4e4e7] mt-16">
+    <footer className="ir-plasma-footer bg-white border-t border-[#DFE0E1] mt-16">
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
         <div>
-          <h3 className="text-sm font-semibold text-[#18181b] mb-4">Annuaire</h3>
+          <h3 className="text-sm font-semibold text-[#1D1E21] mb-4">Annuaire</h3>
           <ul className="space-y-2.5 text-sm">
             <li>
-              <Link href="/reseauteurs" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/reseauteurs" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Réseauteurs
               </Link>
             </li>
             <li>
-              <Link href="/evenements" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/evenements" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Événements
               </Link>
             </li>
             <li>
-              <Link href="/reseaux" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/reseaux" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Réseaux
               </Link>
             </li>
             <li>
-              <Link href="/partenaires" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/partenaires" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Entreprises
               </Link>
             </li>
@@ -58,15 +58,15 @@ export default function FooterReseauteurs() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-[#18181b] mb-4">Compte</h3>
+          <h3 className="text-sm font-semibold text-[#1D1E21] mb-4">Compte</h3>
           <ul className="space-y-2.5 text-sm">
             <li>
-              <Link href="/inscription" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/inscription" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Créer mon profil
               </Link>
             </li>
             <li>
-              <Link href="/login" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/login" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Se connecter
               </Link>
             </li>
@@ -75,20 +75,20 @@ export default function FooterReseauteurs() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-[#18181b] mb-4">À propos</h3>
+          <h3 className="text-sm font-semibold text-[#1D1E21] mb-4">À propos</h3>
           <ul className="space-y-2.5 text-sm">
             <li>
-              <Link href="/a-propos" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/a-propos" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Notre mission
               </Link>
             </li>
             <li>
-              <Link href="/faq-utilisateurs" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/faq-utilisateurs" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 FAQ
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/contact" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Contact
               </Link>
             </li>
@@ -96,25 +96,25 @@ export default function FooterReseauteurs() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-[#18181b] mb-4">Légal</h3>
+          <h3 className="text-sm font-semibold text-[#1D1E21] mb-4">Légal</h3>
           <ul className="space-y-2.5 text-sm">
             <li>
-              <Link href="/mentions-legales" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/mentions-legales" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Mentions légales
               </Link>
             </li>
             <li>
-              <Link href="/cgu" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/cgu" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 CGU
               </Link>
             </li>
             <li>
-              <Link href="/confidentialite" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/confidentialite" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Confidentialité & RGPD
               </Link>
             </li>
             <li>
-              <Link href="/cookies" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+              <Link href="/cookies" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
                 Cookies
               </Link>
             </li>
@@ -122,15 +122,15 @@ export default function FooterReseauteurs() {
         </div>
       </div>
 
-      <div className="border-t border-[#e4e4e7]">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-[#71717a]">
-          <Link href="/" className="flex items-center gap-2 no-underline text-[#71717a] hover:text-[#2563EB] font-medium transition-colors" aria-label="Accueil RÉSEAUTEURS">
+      <div className="border-t border-[#DFE0E1]">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-[#6E7175]">
+          <Link href="/" className="flex items-center gap-2 no-underline text-[#6E7175] hover:text-[#035AA6] font-medium transition-colors" aria-label="Accueil RÉSEAUTEURS">
             <Image src="/img/logo.png" alt="" width={24} height={24} className="h-5 w-5 flex-none" aria-hidden />
-            <span className="font-extrabold text-[#16284f] tracking-tight">{SITE_NAME.toUpperCase()}</span>
+            <span className="font-extrabold text-[#012A4A] tracking-tight">{SITE_NAME.toUpperCase()}</span>
             <span>&copy; {year} Tous droits réservés.</span>
           </Link>
           <div className="flex items-center gap-4">
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
               {CONTACT_EMAIL}
             </a>
             <div className="flex items-center gap-1">
@@ -139,7 +139,7 @@ export default function FooterReseauteurs() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${SITE_NAME} sur Instagram`}
-                className="p-2 rounded-lg text-[#71717a] hover:text-[#2563EB] hover:bg-[#f4f4f5] transition-colors"
+                className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#035AA6] hover:bg-[#E9E9EA] transition-colors"
               >
                 <InstagramIcon />
               </a>
@@ -148,7 +148,7 @@ export default function FooterReseauteurs() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${SITE_NAME} sur LinkedIn`}
-                className="p-2 rounded-lg text-[#71717a] hover:text-[#2563EB] hover:bg-[#f4f4f5] transition-colors"
+                className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#035AA6] hover:bg-[#E9E9EA] transition-colors"
               >
                 <LinkedinIcon />
               </a>

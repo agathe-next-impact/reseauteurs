@@ -40,7 +40,7 @@ export function groupInvitationEmail(
     ${paragraph(`Votre code d'affiliation :`)}
     ${codeBlock(code)}
     ${button({ href: ctaUrl, label: ctaLabel, variant: 'primary' })}
-    ${paragraph(`<span style="color:#6b7280">${esc(helperText)}</span>`)}
+    ${paragraph(`<span style="color:#6E7175">${esc(helperText)}</span>`)}
   `
   return renderEmail({
     preheader: `${senderNomSociete} vous invité dans le groupe ${groupeNom} — code ${code}.`,

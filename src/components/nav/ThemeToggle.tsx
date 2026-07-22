@@ -54,7 +54,7 @@ export default function ThemeToggle() {
       aria-label={dark ? 'Activer le mode clair' : 'Activer le mode sombre'}
       aria-pressed={dark}
       title={dark ? 'Mode clair' : 'Mode sombre'}
-      className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-[#e4e4e7] text-[#52525b] hover:text-[#2563EB] hover:border-[#2563EB] bg-transparent transition-colors cursor-pointer shrink-0"
+      className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-[#DFE0E1] text-[#4E5155] hover:text-[#035AA6] hover:border-[#035AA6] bg-transparent transition-colors cursor-pointer shrink-0"
     >
       {dark ? <Sun size={17} aria-hidden /> : <Moon size={17} aria-hidden />}
     </button>

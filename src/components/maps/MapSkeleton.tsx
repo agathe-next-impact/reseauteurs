@@ -19,7 +19,7 @@ export default function MapSkeleton() {
       </aside>
 
       {/* Map skeleton */}
-      <div className="flex-1 bg-[#e8e0d8] flex items-center justify-center">
+      <div className="flex-1 bg-[#E9E9EA] flex items-center justify-center">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ animation: 'dotBounce 1.4s ease-in-out 0s infinite' }} />
           <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ animation: 'dotBounce 1.4s ease-in-out 0.16s infinite' }} />

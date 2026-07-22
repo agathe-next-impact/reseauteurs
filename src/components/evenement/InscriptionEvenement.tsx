@@ -51,7 +51,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
   }, [evenementId])
 
   const compteur = (
-    <span className={`inline-flex items-center gap-1.5 text-sm ${onDark ? 'text-white/70' : 'text-[#71717a]'}`}>
+    <span className={`inline-flex items-center gap-1.5 text-sm ${onDark ? 'text-white/70' : 'text-[#6E7175]'}`}>
       <Users size={14} aria-hidden />
       {total} inscrit{total > 1 ? 's' : ''}
     </span>
@@ -60,7 +60,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
   if (isPast) {
     return (
       <div className="flex items-center gap-3">
-        <span className={`text-sm font-medium ${onDark ? 'text-white/60' : 'text-[#71717a]'}`}>
+        <span className={`text-sm font-medium ${onDark ? 'text-white/60' : 'text-[#6E7175]'}`}>
           Événement terminé
         </span>
         {total > 0 && compteur}
@@ -83,7 +83,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
           <UserPlus size={15} aria-hidden />
           Je m&apos;inscris
         </a>
-        <span className={`text-xs ${onDark ? 'text-white/60' : 'text-[#71717a]'}`}>
+        <span className={`text-xs ${onDark ? 'text-white/60' : 'text-[#6E7175]'}`}>
           Connectez-vous en tant que réseauteur
         </span>
         {total > 0 && compteur}
@@ -94,7 +94,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
   if (!statut.isReseauteur) {
     return (
       <div className="flex flex-wrap items-center gap-3">
-        <span className={`text-sm ${onDark ? 'text-white/70' : 'text-[#71717a]'}`}>
+        <span className={`text-sm ${onDark ? 'text-white/70' : 'text-[#6E7175]'}`}>
           Inscription réservée aux réseauteurs.
         </span>
         {total > 0 && compteur}
@@ -132,7 +132,7 @@ export default function InscriptionEvenement({ evenementId, slug, initialTotal, 
           type="button"
           onClick={toggle}
           disabled={pending}
-          className={`inline-flex items-center gap-2 font-semibold py-2.5 px-5 rounded-xl text-sm transition-colors disabled:opacity-60 ${
+          className={`inline-flex items-center gap-2 font-semibold p-2.5 rounded-xl text-sm transition-colors disabled:opacity-60 ${
             onDark
               ? 'bg-white/10 text-white border border-white/25 hover:bg-white/15'
               : 'bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0] hover:bg-[#d1fae5]'

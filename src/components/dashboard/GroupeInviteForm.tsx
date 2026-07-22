@@ -86,7 +86,7 @@ export default function GroupeInviteForm() {
               type="button"
               onClick={() => removeRow(i)}
               disabled={emails.length === 1}
-              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              className="p-2.5 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               aria-label="Retirer cette ligne"
             >
               <X size={16} />

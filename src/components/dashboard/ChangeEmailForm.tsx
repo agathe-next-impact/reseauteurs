@@ -86,7 +86,7 @@ export default function ChangeEmailForm({ currentEmail }: Props) {
           <button
             type="button"
             onClick={() => setMode('view')}
-            className="mt-2 text-sm font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none p-0"
+            className="mt-2 text-sm font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none p-2.5"
           >
             Fermer
           </button>
@@ -148,7 +148,7 @@ export default function ChangeEmailForm({ currentEmail }: Props) {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 p-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting && <Loader2 size={14} className="animate-spin" />}
             Envoyer le lien de confirmation
@@ -160,7 +160,7 @@ export default function ChangeEmailForm({ currentEmail }: Props) {
               resetForm()
             }}
             disabled={submitting}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-transparent text-text-medium rounded-lg text-sm hover:text-text-dark transition-colors cursor-pointer border-none disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 p-2.5 bg-transparent text-text-medium rounded-lg text-sm hover:text-text-dark transition-colors cursor-pointer border-none disabled:opacity-50"
           >
             <X size={14} />
             Annuler
@@ -176,7 +176,7 @@ export default function ChangeEmailForm({ currentEmail }: Props) {
       <button
         type="button"
         onClick={() => setMode('editing')}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none p-0 shrink-0"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none p-2.5 shrink-0"
       >
         <Pencil size={13} />
         Modifier

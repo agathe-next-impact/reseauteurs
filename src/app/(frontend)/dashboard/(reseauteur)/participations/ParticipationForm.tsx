@@ -59,21 +59,21 @@ export function ParticipationForm({
             <li key={id}>
               <label
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                  on ? 'border-[#2563EB] bg-[#eff6ff]' : 'border-[#e4e4e7] hover:border-[#2563EB]/40'
+                  on ? 'border-[#035AA6] bg-[#EFF5FA]' : 'border-[#DFE0E1] hover:border-[#035AA6]/40'
                 }`}
               >
                 <input type="checkbox" checked={on} onChange={() => toggle(id)} className="sr-only" />
                 <span
                   className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${
-                    on ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'border-[#d4d4d8] bg-white'
+                    on ? 'bg-[#035AA6] border-[#035AA6] text-white' : 'border-[#CFD0D2] bg-white'
                   }`}
                   aria-hidden
                 >
-                  {on && <Check size={13} strokeWidth={3} />}
+                  {on && <Check size={13} />}
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-semibold text-[#18181b] truncate">{ev.titre}</span>
-                  <span className="block text-xs text-[#71717a] truncate capitalize">
+                  <span className="block text-sm font-semibold text-[#1D1E21] truncate">{ev.titre}</span>
+                  <span className="block text-xs text-[#6E7175] truncate capitalize">
                     {dateStr}
                     {ev.lieuVille ? ` · ${ev.lieuVille}` : ''}
                     {ev.reseauNom ? ` · ${ev.reseauNom}` : ''}
@@ -86,14 +86,14 @@ export function ParticipationForm({
       </ul>
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <p className="text-xs text-[#71717a]">
+        <p className="text-xs text-[#6E7175]">
           {selected.size} événement{selected.size > 1 ? 's' : ''} sélectionné{selected.size > 1 ? 's' : ''}
         </p>
         <button
           type="button"
           onClick={onSave}
           disabled={pending}
-          className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
+          className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
         >
           {pending && <Loader2 size={15} className="animate-spin" aria-hidden />}
           Enregistrer

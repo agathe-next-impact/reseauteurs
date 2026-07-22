@@ -15,7 +15,7 @@ export function ficheRejectedEmail(nomSociete: string, raison?: string): string 
       body: `<p style="margin:0">Un administrateur a suspendu votre fiche sur RÉSEAUTEURS. Elle n'est actuellement plus visible sur la carte ni dans l'annuaire.</p>`,
     })}
     ${motifBlock}
-    ${paragraph(`Si vous pensez qu'il s'agit d'une erreur ou souhaitez contester cette décision, répondez directement à cet email ou ecrivez a <a href="mailto:${CONTACT_EMAIL}" style="color:#6b7280">${CONTACT_EMAIL}</a>.`)}
+    ${paragraph(`Si vous pensez qu'il s'agit d'une erreur ou souhaitez contester cette décision, répondez directement à cet email ou ecrivez a <a href="mailto:${CONTACT_EMAIL}" style="color:#6E7175">${CONTACT_EMAIL}</a>.`)}
     ${button({ href: `${SITE_URL}/dashboard/fiche`, label: 'Voir ma fiche', variant: 'secondary' })}
   `
   return renderEmail({
@@ -42,7 +42,7 @@ export function evenementRejectedEmail(
       body: `<p style="margin:0">L'événement <strong>${esc(titre)}</strong> a été archive par un administrateur. Il n'apparait plus sur la carte des événements.</p>`,
     })}
     ${motifBlock}
-    ${paragraph(`Pour toute question, répondez directement à cet email ou ecrivez a <a href="mailto:${CONTACT_EMAIL}" style="color:#6b7280">${CONTACT_EMAIL}</a>.`)}
+    ${paragraph(`Pour toute question, répondez directement à cet email ou ecrivez a <a href="mailto:${CONTACT_EMAIL}" style="color:#6E7175">${CONTACT_EMAIL}</a>.`)}
     ${button({ href: `${SITE_URL}/dashboard/evenements`, label: 'Voir mes événements', variant: 'secondary' })}
   `
   return renderEmail({

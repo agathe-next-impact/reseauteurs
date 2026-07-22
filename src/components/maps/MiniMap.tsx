@@ -38,7 +38,7 @@ export default function MiniMap({
 }: MiniMapProps) {
   return (
     <div
-      className="h-48 w-full rounded-xl overflow-hidden border border-[#e4e4e7]"
+      className="h-48 w-full rounded-xl overflow-hidden border border-[#DFE0E1]"
       role="img"
       aria-label={label ?? 'Localisation sur la carte'}
     >

@@ -74,14 +74,14 @@ export default async function DashboardProfilPage() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
         <Reveal>
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
               <User size={20} aria-hidden />
               Mon profil
             </h1>
             {reseauteur?.slug && (
               <Link
                 href={`/reseauteur/${reseauteur.slug}`}
-                className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium no-underline transition-colors"
+                className="text-sm text-[#035AA6] hover:text-[#02467F] font-medium no-underline transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -94,11 +94,11 @@ export default async function DashboardProfilPage() {
         {!reseauteur ? (
           /* État vide — le profil est auto-créé au signup. S'il manque, c'est une anomalie. */
           <div className="rsn-card rounded-2xl border-dashed p-10 text-center">
-            <User size={36} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-            <p className="text-sm font-medium text-[#52525b] mb-2">
+            <User size={36} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+            <p className="text-sm font-medium text-[#4E5155] mb-2">
               Profil en cours d&apos;initialisation…
             </p>
-            <p className="text-sm text-[#71717a] mb-6">
+            <p className="text-sm text-[#6E7175] mb-6">
               Votre profil réseauteur est créé automatiquement. Rechargez la page dans quelques
               secondes.
             </p>
@@ -114,11 +114,11 @@ export default async function DashboardProfilPage() {
                     alt={`Photo de profil de ${reseauteur.prenom} ${reseauteur.nom}`}
                     width={72}
                     height={72}
-                    className="w-16 h-16 rounded-xl object-cover border border-[#e4e4e7] shrink-0"
+                    className="w-16 h-16 rounded-xl object-cover border border-[#DFE0E1] shrink-0"
                   />
                 ) : (
                   <div
-                    className="w-16 h-16 rounded-xl bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold text-xl shrink-0"
+                    className="w-16 h-16 rounded-xl bg-[#A9C9E4]/30 flex items-center justify-center text-[#035AA6] font-bold text-xl shrink-0"
                     aria-hidden
                   >
                     {reseauteur.prenom?.charAt(0)}
@@ -127,19 +127,19 @@ export default async function DashboardProfilPage() {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <p className="font-bold text-[#16284f]">
+                    <p className="font-bold text-[#012A4A]">
                       {reseauteur.prenom} {reseauteur.nom}
                     </p>
                     {reseauteur.badge && <BadgeReseauteur badge={reseauteur.badge} />}
                   </div>
                   {reseauteur.fonction && (
-                    <p className="text-sm text-[#52525b]">{reseauteur.fonction}</p>
+                    <p className="text-sm text-[#4E5155]">{reseauteur.fonction}</p>
                   )}
                   {reseauteur.entreprise && (
-                    <p className="text-sm text-[#71717a]">{reseauteur.entreprise}</p>
+                    <p className="text-sm text-[#6E7175]">{reseauteur.entreprise}</p>
                   )}
                   {reseauteur.ville && (
-                    <p className="text-xs text-[#71717a] flex items-center gap-1 mt-1">
+                    <p className="text-xs text-[#6E7175] flex items-center gap-1 mt-1">
                       <MapPin size={11} aria-hidden />
                       {reseauteur.ville}
                     </p>
@@ -176,8 +176,8 @@ export default async function DashboardProfilPage() {
               )}
 
               {/* Aperçu contacts publics */}
-              <div className="pt-4 border-t border-[#e4e4e7]">
-                <p className="text-xs text-[#71717a] mb-3 flex items-center gap-1">
+              <div className="pt-4 border-t border-[#DFE0E1]">
+                <p className="text-xs text-[#6E7175] mb-3 flex items-center gap-1">
                   <Shield size={12} aria-hidden />
                   Contacts facultatifs — visibles publiquement si renseignés
                 </p>
@@ -212,13 +212,13 @@ export default async function DashboardProfilPage() {
 
             {/* Badge networking */}
             <div className="rsn-card rounded-2xl p-5">
-              <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+              <h2 className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
                 <Network size={14} aria-hidden />
                 Badge réseauteur
               </h2>
               <div className="flex items-center gap-3">
                 <BadgeReseauteur badge={reseauteur.badge} />
-                <p className="text-xs text-[#71717a]">
+                <p className="text-xs text-[#6E7175]">
                   Basé sur votre déclaration : {reseauteur.evenementsParMois ?? 0} événement
                   {(reseauteur.evenementsParMois ?? 0) > 1 ? 's' : ''}/mois
                 </p>
@@ -227,17 +227,17 @@ export default async function DashboardProfilPage() {
 
             {/* Formulaire d'édition */}
             <div className="rsn-card rounded-2xl p-6">
-              <h2 className="text-sm font-semibold text-[#18181b] mb-5">Modifier mon profil</h2>
+              <h2 className="text-sm font-semibold text-[#1D1E21] mb-5">Modifier mon profil</h2>
               <ProfilForm reseauteur={reseauteur} reseauxLocaux={reseauxLocaux} />
             </div>
 
             {/* Confidentialité & RGPD */}
             <div className="rsn-card rounded-2xl p-5">
-              <h2 className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
+              <h2 className="text-sm font-semibold text-[#1D1E21] mb-2 flex items-center gap-1.5">
                 <Shield size={14} aria-hidden />
                 Confidentialité & RGPD
               </h2>
-              <p className="text-xs text-[#71717a] mb-4">
+              <p className="text-xs text-[#6E7175] mb-4">
                 Votre géolocalisation est au niveau de la ville (pas d&apos;adresse exacte).
                 Téléphone et email ne sont partagés que si vous les renseignez.
               </p>
@@ -245,7 +245,7 @@ export default async function DashboardProfilPage() {
                 <a
                   href="/api/account/export"
                   download
-                  className="text-xs text-[#71717a] hover:text-[#2563EB] transition-colors block"
+                  className="text-xs text-[#6E7175] hover:text-[#035AA6] transition-colors block"
                 >
                   Exporter mes données (RGPD — JSON)
                 </a>
@@ -272,12 +272,12 @@ function FieldPreview({
 }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="text-[#a1a1aa]" aria-hidden>
+      <span className="text-[#999A9D]" aria-hidden>
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-[#71717a] font-medium">{label}</p>
-        <p className={`truncate ${value ? 'text-[#52525b]' : 'text-[#a1a1aa] italic'}`}>
+        <p className="text-[#6E7175] font-medium">{label}</p>
+        <p className={`truncate ${value ? 'text-[#4E5155]' : 'text-[#999A9D] italic'}`}>
           {value || muted}
         </p>
       </div>

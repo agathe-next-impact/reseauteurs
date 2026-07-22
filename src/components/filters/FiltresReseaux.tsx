@@ -71,11 +71,11 @@ export default function FiltresReseaux({
   const content = (
     <>
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-base font-semibold text-[#18181b]">Filtrer les réseaux</h2>
+        <h2 className="text-base font-semibold text-[#1D1E21]">Filtrer les réseaux</h2>
         {onClose && (
           <button
             type="button"
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
+            className="p-2.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
             onClick={onClose}
             aria-label="Fermer les filtres"
           >
@@ -88,7 +88,7 @@ export default function FiltresReseaux({
       <div className="mb-5">
         <label
           htmlFor="filtre-ville-res"
-          className="block text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2"
+          className="block text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2"
         >
           Ville
         </label>
@@ -103,7 +103,7 @@ export default function FiltresReseaux({
             placeholder="Paris, Lyon, Bordeaux..."
             value={filters.ville}
             onChange={(e) => onFilterChange({ ...filters, ville: e.target.value })}
-            className="w-full pl-8 pr-3 py-2 text-sm border border-[#e4e4e7] rounded-xl focus:outline-none focus:border-[#a855f7] transition-colors bg-white"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-[#DFE0E1] rounded-xl focus:outline-none focus:border-[#3E7CA6] transition-colors bg-white"
           />
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function FiltresReseaux({
       {/* Réseau national parent */}
       {nationals.length > 0 && (
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
             Réseau national
           </p>
           <div className="space-y-0.5 max-h-48 overflow-y-auto pr-1">
@@ -126,7 +126,7 @@ export default function FiltresReseaux({
                   onCheckedChange={() => toggleNational(n.id)}
                   aria-label={`Filtrer par réseau national ${n.nom}`}
                 />
-                <span className="text-sm text-[#18181b] truncate">{n.nom}</span>
+                <span className="text-sm text-[#1D1E21] truncate">{n.nom}</span>
               </div>
             ))}
           </div>
@@ -137,7 +137,7 @@ export default function FiltresReseaux({
       {hasActiveFilters && (
         <button
           onClick={resetFilters}
-          className="flex items-center gap-1.5 text-sm text-[#71717a] hover:text-[#18181b] transition-colors mb-4 cursor-pointer"
+          className="flex items-center gap-1.5 text-sm text-[#6E7175] hover:text-[#1D1E21] transition-colors mb-4 cursor-pointer"
         >
           <RotateCcw size={13} />
           Réinitialiser les filtres
@@ -146,12 +146,12 @@ export default function FiltresReseaux({
 
       {/* Compteur résultat */}
       <div
-        className="mt-auto pt-4 border-t border-[#e4e4e7]"
+        className="mt-auto pt-4 border-t border-[#DFE0E1]"
         role="status"
         aria-live="polite"
         aria-atomic="true"
       >
-        <div className="bg-[#a855f7] rounded-xl py-2 px-3 text-center">
+        <div className="bg-[#3E7CA6] rounded-xl py-2 px-3 text-center">
           <span className="text-sm font-semibold text-white">
             {resultCount} réseau{resultCount !== 1 ? 'x' : ''} visible{resultCount !== 1 ? 's' : ''}
           </span>

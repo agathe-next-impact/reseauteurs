@@ -3,6 +3,7 @@
 import { useCallback, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { SlidersHorizontal, X } from 'lucide-react'
+import { DebouncedFilterInput } from './DebouncedFilterInput'
 
 interface EvenementsClientFiltersProps {
   reseaux: Array<{ slug: string; nom: string }>
@@ -27,34 +28,44 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
 
   const hasFilters = Object.values(current).some(Boolean)
 
-  function update(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
-    }
-    params.delete('page')
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`)
-    })
-  }
+  const update = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (value) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+      params.delete('page')
+      startTransition(() => {
+        // scroll: false — filtrer ne doit pas renvoyer l'utilisateur en haut de page.
+        router.push(`${pathname}?${params.toString()}`, { scroll: false })
+      })
+    },
+    [router, pathname, searchParams],
+  )
 
   const reset = useCallback(() => {
-    startTransition(() => router.push(pathname))
-  }, [router, pathname])
+    // Conserve la vue courante : sans `vue`, /evenements retombe sur la carte
+    // et l'utilisateur perd l'agenda en effaçant ses filtres.
+    const params = new URLSearchParams()
+    const vue = searchParams.get('vue')
+    if (vue) params.set('vue', vue)
+    const qs = params.toString()
+    startTransition(() => router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false }))
+  }, [router, pathname, searchParams])
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e4e4e7] p-4 space-y-4">
+    <div className="bg-white rounded-2xl border border-[#DFE0E1] p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+        <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
           <SlidersHorizontal size={14} aria-hidden />
           Filtrer
         </h2>
         {hasFilters && (
           <button
             onClick={reset}
-            className="text-xs text-[#71717a] hover:text-[#0284c7] flex items-center gap-1 cursor-pointer transition-colors"
+            className="text-xs text-[#6E7175] hover:text-[#8A6D0B] flex items-center gap-1 cursor-pointer transition-colors"
             aria-label="Effacer tous les filtres"
           >
             <X size={12} aria-hidden />
@@ -65,46 +76,46 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
 
       {/* Ville */}
       <div>
-        <label htmlFor="ev-filter-ville" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="ev-filter-ville" className="block text-xs font-medium text-[#4E5155] mb-1">
           Ville
         </label>
-        <input
+        <DebouncedFilterInput
           id="ev-filter-ville"
           type="text"
-          value={current.ville}
-          onChange={(e) => update('ville', e.target.value)}
+          urlValue={current.ville}
+          onCommit={(v) => update('ville', v)}
           placeholder="Paris, Lyon…"
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent"
           autoComplete="address-level2"
         />
       </div>
 
       {/* Département */}
       <div>
-        <label htmlFor="ev-filter-departement" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="ev-filter-departement" className="block text-xs font-medium text-[#4E5155] mb-1">
           Département
         </label>
-        <input
+        <DebouncedFilterInput
           id="ev-filter-departement"
           type="text"
-          value={current.departement}
-          onChange={(e) => update('departement', e.target.value)}
+          urlValue={current.departement}
+          onCommit={(v) => update('departement', v)}
           placeholder="Rhône, Paris…"
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent"
         />
       </div>
 
       {/* Type d'événement */}
       {types.length > 0 && (
         <div>
-          <label htmlFor="ev-filter-type" className="block text-xs font-medium text-[#52525b] mb-1">
+          <label htmlFor="ev-filter-type" className="block text-xs font-medium text-[#4E5155] mb-1">
             Type d&apos;événement
           </label>
           <select
             id="ev-filter-type"
             value={current.type}
             onChange={(e) => update('type', e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent cursor-pointer"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent cursor-pointer"
           >
             <option value="">Tous les types</option>
             {types.map((t) => (
@@ -116,14 +127,14 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
 
       {/* Tarification */}
       <div>
-        <label htmlFor="ev-filter-tarif" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="ev-filter-tarif" className="block text-xs font-medium text-[#4E5155] mb-1">
           Tarif
         </label>
         <select
           id="ev-filter-tarif"
           value={current.tarification}
           onChange={(e) => update('tarification', e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent cursor-pointer"
         >
           <option value="">Tous</option>
           <option value="gratuit">Gratuit</option>
@@ -134,14 +145,14 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
       {/* Réseau */}
       {reseaux.length > 0 && (
         <div>
-          <label htmlFor="ev-filter-reseau" className="block text-xs font-medium text-[#52525b] mb-1">
+          <label htmlFor="ev-filter-reseau" className="block text-xs font-medium text-[#4E5155] mb-1">
             Réseau organisateur
           </label>
           <select
             id="ev-filter-reseau"
             value={current.reseau}
             onChange={(e) => update('reseau', e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent cursor-pointer"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent cursor-pointer"
           >
             <option value="">Tous les réseaux</option>
             {reseaux.map((r) => (
@@ -153,7 +164,7 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
 
       {/* Date à partir de */}
       <div>
-        <label htmlFor="ev-filter-datedebut" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="ev-filter-datedebut" className="block text-xs font-medium text-[#4E5155] mb-1">
           À partir du
         </label>
         <input
@@ -161,12 +172,12 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
           type="date"
           value={current.dateDebut}
           onChange={(e) => update('dateDebut', e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-transparent cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent cursor-pointer"
         />
       </div>
 
       {isPending && (
-        <p className="text-xs text-center text-[#71717a] animate-pulse" aria-live="polite">
+        <p className="text-xs text-center text-[#6E7175] animate-pulse" aria-live="polite">
           Mise à jour…
         </p>
       )}

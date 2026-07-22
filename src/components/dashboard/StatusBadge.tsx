@@ -1,6 +1,6 @@
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
   publiee: { label: 'Publiee', bg: '#d1fae5', color: '#065f46' },
-  suspendue: { label: 'Suspendue', bg: '#f3f4f6', color: '#374151' },
+  suspendue: { label: 'Suspendue', bg: '#E9E9EA', color: '#3F4247' },
 }
 
 export default function StatusBadge({ statut }: { statut: string }) {

@@ -54,7 +54,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="flex min-h-[calc(100vh-64px)]">
       <DashboardSidebarReseauteurs role={role} displayName={displayName} isNational={isNational} />
-      <main className="flex-1 bg-[#faf9f5]/50 overflow-y-auto">
+      <main className="flex-1 bg-[#F2F2F2]/50 overflow-y-auto">
         {children}
       </main>
     </div>

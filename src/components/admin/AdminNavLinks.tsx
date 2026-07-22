@@ -16,7 +16,7 @@ export default function AdminNavLinks() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '12px 16px', borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '12px 16px', borderTop: '1px solid var(--theme-elevation-150, #DFE0E1)' }}>
       <a
         href="/"
         style={{
@@ -27,13 +27,13 @@ export default function AdminNavLinks() {
           borderRadius: 6,
           fontSize: '0.875rem',
           fontWeight: 500,
-          color: 'var(--theme-text, #374151)',
+          color: 'var(--theme-text, #3F4247)',
           textDecoration: 'none',
-          background: 'var(--theme-elevation-50, #f9fafb)',
+          background: 'var(--theme-elevation-50, #FAFAFA)',
           transition: 'background 0.15s',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-elevation-100, #f3f4f6)')}
-        onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--theme-elevation-50, #f9fafb)')}
+        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-elevation-100, #E9E9EA)')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--theme-elevation-50, #FAFAFA)')}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -59,7 +59,7 @@ export default function AdminNavLinks() {
           textAlign: 'left',
           transition: 'background 0.15s',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-elevation-100, #f3f4f6)')}
+        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-elevation-100, #E9E9EA)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

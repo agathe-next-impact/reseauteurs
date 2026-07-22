@@ -220,7 +220,8 @@ Le **système visuel est conservé** comme identité de marque ; la **structure*
   typo, rayons, style des clusters/cartes). Sa **structure** est indicative.
 
 Tokens clés (détail dans `DESIGN.md`) :
-- **Police : Hanken Grotesk** (Google Fonts, 400→800), via `next/font`.
+- **Polices : Inter** (corps/UI, `--font-sans`) **+ Inter Tight** (titres, `--font-display`), Google
+  Fonts en variable font via `next/font` — décision 2026-07-22, remplace Hanken Grotesk.
 - **Mode clair dominant** sur canvas **`#faf9f5`** ; surfaces blanches ; **bandes sombres** (`#0d0d10`).
 - **Bleu primaire `#2563EB`**, navy `#16284f`, **accent orange `#f5851f`** (conversion / abonnement / CTA),
   violet secondaire `#a855f7`, neutres zinc, bordure `#e4e4e7`.

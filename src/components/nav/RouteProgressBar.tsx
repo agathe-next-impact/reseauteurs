@@ -140,20 +140,10 @@ export default function RouteProgressBar() {
                 ? 'width 200ms ease-out, opacity 300ms ease 200ms'
                 : 'width 600ms cubic-bezier(0.4, 0, 0, 1)',
           opacity: visible ? 1 : 0,
-          background: 'linear-gradient(90deg, var(--color-primary), #f59e0b)',
+          background: 'var(--color-primary)',
           borderRadius: '0 2px 2px 0',
         }}
       />
-      {/* Shimmer pulse at the tip */}
-      {visible && progress < 100 && (
-        <div
-          className="absolute top-0 h-full w-24 animate-pulse"
-          style={{
-            right: `${100 - progress}%`,
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-          }}
-        />
-      )}
     </div>
   )
 }

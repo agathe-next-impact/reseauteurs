@@ -4,19 +4,19 @@ import config from './payload.config'
 // ─── Referentiel ────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { label: 'Objets publicitaires', value: 'objets-publicitaires', couleur: '#1e40af', ordre: 1 },
-  { label: 'Textile promotionnel', value: 'textile-promotionnel', couleur: '#0284c7', ordre: 2 },
+  { label: 'Objets publicitaires', value: 'objets-publicitaires', couleur: '#01365F', ordre: 1 },
+  { label: 'Textile promotionnel', value: 'textile-promotionnel', couleur: '#8A6D0B', ordre: 2 },
   { label: 'Cadeaux d\'entreprise', value: 'cadeaux-entreprise', couleur: '#dc2626', ordre: 3 },
-  { label: 'Signalétique & PLV', value: 'signaletique-plv', couleur: '#ea580c', ordre: 4 },
+  { label: 'Signalétique & PLV', value: 'signaletique-plv', couleur: '#D9BE1F', ordre: 4 },
   { label: 'Packaging personnalisé', value: 'packaging-personnalise', couleur: '#0d9488', ordre: 5 },
-  { label: 'Impression numérique', value: 'impression-numerique', couleur: '#4f46e5', ordre: 6 },
+  { label: 'Impression numérique', value: 'impression-numerique', couleur: '#2E6389', ordre: 6 },
 ]
 
 const TYPES_EVENEMENT = [
-  { label: 'Salon', value: 'salon', couleur: '#2563eb', ordre: 1 },
+  { label: 'Salon', value: 'salon', couleur: '#035AA6', ordre: 1 },
   { label: 'Portes ouvertes', value: 'portes-ouvertes', couleur: '#16a34a', ordre: 2 },
-  { label: 'Formation', value: 'formation', couleur: '#d97706', ordre: 3 },
-  { label: 'Webinaire', value: 'webinaire', couleur: '#0284c7', ordre: 4 },
+  { label: 'Formation', value: 'formation', couleur: '#C9AE18', ordre: 3 },
+  { label: 'Webinaire', value: 'webinaire', couleur: '#8A6D0B', ordre: 4 },
 ]
 
 // ─── Utilisateurs de demo ───────────────────────────────────────────────────

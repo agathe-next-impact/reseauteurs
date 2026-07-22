@@ -10,6 +10,7 @@
 import { useCallback, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { DebouncedFilterInput } from './DebouncedFilterInput'
 
 interface ReseauteursFiltersProps {
   categories: Array<{ id: string | number; label: string }>
@@ -42,36 +43,46 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
 
   const hasFilters = Object.values(current).some(Boolean)
 
-  function update(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
-    }
-    params.delete('page') // reset pagination
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`)
-    })
-  }
+  const update = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (value) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+      params.delete('page') // reset pagination
+      startTransition(() => {
+        // scroll: false — filtrer ne doit pas renvoyer l'utilisateur en haut de page.
+        router.push(`${pathname}?${params.toString()}`, { scroll: false })
+      })
+    },
+    [router, pathname, searchParams],
+  )
 
   const reset = useCallback(() => {
+    // Conserve la vue courante : sans `vue`, /reseauteurs retombe sur la carte
+    // et l'utilisateur perd l'annuaire en effaçant ses filtres.
+    const params = new URLSearchParams()
+    const vue = searchParams.get('vue')
+    if (vue) params.set('vue', vue)
+    const qs = params.toString()
     startTransition(() => {
-      router.push(pathname)
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
     })
-  }, [router, pathname])
+  }, [router, pathname, searchParams])
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e4e4e7] p-4 space-y-4">
+    <div className="bg-white rounded-2xl border border-[#DFE0E1] p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+        <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
           <SlidersHorizontal size={14} aria-hidden />
           Filtrer
         </h2>
         {hasFilters && (
           <button
             onClick={reset}
-            className="text-xs text-[#71717a] hover:text-[#2563EB] flex items-center gap-1 cursor-pointer transition-colors"
+            className="text-xs text-[#6E7175] hover:text-[#035AA6] flex items-center gap-1 cursor-pointer transition-colors"
             aria-label="Effacer tous les filtres"
           >
             <X size={12} aria-hidden />
@@ -82,18 +93,18 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
 
       {/* Recherche nom/entreprise */}
       <div>
-        <label htmlFor="filter-q" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="filter-q" className="block text-xs font-medium text-[#4E5155] mb-1">
           Nom ou entreprise
         </label>
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a1a1aa]" aria-hidden />
-          <input
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#999A9D]" aria-hidden />
+          <DebouncedFilterInput
             id="filter-q"
             type="search"
-            value={current.q}
-            onChange={(e) => update('q', e.target.value)}
+            urlValue={current.q}
+            onCommit={(v) => update('q', v)}
             placeholder="Jean Dupont, Dupont SARL…"
-            className="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
+            className="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent"
             autoComplete="off"
           />
         </div>
@@ -101,45 +112,60 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
 
       {/* Ville */}
       <div>
-        <label htmlFor="filter-ville" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="filter-ville" className="block text-xs font-medium text-[#4E5155] mb-1">
           Ville
         </label>
-        <input
+        <DebouncedFilterInput
           id="filter-ville"
           type="text"
-          value={current.ville}
-          onChange={(e) => update('ville', e.target.value)}
+          urlValue={current.ville}
+          onCommit={(v) => update('ville', v)}
           placeholder="Paris, Lyon, Bordeaux…"
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent"
           autoComplete="address-level2"
         />
       </div>
 
       {/* Département */}
       <div>
-        <label htmlFor="filter-dept" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="filter-dept" className="block text-xs font-medium text-[#4E5155] mb-1">
           Département
         </label>
-        <input
+        <DebouncedFilterInput
           id="filter-dept"
           type="text"
-          value={current.departement}
-          onChange={(e) => update('departement', e.target.value)}
+          urlValue={current.departement}
+          onCommit={(v) => update('departement', v)}
           placeholder="Rhône, Puy-de-Dôme…"
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent"
+        />
+      </div>
+
+      {/* Région — le serveur filtrait déjà `region`, il manquait le contrôle. */}
+      <div>
+        <label htmlFor="filter-region" className="block text-xs font-medium text-[#4E5155] mb-1">
+          Région
+        </label>
+        <DebouncedFilterInput
+          id="filter-region"
+          type="text"
+          urlValue={current.region}
+          onCommit={(v) => update('region', v)}
+          placeholder="Auvergne-Rhône-Alpes…"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent"
         />
       </div>
 
       {/* Badge */}
       <div>
-        <label htmlFor="filter-badge" className="block text-xs font-medium text-[#52525b] mb-1">
+        <label htmlFor="filter-badge" className="block text-xs font-medium text-[#4E5155] mb-1">
           Badge
         </label>
         <select
           id="filter-badge"
           value={current.badge}
           onChange={(e) => update('badge', e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent cursor-pointer"
         >
           {BADGES.map((b) => (
             <option key={b.value} value={b.value}>{b.label}</option>
@@ -150,14 +176,14 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
       {/* Réseau */}
       {reseaux.length > 0 && (
         <div>
-          <label htmlFor="filter-reseau" className="block text-xs font-medium text-[#52525b] mb-1">
+          <label htmlFor="filter-reseau" className="block text-xs font-medium text-[#4E5155] mb-1">
             Réseau
           </label>
           <select
             id="filter-reseau"
             value={current.reseau}
             onChange={(e) => update('reseau', e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent cursor-pointer"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent cursor-pointer"
           >
             <option value="">Tous les réseaux</option>
             {reseaux.map((r) => (
@@ -170,14 +196,14 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
       {/* Secteur */}
       {categories.length > 0 && (
         <div>
-          <label htmlFor="filter-secteur" className="block text-xs font-medium text-[#52525b] mb-1">
+          <label htmlFor="filter-secteur" className="block text-xs font-medium text-[#4E5155] mb-1">
             Secteur d&apos;activité
           </label>
           <select
             id="filter-secteur"
             value={current.secteur}
             onChange={(e) => update('secteur', e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-xl border border-[#e4e4e7] bg-[#faf9f5] text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent cursor-pointer"
+            className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent cursor-pointer"
           >
             <option value="">Tous les secteurs</option>
             {categories.map((c) => (
@@ -188,7 +214,7 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
       )}
 
       {isPending && (
-        <p className="text-xs text-center text-[#71717a] animate-pulse" aria-live="polite">
+        <p className="text-xs text-center text-[#6E7175] animate-pulse" aria-live="polite">
           Mise à jour…
         </p>
       )}

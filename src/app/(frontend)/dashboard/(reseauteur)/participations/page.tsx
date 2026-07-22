@@ -105,15 +105,15 @@ export default async function ParticipationsPage() {
         <Reveal>
           <Link
             href="/dashboard/profil"
-            className="text-sm text-[#71717a] hover:text-[#2563EB] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
+            className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
             <ArrowLeft size={14} aria-hidden /> Mon profil
           </Link>
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2 mb-2">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
             <CalendarCheck size={20} aria-hidden />
             Mes participations
           </h1>
-          <p className="text-sm text-[#71717a] mb-8">
+          <p className="text-sm text-[#6E7175] mb-8">
             Signalez votre présence aux événements des réseaux que vous fréquentez. Cette
             information apparaît sur votre fiche publique et sur la fiche de chaque événement.
           </p>
@@ -121,23 +121,23 @@ export default async function ParticipationsPage() {
 
         {reseauIds.length === 0 ? (
           <div className="rsn-card rounded-2xl border-dashed p-10 text-center">
-            <p className="text-sm font-medium text-[#52525b] mb-2">
+            <p className="text-sm font-medium text-[#4E5155] mb-2">
               Vous ne fréquentez aucun réseau pour l&apos;instant.
             </p>
-            <p className="text-sm text-[#71717a] mb-4">
+            <p className="text-sm text-[#6E7175] mb-4">
               Ajoutez vos réseaux dans votre profil pour voir leurs événements ici.
             </p>
             <Link
               href="/dashboard/profil"
-              className="text-sm text-[#2563EB] font-medium no-underline"
+              className="text-sm text-[#035AA6] font-medium no-underline"
             >
               Compléter mon profil →
             </Link>
           </div>
         ) : events.length === 0 ? (
           <div className="rsn-card rounded-2xl border-dashed p-10 text-center">
-            <p className="text-sm font-medium text-[#52525b] mb-1">Aucun événement à venir</p>
-            <p className="text-sm text-[#71717a]">
+            <p className="text-sm font-medium text-[#4E5155] mb-1">Aucun événement à venir</p>
+            <p className="text-sm text-[#6E7175]">
               Les réseaux que vous fréquentez n&apos;ont pas encore publié d&apos;événement à venir.
             </p>
           </div>

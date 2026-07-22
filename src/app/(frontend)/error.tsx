@@ -23,13 +23,13 @@ export default function FrontendError({
       <div className="flex gap-3">
         <button
           onClick={reset}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-md bg-blue-600 p-2.5 text-sm font-medium text-white hover:bg-blue-700"
         >
           Réessayer
         </button>
         <a
           href="/"
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-md border border-gray-300 p-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           Retour a l&apos;accueil
         </a>

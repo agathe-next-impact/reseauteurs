@@ -22,7 +22,7 @@ export function accountLockedEmail(
     ${paragraph(`Si vous avez oublié votre mot de passe, reinitialisez-le immediatement sans attendre le deverrouillage automatique.`)}
     ${button({ href: resetUrl, label: 'Réinitialiser mon mot de passe', variant: 'primary' })}
     ${fallbackUrl(resetUrl)}
-    ${paragraph(`Si ce n'etait pas vous, quelqu'un a peut-être essaye d'acceder à votre compte. Contactez notre support a <a href="mailto:${CONTACT_EMAIL}" style="color:#6b7280">${CONTACT_EMAIL}</a> et changez votre mot de passe dès que possible.`)}
+    ${paragraph(`Si ce n'etait pas vous, quelqu'un a peut-être essaye d'acceder à votre compte. Contactez notre support a <a href="mailto:${CONTACT_EMAIL}" style="color:#6E7175">${CONTACT_EMAIL}</a> et changez votre mot de passe dès que possible.`)}
   `
   return renderEmail({
     preheader: `Compte verrouille ${unlockMinutes} minutes après plusieurs tentatives echouees.`,

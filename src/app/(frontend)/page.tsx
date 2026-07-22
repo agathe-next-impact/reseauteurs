@@ -70,14 +70,15 @@ const RESEAUX_CONNUS = [
   'Initiative France',
 ]
 
-// Palette de charts (tokens marque : bleu → ciel → orange → violet → vert → jaune)
-const CHART_COLORS = ['#2563EB', '#0284c7', '#f5851f', '#a855f7', '#22c55e', '#eab308']
+// Palette de charts — dérivée de la palette de marque
+// (bleu profond → bleu médian → bleu clair → jaune → or foncé → gris)
+const CHART_COLORS = ['#035AA6', '#3E7CA6', '#8BB4D9', '#F5E050', '#8A6D0B', '#999A9D']
 
 const BADGE_META = [
-  { key: 'bronze', label: 'Bronze', color: '#b45309' },
-  { key: 'argent', label: 'Argent', color: '#71717a' },
-  { key: 'gold', label: 'Gold', color: '#f5851f' },
-  { key: 'platinum', label: 'Platinum', color: '#2563EB' },
+  { key: 'bronze', label: 'Bronze', color: '#8A6D0B' },
+  { key: 'argent', label: 'Argent', color: '#6E7175' },
+  { key: 'gold', label: 'Gold', color: '#F5E050' },
+  { key: 'platinum', label: 'Platinum', color: '#035AA6' },
 ] as const
 
 type TopReseau = { nom: string; slug?: string | null; nbReseauteurs: number; nbEvenements: number }
@@ -358,7 +359,7 @@ export default async function HomePage() {
                     </div>
                     <div className="rsn-hd-trend">
                       <p className="rsn-hd-cell-title">Croissance de la communauté</p>
-                      <TrendArea data={growthSeries} height={88} color="#38bdf8" showDots />
+                      <TrendArea data={growthSeries} height={88} color="#8BB4D9" showDots />
                     </div>
                   </div>
                   <div className="rsn-hero-dash-side">
@@ -387,10 +388,10 @@ export default async function HomePage() {
 
       {/* ─── BANDEAU RÉSEAUX (marquee — « on les rassemble ») ─── */}
       <section
-        className="bg-white border-b border-[#e4e4e7] py-10"
+        className="bg-white border-b border-[#DFE0E1] py-10"
         aria-label="Réseaux d'affaires référencés"
       >
-        <p className="text-center text-xs font-semibold uppercase tracking-widest text-[#71717a] mb-6">
+        <p className="text-center text-xs font-semibold uppercase tracking-widest text-[#6E7175] mb-6">
           Tous les réseaux réunis
         </p>
         <div className="rsn-marquee-mask">
@@ -477,7 +478,7 @@ export default async function HomePage() {
               </span>
               <span className="rsn-strip-title">{title}</span>
               <span className="rsn-strip-desc">{desc}</span>
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] mt-1">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#035AA6] mt-1">
                 Découvrir
                 <ArrowRight size={14} aria-hidden className="rsn-arrow" />
               </span>
@@ -496,7 +497,7 @@ export default async function HomePage() {
                 Le cœur du modèle
               </p>
               <h2 id="trois-piliers-titre" className="rsn-h2 mx-auto">
-                Trois entités, une plateforme
+                Trois entités, <span>une plateforme</span>
               </h2>
               <p className="rsn-sub mx-auto">
                 Réseauteurs, événements, réseaux — tout ce que vous cherchez dans le networking
@@ -513,8 +514,7 @@ export default async function HomePage() {
                 desc: 'Trouvez les professionnels qui réseautent près de chez vous. Entrepreneurs, dirigeants, indépendants — visibles sur la carte.',
                 href: '/reseauteurs',
                 cta: 'Voir les réseauteurs',
-                color: '#2563EB',
-                bg: 'bg-[#bfdbfe]/40',
+                color: '#035AA6',
               },
               {
                 icon: Calendar,
@@ -522,8 +522,7 @@ export default async function HomePage() {
                 desc: 'Tous les événements business — afterworks, petits-déjeuners, conférences, réunions de réseaux — sur une seule carte.',
                 href: '/evenements',
                 cta: 'Voir les événements',
-                color: '#0284c7',
-                bg: 'bg-[#e0f2fe]/60',
+                color: '#8A6D0B',
               },
               {
                 icon: Network,
@@ -531,21 +530,17 @@ export default async function HomePage() {
                 desc: "Découvrez tous les réseaux d'affaires (BNI, DCF, CJD, Dynabuy…), leurs membres, leurs événements et leurs spécialités.",
                 href: '/reseaux',
                 cta: 'Voir les réseaux',
-                color: '#f5851f',
-                bg: 'bg-[#ffedd5]/60',
+                color: '#3E7CA6',
               },
-            ].map(({ icon: Icon, title, desc, href, cta, color, bg }, i) => (
+            ].map(({ icon: Icon, title, desc, href, cta, color }, i) => (
               <Reveal key={title} delay={i * 90}>
-                <div className="bg-white border border-[#e4e4e7] p-6 flex flex-col gap-4 rsn-lift h-full">
-                  <div
-                    className={`w-12 h-12 ${bg} flex items-center justify-center`}
-                    style={{ color }}
-                  >
-                    <Icon size={24} aria-hidden />
+                <div className="bg-white border border-[#DFE0E1] p-6 flex flex-col gap-4 rsn-lift h-full">
+                  <div className="flex items-center" style={{ color }}>
+                    <Icon size={26} aria-hidden />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-[#16284f] mb-2">{title}</h3>
-                    <p className="text-sm text-[#52525b] leading-relaxed">{desc}</p>
+                    <h3 className="text-lg font-bold text-[#012A4A] mb-2">{title}</h3>
+                    <p className="text-sm text-[#4E5155] leading-relaxed">{desc}</p>
                   </div>
                   <div className="mt-auto pt-2">
                     <Link
@@ -565,7 +560,7 @@ export default async function HomePage() {
       </section>
 
       {/* ─── VUE D'ENSEMBLE (donut badges — style « gauge ») ──── */}
-      <section className="bg-white border-y border-[#e4e4e7] py-16" aria-labelledby="apercu-titre">
+      <section className="bg-white border-y border-[#DFE0E1] py-16" aria-labelledby="apercu-titre">
         <div className="px-6">
           <Reveal>
             <div className="rsn-split">
@@ -575,7 +570,7 @@ export default async function HomePage() {
                   Vue d&apos;ensemble
                 </p>
                 <h2 id="apercu-titre" className="rsn-h2">
-                  La communauté en un coup d&apos;œil
+                  La communauté <span>en un coup d&apos;œil</span>
                 </h2>
                 <p className="rsn-sub">
                   Chaque réseauteur affiche un badge selon son activité de networking : plus il
@@ -664,11 +659,11 @@ export default async function HomePage() {
       </section>
 
       {/* ─── COMMENT ÇA FONCTIONNE ────────────────────────────── */}
-      <section className="bg-white border-y border-[#e4e4e7] py-16" aria-labelledby="comment-titre">
+      <section className="bg-white border-y border-[#DFE0E1] py-16" aria-labelledby="comment-titre">
         <div className="px-6">
           <Reveal>
             <h2 id="comment-titre" className="rsn-h2 text-center mx-auto mb-12">
-              Comment ça fonctionne
+              Comment <span>ça fonctionne</span>
             </h2>
           </Reveal>
           <Reveal>
@@ -678,22 +673,22 @@ export default async function HomePage() {
                   step: '1',
                   title: 'Créez votre profil gratuit',
                   desc: 'Renseignez votre prénom, nom, ville, métier et les réseaux que vous fréquentez. Gratuit, en moins de 2 minutes.',
-                  color: '#2563EB',
-                  bg: '#bfdbfe',
+                  color: '#035AA6',
+                  bg: '#A9C9E4',
                 },
                 {
                   step: '2',
                   title: 'Apparaissez sur la carte',
                   desc: 'Votre profil est visible sur la carte des réseauteurs de votre ville. Les professionnels vous trouvent par métier, secteur ou réseau.',
-                  color: '#0284c7',
-                  bg: '#e0f2fe',
+                  color: '#8A6D0B',
+                  bg: '#FBF4D3',
                 },
                 {
                   step: '3',
                   title: 'Trouvez et soyez trouvé',
                   desc: 'Explorez les profils, parcourez les événements de networking, et rejoignez les réseaux qui vous correspondent.',
-                  color: '#f5851f',
-                  bg: '#ffedd5',
+                  color: '#3E7CA6',
+                  bg: '#E7F0F7',
                 },
               ].map(({ step, title, desc, color, bg }) => (
                 <li key={step} className="flex flex-col items-center text-center gap-4 list-none">
@@ -705,8 +700,8 @@ export default async function HomePage() {
                     {step}
                   </span>
                   <div>
-                    <h3 className="font-bold text-[#16284f] mb-1.5">{title}</h3>
-                    <p className="text-sm text-[#52525b] leading-relaxed">{desc}</p>
+                    <h3 className="font-bold text-[#012A4A] mb-1.5">{title}</h3>
+                    <p className="text-sm text-[#4E5155] leading-relaxed">{desc}</p>
                   </div>
                 </li>
               ))}
@@ -733,9 +728,9 @@ export default async function HomePage() {
             </h2>
           </Reveal>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 mb-14">
-            <DarkStat value={reseauteurCount} label="Réseauteurs" color="#93c5fd" />
-            <DarkStat value={evenementCount} label="Événements" color="#c4b5fd" />
-            <DarkStat value={reseauCount} label="Réseaux référencés" color="#fed7aa" />
+            <DarkStat value={reseauteurCount} label="Réseauteurs" color="#8BB4D9" />
+            <DarkStat value={evenementCount} label="Événements" color="#F5E050" />
+            <DarkStat value={reseauCount} label="Réseaux référencés" color="#6BA0CD" />
             <DarkStat value={0} label="Villes couvertes" color="#86efac" placeholder="Bientôt" />
           </div>
 
@@ -745,7 +740,7 @@ export default async function HomePage() {
               style={{ background: 'rgba(255,255,255,0.03)' }}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-[#d4d4d8]">
+                <span className="text-sm font-semibold text-[#CFD0D2]">
                   Croissance de la communauté
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#86efac]">
@@ -753,7 +748,7 @@ export default async function HomePage() {
                   {reseauteurCount > 0 ? 'en progression' : 'aperçu'}
                 </span>
               </div>
-              <TrendArea data={growthSeries} height={150} color="#60a5fa" showDots />
+              <TrendArea data={growthSeries} height={150} color="#6BA0CD" showDots />
             </div>
           </Reveal>
         </div>
@@ -770,7 +765,7 @@ export default async function HomePage() {
                   Couverture nationale
                 </p>
                 <h2 id="couverture-titre" className="rsn-h2">
-                  Partout où l&apos;on réseaute en France
+                  Partout où l&apos;on réseaute <span>en France</span>
                 </h2>
                 <p className="rsn-sub">
                   De Paris à Marseille, de Lyon à Lille : les réseauteurs, les événements et les
@@ -824,16 +819,16 @@ export default async function HomePage() {
 
       {/* ─── BANDEAU PARTENAIRES (orange — B2B) ───────────────── */}
       <section
-        className="py-16 bg-[#fff7ed] border-y border-[#fed7aa]"
+        className="py-16 bg-[#FEFBE6] border-y border-[#EFE08F]"
         aria-labelledby="partenaires-titre"
       >
         <div className="px-6">
           <Reveal>
             <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#c2410c] mb-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#8A6D0B] mb-2">
                 Nos entreprises partenaires
               </p>
-              <h2 id="partenaires-titre" className="text-2xl font-bold text-[#16284f]">
+              <h2 id="partenaires-titre" className="text-2xl font-bold text-[#012A4A]">
                 Elles soutiennent le networking français
               </h2>
             </div>
@@ -853,7 +848,7 @@ export default async function HomePage() {
                     className="h-8 w-auto object-contain"
                   />
                 ) : (
-                  <span className="text-sm font-semibold text-[#c2410c]">{p.nom}</span>
+                  <span className="text-sm font-semibold text-[#8A6D0B]">{p.nom}</span>
                 )
                 return p.lien ? (
                   <a
@@ -861,7 +856,7 @@ export default async function HomePage() {
                     href={p.lien}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-3 border border-[#fed7aa] bg-white rsn-lift no-underline"
+                    className="flex items-center gap-2 px-4 py-3 border border-[#EFE08F] bg-white rsn-lift no-underline"
                     title={p.nom}
                   >
                     {inner}
@@ -869,7 +864,7 @@ export default async function HomePage() {
                 ) : (
                   <span
                     key={p.id}
-                    className="flex items-center gap-2 px-4 py-3 border border-[#fed7aa] bg-white"
+                    className="flex items-center gap-2 px-4 py-3 border border-[#EFE08F] bg-white"
                   >
                     {inner}
                   </span>
@@ -879,7 +874,7 @@ export default async function HomePage() {
           )}
 
           <div className="text-center">
-            <p className="text-sm text-[#71717a] mb-3">
+            <p className="text-sm text-[#6E7175] mb-3">
               Vous représentez un réseau d&apos;affaires ou une entreprise ?
             </p>
             <Link
@@ -897,14 +892,14 @@ export default async function HomePage() {
 
       {/* ─── NEWSLETTER ───────────────────────────────────────── */}
       <section
-        className="py-16 bg-white border-b border-[#e4e4e7]"
+        className="py-16 bg-white border-b border-[#DFE0E1]"
         aria-labelledby="newsletter-titre"
       >
         <div className="flex flex-col items-center max-w-lg mx-auto px-6 text-center gap-4">
-          <h2 id="newsletter-titre" className="text-xl font-bold text-[#16284f] mb-2">
+          <h2 id="newsletter-titre" className="text-xl font-bold text-[#012A4A] mb-2">
             Restez informé
           </h2>
-          <p className="text-sm text-[#52525b] mb-6">
+          <p className="text-sm text-[#4E5155] mb-6">
             Nouveaux réseauteurs, événements à venir, actualités du networking près de chez vous.
           </p>
           {/* Newsletter à venir (décision produit 2026-06-29) — collecte non branchée,
@@ -923,18 +918,18 @@ export default async function HomePage() {
               placeholder="votre@email.fr"
               disabled
               autoComplete="email"
-              className="w-full sm:w-flex-1 px-4 py-2.5 border border-[#e4e4e7] text-sm bg-[#f4f4f5] text-[#a1a1aa] placeholder:text-[#a1a1aa] cursor-not-allowed"
+              className="w-full sm:w-flex-1 px-4 py-2.5 border border-[#DFE0E1] text-sm bg-[#E9E9EA] text-[#999A9D] placeholder:text-[#999A9D] cursor-not-allowed"
             />
             <button
               type="button"
               disabled
               aria-disabled="true"
-              className="px-5 py-2.5 bg-[#a1a1aa] text-white font-semibold text-sm cursor-not-allowed"
+              className="p-2.5 bg-[#999A9D] text-white font-semibold text-sm cursor-not-allowed"
             >
               Bientôt disponible
             </button>
           </div>
-          <p className="text-xs text-[#a1a1aa] mt-3">
+          <p className="text-xs text-[#999A9D] mt-3">
             Inscription à la newsletter bientôt disponible.
           </p>
         </div>
@@ -960,7 +955,7 @@ function DarkStat({
       <p className="text-3xl sm:text-4xl font-extrabold mb-1" style={{ color }}>
         {placeholder ? placeholder : value > 0 ? <CountUp value={value} suffix="+" /> : '—'}
       </p>
-      <p className="text-sm text-[#a1a1aa] font-medium">{label}</p>
+      <p className="text-sm text-[#999A9D] font-medium">{label}</p>
     </div>
   )
 }

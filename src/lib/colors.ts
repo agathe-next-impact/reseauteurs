@@ -1,7 +1,7 @@
 /** Couleurs speciales (non liees a une categorie dynamique) */
 export const SPECIAL_COLORS = {
-  'gratuit': '#9ca3af',
-  'evenement-national': '#0891b2',
+  'gratuit': '#999A9D',
+  'evenement-national': '#8A6D0B',
 } as const
 
 /**

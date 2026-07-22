@@ -293,7 +293,7 @@ export default async function EvenementsPage({
   return (
     <div className="rsn-page min-h-screen">
       {/* Barre de navigation + vue */}
-      <div className="bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-2.5 flex items-center gap-3">
+      <div className="bg-white border-b border-[#DFE0E1] px-4 sm:px-6 py-2.5 flex items-center gap-3">
         <Suspense fallback={null}>
           <EntiteVueToggle entite="evenements" vue="agenda" />
         </Suspense>
@@ -302,14 +302,14 @@ export default async function EvenementsPage({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* En-tête */}
         <Reveal className="mb-6">
-          <p className="rsn-eyebrow mb-2 text-[#0284c7]">
+          <p className="rsn-eyebrow mb-2 text-[#8A6D0B]">
             <Calendar size={13} aria-hidden />
             Agenda des événements
           </p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16284f] mb-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#012A4A] mb-1">
             Événements
           </h1>
-          <p className="text-sm text-[#71717a]">
+          <p className="text-sm text-[#6E7175]">
             {totalDocs > 0
               ? `${totalDocs.toLocaleString('fr-FR')} événement${totalDocs > 1 ? 's' : ''} à venir`
               : 'Aucun événement pour l\'instant'}
@@ -321,7 +321,7 @@ export default async function EvenementsPage({
           <aside className="lg:w-64 shrink-0" aria-label="Filtres événements">
             <Suspense
               fallback={
-                <div className="h-48 rounded-2xl bg-white border border-[#e4e4e7] animate-pulse" />
+                <div className="h-48 rounded-2xl bg-white border border-[#DFE0E1] animate-pulse" />
               }
             >
               <EvenementsClientFilters reseaux={reseauxListe} types={typesListe} />
@@ -331,12 +331,12 @@ export default async function EvenementsPage({
           {/* Résultats */}
           <section className="flex-1 min-w-0" aria-label="Événements">
             {docs.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-[#e4e4e7] p-12 text-center">
-                <Calendar size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-                <p className="text-sm font-medium text-[#52525b] mb-2">
+              <div className="bg-white rounded-2xl border border-dashed border-[#DFE0E1] p-12 text-center">
+                <Calendar size={32} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+                <p className="text-sm font-medium text-[#4E5155] mb-2">
                   Aucun événement ne correspond à ces critères
                 </p>
-                <p className="text-sm text-[#71717a]">
+                <p className="text-sm text-[#6E7175]">
                   Les événements à venir apparaîtront ici. Revenez bientôt !
                 </p>
               </div>
@@ -376,7 +376,7 @@ export default async function EvenementsPage({
                         <article
                           key={ev.id}
                           role="listitem"
-                          className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden rsn-lift"
+                          className="bg-white rounded-2xl border border-[#DFE0E1] overflow-hidden rsn-lift"
                         >
                           {imageUrl ? (
                             <Link
@@ -395,22 +395,22 @@ export default async function EvenementsPage({
                             </Link>
                           ) : (
                             <div
-                              className="aspect-[2/1] bg-gradient-to-br from-[#e0f2fe]/40 to-[#bfdbfe]/20"
+                              className="aspect-[2/1] bg-[#FBF4D3]"
                               aria-hidden
                             />
                           )}
                           <div className="p-4 flex flex-col gap-2">
                             <Link
                               href={`/evenement/${ev.slug}`}
-                              className="text-sm font-bold text-[#16284f] hover:text-[#0284c7] no-underline transition-colors leading-tight line-clamp-2"
+                              className="text-sm font-bold text-[#012A4A] hover:text-[#8A6D0B] no-underline transition-colors leading-tight line-clamp-2"
                             >
                               {ev.titre}
                             </Link>
-                            <div className="flex items-center gap-1.5 text-xs text-[#71717a]">
+                            <div className="flex items-center gap-1.5 text-xs text-[#6E7175]">
                               <Calendar size={11} aria-hidden />
                               <time dateTime={ev.dateDebut}>{dateStr}</time>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-[#71717a]">
+                            <div className="flex items-center gap-1.5 text-xs text-[#6E7175]">
                               <MapPin size={11} aria-hidden />
                               {ev.lieuVille}
                             </div>
@@ -419,18 +419,18 @@ export default async function EvenementsPage({
                             {reseau && (
                               <Link
                                 href={`/reseau/${reseau.slug}`}
-                                className="inline-flex items-center gap-1.5 text-xs text-[#52525b] hover:text-[#0284c7] no-underline transition-colors font-medium"
+                                className="inline-flex items-center gap-1.5 text-xs text-[#4E5155] hover:text-[#8A6D0B] no-underline transition-colors font-medium"
                               >
-                                <span className="w-2 h-2 rounded-full bg-[#16284f] shrink-0" aria-hidden />
+                                <span className="w-2 h-2 rounded-full bg-[#012A4A] shrink-0" aria-hidden />
                                 {reseau.nom}
                               </Link>
                             )}
                             {!reseau && orgRz && (
                               <Link
                                 href={`/reseauteur/${orgRz.slug}`}
-                                className="inline-flex items-center gap-1.5 text-xs text-[#c2410c] hover:text-[#9a3412] no-underline transition-colors font-medium"
+                                className="inline-flex items-center gap-1.5 text-xs text-[#8A6D0B] hover:text-[#6E5608] no-underline transition-colors font-medium"
                               >
-                                <span className="w-2 h-2 rounded-full bg-[#f5851f] shrink-0" aria-hidden />
+                                <span className="w-2 h-2 rounded-full bg-[#F5E050] shrink-0" aria-hidden />
                                 Par {orgRz.prenom} {orgRz.nom}
                               </Link>
                             )}
@@ -439,7 +439,7 @@ export default async function EvenementsPage({
                                 href={lienSafe}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0284c7] hover:text-[#0369a1] no-underline transition-colors"
+                                className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[#8A6D0B] hover:text-[#6E5608] no-underline transition-colors"
                                 aria-label={`S'inscrire à ${ev.titre} (lien externe)`}
                               >
                                 <ExternalLink size={11} aria-hidden />
@@ -458,17 +458,17 @@ export default async function EvenementsPage({
                     {page > 1 && (
                       <Link
                         href={`/evenements?${new URLSearchParams({ ...sp, page: String(page - 1) }).toString()}`}
-                        className="px-4 py-2 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#0284c7] hover:text-[#0284c7] no-underline transition-colors"
+                        className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#8A6D0B] hover:text-[#8A6D0B] no-underline transition-colors"
                         aria-label="Page précédente"
                       >
                         ← Précédente
                       </Link>
                     )}
-                    <span className="text-sm text-[#71717a]">Page {page} / {totalPages}</span>
+                    <span className="text-sm text-[#6E7175]">Page {page} / {totalPages}</span>
                     {page < totalPages && (
                       <Link
                         href={`/evenements?${new URLSearchParams({ ...sp, page: String(page + 1) }).toString()}`}
-                        className="px-4 py-2 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#0284c7] hover:text-[#0284c7] no-underline transition-colors"
+                        className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#8A6D0B] hover:text-[#8A6D0B] no-underline transition-colors"
                         aria-label="Page suivante"
                       >
                         Suivante →

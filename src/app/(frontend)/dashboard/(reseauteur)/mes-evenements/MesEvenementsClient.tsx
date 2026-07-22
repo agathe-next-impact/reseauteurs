@@ -71,8 +71,8 @@ export interface MonEvenement {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] transition-colors'
-const labelClass = 'block text-xs font-medium text-[#52525b] mb-1'
+  'w-full rounded-xl border border-[#DFE0E1] bg-white px-3 py-2 text-sm text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6]/30 focus:border-[#035AA6] transition-colors'
+const labelClass = 'block text-xs font-medium text-[#4E5155] mb-1'
 
 /** ISO → valeur datetime-local (heure locale, sans secondes). */
 function toLocalInput(iso: string | null): string {
@@ -179,7 +179,7 @@ export function MesEvenementsClient({
       {/* Formulaire création/édition */}
       {editing !== null ? (
         <form onSubmit={onSubmit} className="rsn-card rounded-2xl p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-[#18181b]">
+          <h2 className="text-sm font-semibold text-[#1D1E21]">
             {current ? `Modifier « ${current.titre} »` : 'Nouvel événement'}
           </h2>
 
@@ -193,13 +193,13 @@ export function MesEvenementsClient({
                   <option key={g.id} value={g.id}>Pour le groupe : {g.nom}</option>
                 ))}
               </select>
-              <p className="text-xs text-[#a1a1aa] mt-1">
+              <p className="text-xs text-[#999A9D] mt-1">
                 Un événement de groupe apparaît au nom du groupe sur sa fiche et sur la carte.
               </p>
             </div>
           )}
           {current?.reseauNom && (
-            <p className="text-xs text-[#71717a] bg-[#fafafa] border border-[#e4e4e7] rounded-xl px-3 py-2">
+            <p className="text-xs text-[#6E7175] bg-[#fafafa] border border-[#DFE0E1] rounded-xl px-3 py-2">
               Événement organisé pour le groupe <strong>{current.reseauNom}</strong> (non modifiable).
             </p>
           )}
@@ -260,7 +260,7 @@ export function MesEvenementsClient({
           />
 
           <fieldset className="space-y-3">
-            <legend className="text-xs font-semibold text-[#52525b]">Lieu</legend>
+            <legend className="text-xs font-semibold text-[#4E5155]">Lieu</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="lieuNom" className={labelClass}>Nom du lieu</label>
@@ -283,14 +283,14 @@ export function MesEvenementsClient({
                 <input id="lieuDepartement" name="lieuDepartement" type="text" maxLength={100} placeholder="Rhône, Paris…" defaultValue={current?.lieuDepartement ?? ''} className={inputClass} />
               </div>
             </div>
-            <p className="text-xs text-[#a1a1aa]">L&apos;adresse est géocodée automatiquement pour la carte.</p>
+            <p className="text-xs text-[#999A9D]">L&apos;adresse est géocodée automatiquement pour la carte.</p>
           </fieldset>
 
           {/* Participation */}
           <fieldset className="space-y-3 pt-1">
-            <legend className="text-xs font-semibold text-[#52525b]">Participation</legend>
-            <label className="flex items-center gap-2 text-sm text-[#18181b]">
-              <input type="checkbox" name="gratuit" defaultChecked={current ? current.gratuit : true} className="rounded border-[#e4e4e7]" />
+            <legend className="text-xs font-semibold text-[#4E5155]">Participation</legend>
+            <label className="flex items-center gap-2 text-sm text-[#1D1E21]">
+              <input type="checkbox" name="gratuit" defaultChecked={current ? current.gratuit : true} className="rounded border-[#DFE0E1]" />
               Événement gratuit
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -340,7 +340,7 @@ export function MesEvenementsClient({
 
           {/* Contact */}
           <fieldset className="space-y-3 pt-1">
-            <legend className="text-xs font-semibold text-[#52525b]">Contact (facultatif)</legend>
+            <legend className="text-xs font-semibold text-[#4E5155]">Contact (facultatif)</legend>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label htmlFor="contactNom" className={labelClass}>Nom</label>
@@ -359,14 +359,14 @@ export function MesEvenementsClient({
 
           {/* Infos pratiques */}
           <fieldset className="space-y-3 pt-1">
-            <legend className="text-xs font-semibold text-[#52525b]">Informations pratiques</legend>
+            <legend className="text-xs font-semibold text-[#4E5155]">Informations pratiques</legend>
             <div className="flex flex-wrap gap-4">
-              <label className="flex items-center gap-2 text-sm text-[#18181b]">
-                <input type="checkbox" name="parking" defaultChecked={current?.parking ?? false} className="rounded border-[#e4e4e7]" />
+              <label className="flex items-center gap-2 text-sm text-[#1D1E21]">
+                <input type="checkbox" name="parking" defaultChecked={current?.parking ?? false} className="rounded border-[#DFE0E1]" />
                 Parking disponible
               </label>
-              <label className="flex items-center gap-2 text-sm text-[#18181b]">
-                <input type="checkbox" name="accesPmr" defaultChecked={current?.accesPmr ?? false} className="rounded border-[#e4e4e7]" />
+              <label className="flex items-center gap-2 text-sm text-[#1D1E21]">
+                <input type="checkbox" name="accesPmr" defaultChecked={current?.accesPmr ?? false} className="rounded border-[#DFE0E1]" />
                 Accès PMR
               </label>
             </div>
@@ -380,7 +380,7 @@ export function MesEvenementsClient({
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
+              className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
             >
               {pending && <Loader2 size={15} className="animate-spin" aria-hidden />}
               {current ? 'Enregistrer' : 'Publier l\'événement'}
@@ -389,7 +389,7 @@ export function MesEvenementsClient({
               type="button"
               onClick={() => changeEditing(null)}
               disabled={pending}
-              className="text-sm text-[#71717a] hover:text-[#18181b] transition-colors"
+              className="text-sm text-[#6E7175] hover:text-[#1D1E21] transition-colors"
             >
               Annuler
             </button>
@@ -399,7 +399,7 @@ export function MesEvenementsClient({
         <button
           type="button"
           onClick={() => changeEditing('new')}
-          className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm"
+          className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm"
         >
           <Plus size={15} aria-hidden />
           Nouvel événement
@@ -409,9 +409,9 @@ export function MesEvenementsClient({
       {/* Liste */}
       {evenements.length === 0 && editing === null ? (
         <div className="rsn-card rounded-2xl border-dashed p-10 text-center">
-          <CalendarDays size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-          <p className="text-sm font-medium text-[#52525b] mb-1">Aucun événement pour l&apos;instant</p>
-          <p className="text-sm text-[#71717a]">Publiez votre premier événement de networking.</p>
+          <CalendarDays size={32} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+          <p className="text-sm font-medium text-[#4E5155] mb-1">Aucun événement pour l&apos;instant</p>
+          <p className="text-sm text-[#6E7175]">Publiez votre premier événement de networking.</p>
         </div>
       ) : (
         <ul className="space-y-3" role="list">
@@ -422,40 +422,40 @@ export function MesEvenementsClient({
               <li key={ev.id} className="rsn-card rounded-2xl p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#16284f] truncate">
+                    <p className="text-sm font-semibold text-[#012A4A] truncate">
                       {ev.titre}
-                      {past && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">passé</span>}
+                      {past && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-[#999A9D]">passé</span>}
                       {ev.statut !== 'publie' && <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-amber-600">{ev.statut}</span>}
                       {ev.reseauNom && (
-                        <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-[#a855f7]">
+                        <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-[#3E7CA6]">
                           Pour {ev.reseauNom}
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-[#71717a] flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-[#6E7175] flex items-center gap-2 mt-0.5">
                       <span className="inline-flex items-center gap-1"><CalendarDays size={11} aria-hidden />{d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       <span className="inline-flex items-center gap-1"><MapPin size={11} aria-hidden />{ev.lieuVille}</span>
                     </p>
                   </div>
                   {ev.slug && (
-                    <Link href={`/evenement/${ev.slug}`} target="_blank" className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Voir la fiche de ${ev.titre}`}>
+                    <Link href={`/evenement/${ev.slug}`} target="_blank" className="text-[#999A9D] hover:text-[#035AA6] transition-colors" aria-label={`Voir la fiche de ${ev.titre}`}>
                       <ExternalLink size={15} />
                     </Link>
                   )}
-                  <button type="button" onClick={() => changeEditing(ev)} className="text-[#a1a1aa] hover:text-[#2563EB] transition-colors" aria-label={`Modifier ${ev.titre}`}>
+                  <button type="button" onClick={() => changeEditing(ev)} className="text-[#999A9D] hover:text-[#035AA6] transition-colors" aria-label={`Modifier ${ev.titre}`}>
                     <Pencil size={15} />
                   </button>
-                  <button type="button" onClick={() => onDelete(ev)} disabled={pending} className="text-[#a1a1aa] hover:text-red-600 transition-colors disabled:opacity-50" aria-label={`Supprimer ${ev.titre}`}>
+                  <button type="button" onClick={() => onDelete(ev)} disabled={pending} className="text-[#999A9D] hover:text-red-600 transition-colors disabled:opacity-50" aria-label={`Supprimer ${ev.titre}`}>
                     <Trash2 size={15} />
                   </button>
                 </div>
 
                 {/* Inscrits en ligne (ADR-0013 §3bis) */}
-                <div className="mt-3 pt-3 border-t border-[#f4f4f5]">
+                <div className="mt-3 pt-3 border-t border-[#E9E9EA]">
                   <button
                     type="button"
                     onClick={() => setExpandedInscrits(expandedInscrits === ev.id ? null : ev.id)}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-[#52525b] hover:text-[#2563EB] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4E5155] hover:text-[#035AA6] transition-colors"
                     aria-expanded={expandedInscrits === ev.id}
                     disabled={ev.inscrits.length === 0}
                   >
@@ -475,15 +475,15 @@ export function MesEvenementsClient({
                         <li key={i.reseauteurId} className="flex items-center justify-between gap-2 text-xs py-1">
                           <span className="min-w-0 truncate">
                             {i.slug ? (
-                              <Link href={`/reseauteur/${i.slug}`} target="_blank" className="font-medium text-[#16284f] hover:text-[#2563EB] no-underline">
+                              <Link href={`/reseauteur/${i.slug}`} target="_blank" className="font-medium text-[#012A4A] hover:text-[#035AA6] no-underline">
                                 {i.prenom} {i.nom}
                               </Link>
                             ) : (
-                              <span className="font-medium text-[#16284f]">{i.prenom} {i.nom}</span>
+                              <span className="font-medium text-[#012A4A]">{i.prenom} {i.nom}</span>
                             )}
-                            {i.ville && <span className="text-[#a1a1aa]"> · {i.ville}</span>}
+                            {i.ville && <span className="text-[#999A9D]"> · {i.ville}</span>}
                           </span>
-                          <span className="text-[#a1a1aa] shrink-0">
+                          <span className="text-[#999A9D] shrink-0">
                             {i.dateInscription ? new Date(i.dateInscription).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''}
                           </span>
                         </li>

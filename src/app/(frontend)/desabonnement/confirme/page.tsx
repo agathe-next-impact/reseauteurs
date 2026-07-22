@@ -32,7 +32,7 @@ export default async function DesabonnementConfirmePage({
           </>
         ) : (
           <>
-            <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="flex items-center justify-center mx-auto mb-4">
               <AlertTriangle size={28} className="text-amber-600" />
             </div>
             <p className="text-sm text-text-light mb-6">
@@ -43,7 +43,7 @@ export default async function DesabonnementConfirmePage({
         )}
         <Link
           href="/dashboard/compte"
-          className="inline-flex items-center justify-center px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
+          className="inline-flex items-center justify-center p-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
         >
           Gérer mes préférences
         </Link>

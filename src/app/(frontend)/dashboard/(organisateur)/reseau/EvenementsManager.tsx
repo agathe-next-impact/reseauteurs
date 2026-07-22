@@ -114,8 +114,8 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
   }
 
   const inputClass =
-    'w-full rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] transition-colors'
-  const labelClass = 'block text-xs font-medium text-[#52525b] mb-1'
+    'w-full rounded-xl border border-[#DFE0E1] bg-white px-3 py-2 text-sm text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6]/30 focus:border-[#035AA6] transition-colors'
+  const labelClass = 'block text-xs font-medium text-[#4E5155] mb-1'
 
   const editingEvenement =
     typeof mode === 'object' && 'edit' in mode ? mode.edit : null
@@ -125,12 +125,12 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
       {/* Liste événements */}
       {localEvenements.length === 0 && mode === 'idle' ? (
         <div className="text-center py-6">
-          <Calendar size={28} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-          <p className="text-sm text-[#71717a] mb-4">Aucun événement publié.</p>
+          <Calendar size={28} className="text-[#CFD0D2] mx-auto mb-3" aria-hidden />
+          <p className="text-sm text-[#6E7175] mb-4">Aucun événement publié.</p>
           <button
             type="button"
             onClick={() => changeMode('create')}
-            className="text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] transition-colors"
+            className="text-sm text-[#035AA6] font-medium hover:text-[#02467F] transition-colors"
           >
             Créer le premier événement →
           </button>
@@ -141,9 +141,9 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
             <div
               key={ev.id as string}
               role="listitem"
-              className="flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#d4d4d8] transition-colors"
+              className="flex items-center gap-3 p-3 rounded-xl border border-[#DFE0E1] hover:border-[#CFD0D2] transition-colors"
             >
-              <div className="shrink-0 w-8 h-8 rounded-lg bg-[#eff6ff] flex items-center justify-center text-[#2563EB]" aria-hidden>
+              <div className="shrink-0 flex items-center justify-center text-[#035AA6]" aria-hidden>
                 <Calendar size={14} />
               </div>
               <div className="flex-1 min-w-0">
@@ -151,18 +151,18 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                   {ev.slug ? (
                     <Link
                       href={`/evenement/${ev.slug as string}`}
-                      className="text-sm font-medium text-[#18181b] hover:text-[#2563EB] no-underline transition-colors truncate"
+                      className="text-sm font-medium text-[#1D1E21] hover:text-[#035AA6] no-underline transition-colors truncate"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       {ev.titre as string}
                     </Link>
                   ) : (
-                    <p className="text-sm font-medium text-[#18181b] truncate">{ev.titre as string}</p>
+                    <p className="text-sm font-medium text-[#1D1E21] truncate">{ev.titre as string}</p>
                   )}
                   {/* ADR-0012 : événement Premium supprimé — marqueur unique */}
                 </div>
-                <p className="text-xs text-[#71717a]">
+                <p className="text-xs text-[#6E7175]">
                   {new Date(ev.dateDebut as string).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'short',
@@ -180,7 +180,7 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                 <button
                   type="button"
                   onClick={() => changeMode({ edit: ev })}
-                  className="p-1.5 rounded-lg text-[#71717a] hover:text-[#2563EB] hover:bg-[#eff6ff] transition-colors"
+                  className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#035AA6] hover:bg-[#EFF5FA] transition-colors"
                   aria-label={`Modifier ${ev.titre as string}`}
                 >
                   <Pencil size={13} />
@@ -189,7 +189,7 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                   type="button"
                   onClick={() => handleDelete(ev.id as string | number)}
                   disabled={isPending}
-                  className="p-1.5 rounded-lg text-[#71717a] hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  className="p-2.5 rounded-lg text-[#6E7175] hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
                   aria-label={`Supprimer ${ev.titre as string}`}
                 >
                   <Trash2 size={13} />
@@ -202,15 +202,15 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
 
       {/* Formulaire create / edit */}
       {mode !== 'idle' && (
-        <div className="rounded-2xl border border-[#2563EB]/20 bg-[#eff6ff]/20 p-5 mt-4">
+        <div className="rounded-2xl border border-[#035AA6]/20 bg-[#EFF5FA]/20 p-5 mt-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-[#18181b]">
+            <h3 className="text-sm font-semibold text-[#1D1E21]">
               {mode === 'create' ? 'Nouvel événement' : `Modifier l'événement`}
             </h3>
             <button
               type="button"
               onClick={() => changeMode('idle')}
-              className="p-1 rounded-lg text-[#71717a] hover:text-[#18181b] hover:bg-[#f4f4f5] transition-colors"
+              className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#1D1E21] hover:bg-[#E9E9EA] transition-colors"
               aria-label="Fermer le formulaire"
             >
               <X size={16} />
@@ -325,8 +325,8 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
 
             {/* Récurrence — création uniquement : 1 événement distinct créé par date */}
             {mode === 'create' && (
-              <fieldset className="space-y-3 pt-1 border-t border-[#f4f4f5]">
-                <legend className="text-xs font-semibold text-[#52525b]">Récurrence</legend>
+              <fieldset className="space-y-3 pt-1 border-t border-[#E9E9EA]">
+                <legend className="text-xs font-semibold text-[#4E5155]">Récurrence</legend>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="recurrence" className={labelClass}>Répétition</label>
@@ -357,7 +357,7 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                   )}
                 </div>
                 {recurrence !== 'aucune' && (
-                  <p className="text-xs text-[#a1a1aa]">
+                  <p className="text-xs text-[#999A9D]">
                     Un événement distinct sera créé pour chaque date (26 maximum), modifiable ou
                     supprimable individuellement ensuite.
                   </p>
@@ -422,16 +422,16 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                 defaultValue={editingEvenement?.lienInscription as string ?? ''}
                 className={inputClass}
               />
-              <p className="text-xs text-[#a1a1aa] mt-1">
+              <p className="text-xs text-[#999A9D] mt-1">
                 Le bouton &quot;S&apos;inscrire&quot; redirigera vers cette URL.
               </p>
             </div>
 
             {/* Participation */}
-            <fieldset className="space-y-3 pt-1 border-t border-[#f4f4f5]">
-              <legend className="text-xs font-semibold text-[#52525b]">Participation</legend>
-              <label className="flex items-center gap-2 text-sm text-[#18181b]">
-                <input type="checkbox" name="gratuit" defaultChecked={editingEvenement ? editingEvenement.gratuit !== false : true} className="rounded border-[#e4e4e7]" />
+            <fieldset className="space-y-3 pt-1 border-t border-[#E9E9EA]">
+              <legend className="text-xs font-semibold text-[#4E5155]">Participation</legend>
+              <label className="flex items-center gap-2 text-sm text-[#1D1E21]">
+                <input type="checkbox" name="gratuit" defaultChecked={editingEvenement ? editingEvenement.gratuit !== false : true} className="rounded border-[#DFE0E1]" />
                 Événement gratuit
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -476,8 +476,8 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
             </fieldset>
 
             {/* Contact & infos pratiques */}
-            <fieldset className="space-y-3 pt-1 border-t border-[#f4f4f5]">
-              <legend className="text-xs font-semibold text-[#52525b]">Contact & infos pratiques</legend>
+            <fieldset className="space-y-3 pt-1 border-t border-[#E9E9EA]">
+              <legend className="text-xs font-semibold text-[#4E5155]">Contact & infos pratiques</legend>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label htmlFor="contactNom" className={labelClass}>Contact — nom</label>
@@ -493,12 +493,12 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
                 </div>
               </div>
               <div className="flex flex-wrap gap-4">
-                <label className="flex items-center gap-2 text-sm text-[#18181b]">
-                  <input type="checkbox" name="parking" defaultChecked={editingEvenement?.parking === true} className="rounded border-[#e4e4e7]" />
+                <label className="flex items-center gap-2 text-sm text-[#1D1E21]">
+                  <input type="checkbox" name="parking" defaultChecked={editingEvenement?.parking === true} className="rounded border-[#DFE0E1]" />
                   Parking disponible
                 </label>
-                <label className="flex items-center gap-2 text-sm text-[#18181b]">
-                  <input type="checkbox" name="accesPmr" defaultChecked={editingEvenement?.accesPmr === true} className="rounded border-[#e4e4e7]" />
+                <label className="flex items-center gap-2 text-sm text-[#1D1E21]">
+                  <input type="checkbox" name="accesPmr" defaultChecked={editingEvenement?.accesPmr === true} className="rounded border-[#DFE0E1]" />
                   Accès PMR
                 </label>
               </div>
@@ -518,14 +518,14 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-5 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] disabled:opacity-60 transition-colors"
+                className="p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] disabled:opacity-60 transition-colors"
               >
                 {isPending ? 'Enregistrement…' : mode === 'create' ? 'Publier l\'événement' : 'Enregistrer les modifications'}
               </button>
               <button
                 type="button"
                 onClick={() => changeMode('idle')}
-                className="px-4 py-2.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:bg-[#f4f4f5] transition-colors"
+                className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:bg-[#E9E9EA] transition-colors"
               >
                 Annuler
               </button>
@@ -539,7 +539,7 @@ export function EvenementsManager({ evenements, types }: EvenementsManagerProps)
         <button
           type="button"
           onClick={() => changeMode('create')}
-          className="text-xs text-[#2563EB] hover:text-[#1d4ed8] font-medium transition-colors mt-1"
+          className="text-xs text-[#035AA6] hover:text-[#02467F] font-medium transition-colors mt-1"
         >
           + Ajouter un événement
         </button>

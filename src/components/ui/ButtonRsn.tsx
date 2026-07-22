@@ -1,6 +1,7 @@
 /**
  * ButtonRsn — Bouton primitif RÉSEAUTEURS (tokens DESIGN.md §4).
- * Variantes : primary (bleu), orange (CTA B2B/partenaires), outline, ghost.
+ * Variantes : primary (bleu #035AA6), accent (jaune #F5E050 — CTA B2B/partenaires),
+ * outline, ghost. La variante reste nommée `orange` par compatibilité d'API.
  * Radius ~12px (rounded-xl) ; pills sur les badges (rounded-full).
  * Server Component-compatible : pas de 'use client' dans ce fichier.
  */
@@ -20,19 +21,19 @@ interface ButtonRsnProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#2563EB] text-white hover:bg-[#1d4ed8] focus-visible:outline-[#2563EB] ir-btn-plasma',
+    'bg-[#035AA6] text-white hover:bg-[#02467F] focus-visible:outline-[#035AA6] ir-btn-plasma',
   orange:
-    'bg-[#f5851f] text-white hover:bg-[#e07710] focus-visible:outline-[#f5851f] ir-btn-plasma',
+    'bg-[#F5E050] text-[#012A4A] hover:bg-[#E3CB2E] focus-visible:outline-[#8A6D0B] ir-btn-plasma',
   outline:
-    'bg-white text-[#2563EB] border border-[#2563EB] hover:bg-[#bfdbfe]/20 focus-visible:outline-[#2563EB] ir-btn-outline-plasma',
+    'bg-white text-[#035AA6] border border-[#035AA6] hover:bg-[#A9C9E4]/20 focus-visible:outline-[#035AA6] ir-btn-outline-plasma',
   ghost:
-    'bg-transparent text-[#52525b] hover:bg-[#f4f4f5] hover:text-[#18181b] focus-visible:outline-[#2563EB]',
+    'bg-transparent text-[#4E5155] hover:bg-[#E9E9EA] hover:text-[#1D1E21] focus-visible:outline-[#035AA6]',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'text-sm px-3 py-1.5 gap-1.5',
-  md: 'text-sm px-4 py-2 gap-2',
-  lg: 'text-base px-5 py-2.5 gap-2',
+  sm: 'text-sm p-2.5 gap-1.5',
+  md: 'text-sm p-2.5 gap-2',
+  lg: 'text-base p-2.5 gap-2',
 }
 
 const iconSizes: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 18 }

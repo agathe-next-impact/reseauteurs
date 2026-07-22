@@ -602,7 +602,7 @@ export interface Category {
    */
   value: string;
   /**
-   * Code couleur hexadécimal, ex : #1e40af.
+   * Code couleur hexadécimal, ex : #01365F.
    */
   couleur?: string | null;
   ordre?: number | null;
@@ -793,7 +793,7 @@ export interface TypesEvenement {
    */
   value: string;
   /**
-   * Code couleur hexadecimal, ex: #1e40af
+   * Code couleur hexadecimal, ex: #01365F
    */
   couleur: string;
   ordre?: number | null;

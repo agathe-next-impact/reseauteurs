@@ -68,18 +68,18 @@ export function PlusClient({
 
         <Link
           href="/dashboard/mes-evenements"
-          className="rsn-lift flex items-center gap-3 p-4 rounded-2xl border border-[#e4e4e7] bg-white hover:border-[#2563EB]/40 transition-colors no-underline group"
+          className="rsn-lift flex items-center gap-3 p-4 rounded-2xl border border-[#DFE0E1] bg-white hover:border-[#035AA6]/40 transition-colors no-underline group"
         >
-          <span className="w-10 h-10 rounded-xl bg-[#eff6ff] text-[#2563EB] flex items-center justify-center shrink-0" aria-hidden>
+          <span className="text-[#035AA6] flex items-center justify-center shrink-0" aria-hidden>
             <CalendarPlus size={18} />
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-semibold text-[#16284f] group-hover:text-[#2563EB] transition-colors">
+            <span className="block text-sm font-semibold text-[#012A4A] group-hover:text-[#035AA6] transition-colors">
               Mes événements
             </span>
-            <span className="block text-xs text-[#71717a]">Créez et gérez vos événements de networking.</span>
+            <span className="block text-xs text-[#6E7175]">Créez et gérez vos événements de networking.</span>
           </span>
-          <ArrowRight size={16} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+          <ArrowRight size={16} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />
         </Link>
       </div>
     )
@@ -96,8 +96,8 @@ export function PlusClient({
 
       {/* Abonnement */}
       <section className="rsn-card rounded-2xl p-5">
-        <h2 className="text-sm font-semibold text-[#18181b] mb-1">Passer Plus — 39 € HT / an</h2>
-        <p className="text-xs text-[#71717a] mb-4">
+        <h2 className="text-sm font-semibold text-[#1D1E21] mb-1">Passer Plus — 39 € HT / an</h2>
+        <p className="text-xs text-[#6E7175] mb-4">
           Débloquez la création d&apos;événements. Sans engagement — gérable à tout moment depuis
           le portail de facturation.
         </p>
@@ -105,7 +105,7 @@ export function PlusClient({
           type="button"
           onClick={subscribe}
           disabled={busy !== null}
-          className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
+          className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
         >
           {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
           S&apos;abonner à Réseauteur Plus

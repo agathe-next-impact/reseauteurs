@@ -59,7 +59,7 @@ export default async function AProposPage() {
           <>
             La plateforme nationale
             <br />
-            du networking
+            <span>du networking</span>
           </>
         }
         lead="Des centaines de milliers de professionnels fréquentent BNI, DCF, CJD, Rotary, Lions Club, Réseau Entreprendre et des dizaines d'autres réseaux partout en France. RÉSEAUTEURS les rassemble tous en un seul endroit."
@@ -69,12 +69,12 @@ export default async function AProposPage() {
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <h2 className="text-2xl font-bold text-[#16284f] mb-6 text-center">Notre mission</h2>
+            <h2 className="text-2xl font-bold text-[#012A4A] mb-6 text-center">Notre mission</h2>
             <div className="rsn-card p-8">
-              <blockquote className="text-xl font-medium text-[#18181b] text-center leading-relaxed italic">
+              <blockquote className="text-xl font-medium text-[#1D1E21] text-center leading-relaxed italic">
                 « Le site ne remplace aucun réseau. Il les rassemble. »
               </blockquote>
-              <p className="text-[#52525b] text-center mt-4 leading-relaxed">
+              <p className="text-[#4E5155] text-center mt-4 leading-relaxed">
                 RÉSEAUTEURS est une couche de visibilité et de mise en relation, neutre et
                 indépendante, superposée à l&apos;écosystème du networking français. On ne concurrence
                 aucun réseau ; on les transforme en partenaires.
@@ -85,13 +85,13 @@ export default async function AProposPage() {
       </section>
 
       {/* Trois entités */}
-      <section className="py-16 px-4 bg-white border-y border-[#e4e4e7]">
+      <section className="py-16 px-4 bg-white border-y border-[#DFE0E1]">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <h2 className="text-2xl font-bold text-[#16284f] mb-3 text-center">
+            <h2 className="text-2xl font-bold text-[#012A4A] mb-3 text-center">
               Trois entités, une plateforme
             </h2>
-            <p className="text-[#52525b] text-center mb-10 max-w-2xl mx-auto">
+            <p className="text-[#4E5155] text-center mb-10 max-w-2xl mx-auto">
               RÉSEAUTEURS repose sur trois bases de données interconnectées qui forment le cœur du
               service.
             </p>
@@ -101,7 +101,7 @@ export default async function AProposPage() {
               {
                 icon: Users,
                 title: 'Les réseauteurs',
-                color: 'text-[#2563EB]',
+                color: 'text-[#035AA6]',
                 bg: 'bg-blue-50',
                 desc: 'Des personnes. Inscription gratuite, fiche publique et marqueur sur la carte. Chaque professionnel qui réseaute peut se rendre visible.',
                 link: '/reseauteurs',
@@ -110,7 +110,7 @@ export default async function AProposPage() {
               {
                 icon: CalendarDays,
                 title: 'Les événements',
-                color: 'text-[#0284c7]',
+                color: 'text-[#8A6D0B]',
                 bg: 'bg-sky-50',
                 desc: "Des rencontres datées. Chaque réseau publie ses événements business ; les réseauteurs les retrouvent sur la carte et dans l'agenda.",
                 link: '/evenements',
@@ -119,7 +119,7 @@ export default async function AProposPage() {
               {
                 icon: Network,
                 title: 'Les réseaux',
-                color: 'text-[#f5851f]',
+                color: 'text-[#8A6D0B]',
                 bg: 'bg-orange-50',
                 desc: "BNI, DCF, CJD, Rotary, Dynabuy et bien d'autres. Chaque réseau a sa fiche, son badge partenaire et ses événements référencés.",
                 link: '/reseaux',
@@ -131,8 +131,8 @@ export default async function AProposPage() {
                   <div className={`inline-flex items-center justify-center w-12 h-12 ${bg} mb-4`}>
                     <Icon size={22} className={color} />
                   </div>
-                  <h3 className="font-bold text-[#18181b] mb-2">{title}</h3>
-                  <p className="text-sm text-[#52525b] mb-4 leading-relaxed">{desc}</p>
+                  <h3 className="font-bold text-[#1D1E21] mb-2">{title}</h3>
+                  <p className="text-sm text-[#4E5155] mb-4 leading-relaxed">{desc}</p>
                   <Link
                     href={link}
                     className={`inline-flex items-center gap-1.5 text-sm font-semibold ${color} hover:underline no-underline rsn-linkrow`}
@@ -160,7 +160,7 @@ export default async function AProposPage() {
               { value: nbReseaux, label: 'Réseaux référencés', icon: Network },
             ].map(({ value, label, icon: Icon }) => (
               <div key={label}>
-                <Icon size={24} className="mx-auto text-[#60a5fa] mb-3" />
+                <Icon size={24} className="mx-auto text-[#6BA0CD] mb-3" />
                 <div className="text-4xl font-extrabold text-white mb-1">
                   {value > 0 ? <CountUp value={value} /> : '—'}
                 </div>
@@ -175,7 +175,7 @@ export default async function AProposPage() {
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <h2 className="text-2xl font-bold text-[#16284f] mb-8 text-center">Nos principes</h2>
+            <h2 className="text-2xl font-bold text-[#012A4A] mb-8 text-center">Nos principes</h2>
           </Reveal>
           <div className="space-y-4">
             {[
@@ -197,12 +197,12 @@ export default async function AProposPage() {
             ].map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={i * 80}>
                 <div className="flex items-start gap-4 rsn-card p-5 rsn-lift">
-                  <div className="w-10 h-10 bg-[#bfdbfe]/40 flex items-center justify-center shrink-0">
-                    <Icon size={18} className="text-[#2563EB]" />
+                  <div className="flex items-center justify-center shrink-0">
+                    <Icon size={18} className="text-[#035AA6]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#18181b] mb-1">{title}</h3>
-                    <p className="text-sm text-[#52525b] leading-relaxed">{desc}</p>
+                    <h3 className="font-semibold text-[#1D1E21] mb-1">{title}</h3>
+                    <p className="text-sm text-[#4E5155] leading-relaxed">{desc}</p>
                   </div>
                 </div>
               </Reveal>
@@ -212,11 +212,11 @@ export default async function AProposPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-4 bg-white border-t border-[#e4e4e7] text-center">
+      <section className="py-16 px-4 bg-white border-t border-[#DFE0E1] text-center">
         <Reveal>
           <div className="max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold text-[#16284f] mb-4">Rejoignez RÉSEAUTEURS</h2>
-            <p className="text-[#52525b] mb-8">
+            <h2 className="text-2xl font-bold text-[#012A4A] mb-4">Rejoignez RÉSEAUTEURS</h2>
+            <p className="text-[#4E5155] mb-8">
               Créez votre profil gratuitement et rejoignez la plateforme nationale du networking.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">

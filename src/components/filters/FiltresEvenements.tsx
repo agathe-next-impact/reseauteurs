@@ -120,7 +120,7 @@ export default function FiltresEvenements({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-text-dark">Filtrer les événements</h3>
         <button
-          className="md:hidden p-1.5 rounded-md hover:bg-gray-100 text-gray-500"
+          className="md:hidden p-2.5 rounded-md hover:bg-gray-100 text-gray-500"
           onClick={() => setMobileOpen(false)}
           aria-label="Fermer les filtres"
         >
@@ -155,7 +155,7 @@ export default function FiltresEvenements({
                 const range = preset.getRange()
                 onFilterChange({ ...filters, ...range })
               }}
-              className="text-sm px-2.5 py-1 rounded-full border border-gray-300 text-text-medium hover:border-primary hover:text-primary transition-colors cursor-pointer"
+              className="text-sm p-2.5 rounded-full border border-gray-300 text-text-medium hover:border-primary hover:text-primary transition-colors cursor-pointer"
             >
               {preset.label}
             </button>
@@ -240,7 +240,7 @@ export default function FiltresEvenements({
     <>
       {/* Mobile trigger */}
       <button
-        className="md:hidden fixed bottom-4 left-4 z-[800] bg-primary text-white px-4 py-2.5 rounded-full flex items-center gap-2 text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
+        className="md:hidden fixed bottom-4 left-4 z-[800] bg-primary text-white p-2.5 rounded-full flex items-center gap-2 text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
         onClick={() => setMobileOpen(true)}
         aria-label="Ouvrir les filtres"
       >
@@ -265,7 +265,7 @@ export default function FiltresEvenements({
             className="absolute inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 max-h-[70vh] overflow-y-auto flex flex-col border-t border-[#e4e4e7] animate-[slideUp_200ms_ease-out]">
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 max-h-[70vh] overflow-y-auto flex flex-col border-t border-[#DFE0E1] animate-[slideUp_200ms_ease-out]">
             <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3 shrink-0" />
             {content}
           </div>

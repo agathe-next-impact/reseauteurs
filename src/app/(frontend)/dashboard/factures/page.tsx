@@ -82,7 +82,7 @@ export default async function FacturesPage() {
           <p className="rsn-eyebrow">Espace connecté</p>
         </div>
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
             <FileText size={20} aria-hidden />
             Mes factures
           </h1>
@@ -90,7 +90,7 @@ export default async function FacturesPage() {
             <form action="/api/stripe/portal" method="POST">
               <button
                 type="submit"
-                className="text-sm text-[#2563EB] hover:text-[#1d4ed8] font-medium flex items-center gap-1.5 transition-colors"
+                className="text-sm text-[#035AA6] hover:text-[#02467F] font-medium flex items-center gap-1.5 transition-colors"
               >
                 <ExternalLink size={14} aria-hidden />
                 Portail Stripe
@@ -102,14 +102,14 @@ export default async function FacturesPage() {
 
       {!stripeCustomerId ? (
         <div className="rsn-card rounded-2xl border-dashed p-8 text-center">
-          <CreditCard size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-          <p className="text-sm font-medium text-[#52525b] mb-2">Aucun abonnement actif</p>
-          <p className="text-sm text-[#71717a] mb-6">
+          <CreditCard size={32} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+          <p className="text-sm font-medium text-[#4E5155] mb-2">Aucun abonnement actif</p>
+          <p className="text-sm text-[#6E7175] mb-6">
             Vous n&apos;avez pas encore d&apos;abonnement. Souscrivez pour accéder à vos factures.
           </p>
           <Link
             href="/dashboard/abonnement"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] transition-colors"
+            className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] transition-colors"
           >
             Gérer mon abonnement →
           </Link>
@@ -123,7 +123,7 @@ export default async function FacturesPage() {
           {/* Factures impayées */}
           {openInvoices.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+              <h2 className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" aria-hidden />
                 En attente de paiement
               </h2>
@@ -137,16 +137,16 @@ export default async function FacturesPage() {
 
           {/* Factures payées */}
           <div>
-            <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+            <h2 className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" aria-hidden />
               Payées
               {paidInvoices.length > 0 && (
-                <span className="text-[#a1a1aa] font-normal">({paidInvoices.length})</span>
+                <span className="text-[#999A9D] font-normal">({paidInvoices.length})</span>
               )}
             </h2>
             {paidInvoices.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#e4e4e7] p-6 text-center">
-                <p className="text-sm text-[#71717a]">Aucune facture payée pour l&apos;instant.</p>
+              <div className="rounded-2xl border border-dashed border-[#DFE0E1] p-6 text-center">
+                <p className="text-sm text-[#6E7175]">Aucune facture payée pour l&apos;instant.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -157,10 +157,10 @@ export default async function FacturesPage() {
             )}
           </div>
 
-          <p className="text-xs text-[#a1a1aa] text-center pt-2">
+          <p className="text-xs text-[#999A9D] text-center pt-2">
             Les factures sont générées et hébergées par Stripe.
             Pour toute question, contactez{' '}
-            <a href="mailto:contact@reseauteurs.com" className="text-[#2563EB] hover:underline">
+            <a href="mailto:contact@reseauteurs.com" className="text-[#035AA6] hover:underline">
               contact@reseauteurs.com
             </a>.
           </p>
@@ -180,12 +180,12 @@ function InvoiceRow({ invoice }: { invoice: Stripe.Invoice }) {
 
   return (
     <div className="rsn-card flex items-center gap-3 p-4 rounded-xl">
-      <div className="shrink-0 w-9 h-9 rounded-lg bg-[#f3f4f6] flex items-center justify-center text-[#71717a]" aria-hidden>
+      <div className="shrink-0 flex items-center justify-center text-[#6E7175]" aria-hidden>
         <FileText size={16} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[#18181b] truncate">{label}</p>
-        <p className="text-xs text-[#71717a]">
+        <p className="text-sm font-medium text-[#1D1E21] truncate">{label}</p>
+        <p className="text-xs text-[#6E7175]">
           {invoice.created ? formatDate(invoice.created) : '—'}
           {' · '}
           {invoice.amount_due ? formatAmount(invoice.amount_due, invoice.currency) : '—'}
@@ -204,7 +204,7 @@ function InvoiceRow({ invoice }: { invoice: Stripe.Invoice }) {
             href={invoice.invoice_pdf}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-lg text-[#71717a] hover:text-[#2563EB] hover:bg-[#eff6ff] transition-colors"
+            className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#035AA6] hover:bg-[#EFF5FA] transition-colors"
             aria-label="Télécharger la facture PDF"
           >
             <Download size={14} />
@@ -215,7 +215,7 @@ function InvoiceRow({ invoice }: { invoice: Stripe.Invoice }) {
             href={invoice.hosted_invoice_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-lg text-[#71717a] hover:text-[#2563EB] hover:bg-[#eff6ff] transition-colors"
+            className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#035AA6] hover:bg-[#EFF5FA] transition-colors"
             aria-label="Voir la facture en ligne"
           >
             <ExternalLink size={14} />

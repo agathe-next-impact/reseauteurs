@@ -76,8 +76,8 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
   }
 
   const inputClass =
-    'w-full rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] transition-colors disabled:opacity-50'
-  const labelClass = 'block text-xs font-medium text-[#52525b] mb-1'
+    'w-full rounded-xl border border-[#DFE0E1] bg-white px-3 py-2 text-sm text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6]/30 focus:border-[#035AA6] transition-colors disabled:opacity-50'
+  const labelClass = 'block text-xs font-medium text-[#4E5155] mb-1'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -201,7 +201,7 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       </div>
 
       {/* ── Type de structure (l'échelle = champ « niveau », géré en administration) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#f4f4f5]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E9E9EA]">
         <div>
           <label htmlFor="typeJuridique" className={labelClass}>Type de structure</label>
           <select id="typeJuridique" name="typeJuridique" defaultValue={(reseau.typeJuridique as string) ?? ''} className={inputClass}>
@@ -226,7 +226,7 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
           <input id="responsableFonction" name="responsableFonction" type="text" maxLength={200} defaultValue={(reseau.responsableFonction as string) ?? ''} className={inputClass} />
         </div>
       </div>
-      <p className="text-xs text-[#a1a1aa] -mt-2">La photo du responsable et la galerie se gèrent depuis l&apos;administration.</p>
+      <p className="text-xs text-[#999A9D] -mt-2">La photo du responsable et la galerie se gèrent depuis l&apos;administration.</p>
 
       {/* ── Objectif / différenciateur / membres */}
       <div>
@@ -239,8 +239,8 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       </div>
 
       {/* ── Fonctionnement */}
-      <fieldset className="space-y-3 pt-2 border-t border-[#f4f4f5]">
-        <legend className="text-xs font-semibold text-[#52525b]">Fonctionnement</legend>
+      <fieldset className="space-y-3 pt-2 border-t border-[#E9E9EA]">
+        <legend className="text-xs font-semibold text-[#4E5155]">Fonctionnement</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label htmlFor="publicConcerne" className={labelClass}>Public concerné</label>
@@ -275,7 +275,7 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       </fieldset>
 
       {/* ── Médias & validation */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#f4f4f5]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E9E9EA]">
         <div>
           <label htmlFor="plaquetteUrl" className={labelClass}>Plaquette PDF (lien)</label>
           <input id="plaquetteUrl" name="plaquetteUrl" type="url" maxLength={500} placeholder="https://…/plaquette.pdf" defaultValue={(reseau.plaquetteUrl as string) ?? ''} className={inputClass} />
@@ -300,7 +300,7 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] disabled:opacity-60 transition-colors focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+        className="w-full sm:w-auto p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] disabled:opacity-60 transition-colors focus-visible:ring-2 focus-visible:ring-[#035AA6] focus-visible:ring-offset-2"
       >
         {isPending ? 'Enregistrement…' : 'Enregistrer la fiche'}
       </button>

@@ -119,7 +119,7 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
 
   // Non abonné
   return (
-    <div className="rounded-2xl border border-[#e4e4e7] bg-[#faf9f5] p-5 space-y-3">
+    <div className="rounded-2xl border border-[#DFE0E1] bg-[#F2F2F2] p-5 space-y-3">
       {/* ADR-0014 : sans abonnement, la fiche revendiquée n'est pas visible publiquement */}
       {ficheSuspendue && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
@@ -131,10 +131,10 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
         </div>
       )}
       <div className="flex items-start gap-3">
-        <AlertCircle size={20} className="text-[#71717a] shrink-0 mt-0.5" aria-hidden />
+        <AlertCircle size={20} className="text-[#6E7175] shrink-0 mt-0.5" aria-hidden />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#18181b] mb-1">Sans abonnement</p>
-          <p className="text-xs text-[#71717a] mb-3">
+          <p className="text-sm font-semibold text-[#1D1E21] mb-1">Sans abonnement</p>
+          <p className="text-xs text-[#6E7175] mb-3">
             Souscrivez un abonnement pour publier votre fiche, créer vos groupes locaux et publier des événements.
           </p>
           {/* Sélecteur de palier */}
@@ -152,17 +152,17 @@ export function AbonnementNationalStatus({ national, nbLocaux }: AbonnementNatio
 function PalierSelector({ reseauId }: { reseauId: string | number }) {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-[#52525b]">Choisissez votre palier :</p>
+      <p className="text-xs font-medium text-[#4E5155]">Choisissez votre palier :</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
         {Object.entries(PALIERS_CONFIG).map(([palier, cfg]) => (
-          <div key={palier} className="border border-[#e4e4e7] rounded-xl p-3 bg-white">
-            <p className="text-xs font-semibold text-[#18181b] mb-0.5">{palier.charAt(0).toUpperCase() + palier.slice(1)}</p>
+          <div key={palier} className="border border-[#DFE0E1] rounded-xl p-3 bg-white">
+            <p className="text-xs font-semibold text-[#1D1E21] mb-0.5">{palier.charAt(0).toUpperCase() + palier.slice(1)}</p>
             {PALIER_PRIX_HT[palier] != null && (
-              <p className="text-sm font-extrabold text-[#16284f] leading-tight">
-                {PALIER_PRIX_HT[palier]} €<span className="text-[10px] font-medium text-[#71717a]"> HT/an</span>
+              <p className="text-sm font-extrabold text-[#012A4A] leading-tight">
+                {PALIER_PRIX_HT[palier]} €<span className="text-[10px] font-medium text-[#6E7175]"> HT/an</span>
               </p>
             )}
-            <p className="text-[10px] text-[#71717a] mb-2 mt-0.5">
+            <p className="text-[10px] text-[#6E7175] mb-2 mt-0.5">
               {cfg.maxLocaux === 0
                 ? 'Publication de la fiche — sans groupes locaux'
                 : cfg.maxLocaux === 999
@@ -172,14 +172,14 @@ function PalierSelector({ reseauId }: { reseauId: string | number }) {
             <CheckoutPartenaireButton
               reseauId={reseauId}
               palier={palier}
-              className="w-full text-xs bg-[#f5851f] text-white hover:bg-[#e07518] px-2 py-1.5 rounded-lg font-semibold transition-colors disabled:opacity-60"
+              className="w-full text-xs bg-[#F5E050] text-[#012A4A] hover:bg-[#E3CB2E] px-2 py-1.5 rounded-lg font-semibold transition-colors disabled:opacity-60"
             >
               Choisir
             </CheckoutPartenaireButton>
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-[#a1a1aa]">
+      <p className="text-[10px] text-[#999A9D]">
         Prix hors taxes — la TVA applicable est calculée sur la page de paiement Stripe.
       </p>
     </div>

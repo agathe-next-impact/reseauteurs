@@ -100,13 +100,13 @@ export default async function DashboardEvenementsPage() {
         <Reveal>
           <p className="rsn-eyebrow mb-2">Espace connecté</p>
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
               <Calendar size={20} aria-hidden />
               Mes événements
             </h1>
             <Link
               href="/dashboard/reseau"
-              className="text-sm text-[#71717a] hover:text-[#18181b] no-underline transition-colors"
+              className="text-sm text-[#6E7175] hover:text-[#1D1E21] no-underline transition-colors"
             >
               ← Mon réseau
             </Link>
@@ -131,7 +131,7 @@ export default async function DashboardEvenementsPage() {
                     </p>
                     <Link
                       href="/dashboard/abonnement"
-                      className="inline-flex items-center gap-1.5 text-xs bg-[#f5851f] text-white hover:bg-[#e07518] px-4 py-2 rounded-xl font-semibold transition-colors no-underline"
+                      className="inline-flex items-center gap-1.5 text-xs bg-[#F5E050] text-[#012A4A] hover:bg-[#E3CB2E] p-2.5 rounded-xl font-semibold transition-colors no-underline"
                     >
                       Souscrire un abonnement →
                     </Link>
@@ -144,14 +144,14 @@ export default async function DashboardEvenementsPage() {
 
         {/* Gestion des événements */}
         <div className="rsn-card rounded-2xl">
-          <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
+          <div className="px-6 py-4 border-b border-[#DFE0E1] flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
               <Calendar size={14} aria-hidden />
               Événements
-              <span className="text-[#a1a1aa] font-normal">({totalEvenements})</span>
+              <span className="text-[#999A9D] font-normal">({totalEvenements})</span>
             </h2>
             {!peutPublier && (
-              <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+              <span className="flex items-center gap-1.5 text-xs text-[#999A9D]">
                 <Lock size={13} aria-hidden />
                 Abonnement requis
               </span>
@@ -159,8 +159,8 @@ export default async function DashboardEvenementsPage() {
           </div>
           {!peutPublier ? (
             <div className="p-8 text-center">
-              <AlertCircle size={28} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-              <p className="text-sm text-[#71717a]">
+              <AlertCircle size={28} className="text-[#CFD0D2] mx-auto mb-3" aria-hidden />
+              <p className="text-sm text-[#6E7175]">
                 La publication d&apos;événements est réservée aux réseaux partenaires.
               </p>
             </div>

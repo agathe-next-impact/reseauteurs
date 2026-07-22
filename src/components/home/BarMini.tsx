@@ -12,7 +12,7 @@ export type BarDatum = { label: string; value: number; color?: string; sublabel?
 export default function BarMini({
   bars,
   height = 150,
-  color = '#2563EB',
+  color = '#035AA6',
   valueSuffix = '',
   className = '',
 }: {

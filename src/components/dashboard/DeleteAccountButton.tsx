@@ -48,13 +48,13 @@ export default function DeleteAccountButton() {
         <div className="flex gap-2">
           <button
             onClick={() => setStep('final')}
-            className="text-sm font-medium px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700"
+            className="text-sm font-medium p-2.5 bg-red-600 text-white rounded-md hover:bg-red-700"
           >
             Je comprends, continuer
           </button>
           <button
             onClick={() => setStep('idle')}
-            className="text-sm font-medium px-3 py-1.5 bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            className="text-sm font-medium p-2.5 bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Annuler
           </button>
@@ -72,14 +72,14 @@ export default function DeleteAccountButton() {
         <button
           onClick={handleDelete}
           disabled={loading}
-          className="text-sm font-medium px-3 py-1.5 bg-red-700 text-white rounded-md hover:bg-red-800 disabled:opacity-50"
+          className="text-sm font-medium p-2.5 bg-red-700 text-white rounded-md hover:bg-red-800 disabled:opacity-50"
         >
           {loading ? <><Loader2 size={14} className="inline animate-spin mr-1" />Suppression...</> : 'Supprimer definitivement'}
         </button>
         <button
           onClick={() => setStep('idle')}
           disabled={loading}
-          className="text-sm font-medium px-3 py-1.5 bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+          className="text-sm font-medium p-2.5 bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
         >
           Non, garder mon compte
         </button>

@@ -32,7 +32,7 @@ export function Card({
           <p className="text-sm text-gray-500 font-medium">{lockMessage}</p>
           <a
             href={`/dashboard/abonnement?plan=${upgradePlan}#plan-${upgradePlan}`}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary-hover transition-colors duration-150"
+            className="inline-flex items-center p-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary-hover transition-colors duration-150"
           >
             {ctaLabel}
           </a>

@@ -7,7 +7,7 @@ interface SlideOverProps {
   isOpen: boolean
   onClose: () => void
   children: React.ReactNode
-  /** On mobile, show as a bottom sheet (1/3 height) instead of full-screen overlay */
+  /** Sur mobile : bottom-sheet occupant 2/3 de la hauteur d'écran (au lieu du plein écran). */
   mobileBottomSheet?: boolean
 }
 
@@ -80,18 +80,18 @@ export default function SlideOver({ isOpen, onClose, children, mobileBottomSheet
         className={[
           'fixed z-[1000] bg-white overflow-y-auto transition-all duration-[280ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
           // Desktop: always side panel
-          'md:top-0 md:right-0 md:h-dvh md:w-1/2 md:min-w-[420px] md:max-w-[680px] md:border-l md:border-[#e4e4e7]',
+          'md:top-0 md:right-0 md:h-dvh md:w-1/2 md:min-w-[420px] md:max-w-[680px] md:border-l md:border-[#DFE0E1]',
           isOpen ? 'md:translate-x-0' : 'md:translate-x-full',
-          // Mobile: bottom sheet or full-screen
+          // Mobile : bottom-sheet 2/3 d'écran (dvh — tient compte de la barre du navigateur)
           mobileBottomSheet
-            ? `left-0 right-0 bottom-0 h-[34dvh] rounded-t-2xl border-t border-[#e4e4e7] ${
+            ? `left-0 right-0 bottom-0 h-[67dvh] rounded-t-2xl border-t border-[#DFE0E1] ${
                 isOpen ? 'translate-y-0' : 'translate-y-full'
               }`
             : `top-0 right-0 h-dvh w-full ${
                 isOpen ? 'translate-x-0' : 'translate-x-full'
               }`,
           // Reset mobile transforms on desktop
-          mobileBottomSheet ? 'md:translate-y-0 md:rounded-none md:left-auto md:w-1/2 md:h-dvh md:border-l md:border-[#e4e4e7]' : '',
+          mobileBottomSheet ? 'md:translate-y-0 md:rounded-none md:left-auto md:w-1/2 md:h-dvh md:border-l md:border-[#DFE0E1]' : '',
         ].join(' ')}
         style={dragOffset > 0 ? { transform: mobileBottomSheet ? `translateY(${dragOffset}px)` : `translateX(${dragOffset}px)`, transition: 'none' } : undefined}
       >

@@ -207,7 +207,7 @@ export default async function ReseauxPage({
   return (
     <div className="rsn-page min-h-screen">
       {/* Barre de navigation entité + vue */}
-      <div className="bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-2.5 flex items-center gap-3">
+      <div className="bg-white border-b border-[#DFE0E1] px-4 sm:px-6 py-2.5 flex items-center gap-3">
         <Suspense fallback={null}>
           <EntiteVueToggle entite="reseaux" vue="annuaire" />
         </Suspense>
@@ -220,10 +220,10 @@ export default async function ReseauxPage({
             <Network size={13} aria-hidden />
             Annuaire des réseaux
           </p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#16284f] mb-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#012A4A] mb-1">
             Réseaux d&apos;affaires
           </h1>
-          <p className="text-sm text-[#71717a]">
+          <p className="text-sm text-[#6E7175]">
             {totalDocs > 0
               ? `${totalDocs.toLocaleString('fr-FR')} réseau${totalDocs > 1 ? 'x' : ''} ${totalDocs > 1 ? 'nationaux' : 'national'} référencé${totalDocs > 1 ? 's' : ''}`
               : 'Aucun réseau pour l\'instant'}
@@ -239,9 +239,9 @@ export default async function ReseauxPage({
 
         {/* Grille des nationaux */}
         {nationaux.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-dashed border-[#e4e4e7] p-12 text-center">
-            <Network size={32} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-            <p className="text-sm font-medium text-[#52525b] mb-2">
+          <div className="bg-white rounded-2xl border border-dashed border-[#DFE0E1] p-12 text-center">
+            <Network size={32} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+            <p className="text-sm font-medium text-[#4E5155] mb-2">
               Aucun réseau ne correspond à cette recherche
             </p>
           </div>
@@ -265,7 +265,7 @@ export default async function ReseauxPage({
                   <article key={r.id} role="listitem">
                     <Link
                       href={`/reseau/${r.slug}`}
-                      className={`flex flex-col gap-4 p-5 bg-white border rsn-lift no-underline h-full group ${r.partenaire ? 'border-[#f5851f]/40' : 'border-[#e4e4e7]'}`}
+                      className={`flex flex-col gap-4 p-5 bg-white border rsn-lift no-underline h-full group ${r.partenaire ? 'border-[#F5E050]/40' : 'border-[#DFE0E1]'}`}
                     >
                       <div className="flex items-start gap-3">
                         {logoUrl ? (
@@ -274,15 +274,15 @@ export default async function ReseauxPage({
                             alt={`Logo ${r.nom}`}
                             width={48}
                             height={48}
-                            className="w-12 h-12 rounded-xl object-contain border border-[#e4e4e7] bg-white p-0.5 shrink-0"
+                            className="w-12 h-12 rounded-xl object-contain border border-[#DFE0E1] bg-white p-0.5 shrink-0"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-[#ffedd5]/50 flex items-center justify-center text-[#f5851f] font-bold shrink-0" aria-hidden>
+                          <div className="w-12 h-12 flex items-center justify-center text-[#8A6D0B] font-bold shrink-0" aria-hidden>
                             <Network size={20} />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-[#16284f] group-hover:text-[#2563EB] transition-colors truncate leading-tight">
+                          <p className="text-sm font-bold text-[#012A4A] group-hover:text-[#035AA6] transition-colors truncate leading-tight">
                             {r.nom}
                           </p>
                           {r.partenaire && <BadgePartenaire className="mt-1" />}
@@ -290,23 +290,23 @@ export default async function ReseauxPage({
                       </div>
 
                       {r.description && (
-                        <p className="text-xs text-[#52525b] leading-relaxed line-clamp-2">
+                        <p className="text-xs text-[#4E5155] leading-relaxed line-clamp-2">
                           {r.description}
                         </p>
                       )}
 
                       <div className="flex items-center gap-4 mt-auto pt-1">
-                        <span className="flex items-center gap-1 text-xs text-[#71717a]">
-                          <Users size={11} className="text-[#2563EB]" aria-hidden />
+                        <span className="flex items-center gap-1 text-xs text-[#6E7175]">
+                          <Users size={11} className="text-[#035AA6]" aria-hidden />
                           {agg.nbReseauteurs} réseauteur{agg.nbReseauteurs !== 1 ? 's' : ''}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-[#71717a]">
-                          <Calendar size={11} className="text-[#0284c7]" aria-hidden />
+                        <span className="flex items-center gap-1 text-xs text-[#6E7175]">
+                          <Calendar size={11} className="text-[#8A6D0B]" aria-hidden />
                           {agg.nbEvenements} événement{agg.nbEvenements !== 1 ? 's' : ''}
                         </span>
                         {agg.nbLocaux > 0 && (
-                          <span className="flex items-center gap-1 text-xs text-[#71717a]">
-                            <Network size={11} className="text-[#a855f7]" aria-hidden />
+                          <span className="flex items-center gap-1 text-xs text-[#6E7175]">
+                            <Network size={11} className="text-[#3E7CA6]" aria-hidden />
                             {agg.nbLocaux} groupe{agg.nbLocaux !== 1 ? 's' : ''}
                           </span>
                         )}
@@ -322,17 +322,17 @@ export default async function ReseauxPage({
                 {page > 1 && (
                   <Link
                     href={`/reseaux?${new URLSearchParams({ ...sp, page: String(page - 1) }).toString()}`}
-                    className="px-4 py-2 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#f5851f] hover:text-[#f5851f] no-underline transition-colors"
+                    className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#F5E050] hover:text-[#8A6D0B] no-underline transition-colors"
                     aria-label="Page précédente"
                   >
                     ← Précédente
                   </Link>
                 )}
-                <span className="text-sm text-[#71717a]">Page {page} / {totalPages}</span>
+                <span className="text-sm text-[#6E7175]">Page {page} / {totalPages}</span>
                 {page < totalPages && (
                   <Link
                     href={`/reseaux?${new URLSearchParams({ ...sp, page: String(page + 1) }).toString()}`}
-                    className="px-4 py-2 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#f5851f] hover:text-[#f5851f] no-underline transition-colors"
+                    className="p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#F5E050] hover:text-[#8A6D0B] no-underline transition-colors"
                     aria-label="Page suivante"
                   >
                     Suivante →

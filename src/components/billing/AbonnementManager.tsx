@@ -131,33 +131,33 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
         )}
 
         {view.motifIndisponible !== 'sans_reseau' && view.motifIndisponible !== 'sans_fiche' && (
-          <section className="rounded-2xl border border-[#e4e4e7] bg-white p-5">
+          <section className="rounded-2xl border border-[#DFE0E1] bg-white p-5">
             <div className="flex items-start gap-3 mb-4">
-              <AlertCircle size={20} className="text-[#71717a] shrink-0 mt-0.5" aria-hidden />
+              <AlertCircle size={20} className="text-[#6E7175] shrink-0 mt-0.5" aria-hidden />
               <div>
-                <p className="text-sm font-semibold text-[#18181b]">Sans abonnement</p>
-                <p className="text-xs text-[#71717a] mt-0.5">{subscribeHint(view.produit)}</p>
+                <p className="text-sm font-semibold text-[#1D1E21]">Sans abonnement</p>
+                <p className="text-xs text-[#6E7175] mt-0.5">{subscribeHint(view.produit)}</p>
               </div>
             </div>
 
             {view.supportsPalier && view.paliers.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                 {view.paliers.map((p) => (
-                  <div key={p.value} className="border border-[#e4e4e7] rounded-xl p-3 bg-[#faf9f5]">
-                    <p className="text-xs font-semibold text-[#18181b] mb-0.5">
+                  <div key={p.value} className="border border-[#DFE0E1] rounded-xl p-3 bg-[#F2F2F2]">
+                    <p className="text-xs font-semibold text-[#1D1E21] mb-0.5">
                       {p.value.charAt(0).toUpperCase() + p.value.slice(1)}
                     </p>
                     {p.prixHT != null && (
-                      <p className="text-sm font-extrabold text-[#16284f] leading-tight">
-                        {p.prixHT} €<span className="text-[10px] font-medium text-[#71717a]"> HT/an</span>
+                      <p className="text-sm font-extrabold text-[#012A4A] leading-tight">
+                        {p.prixHT} €<span className="text-[10px] font-medium text-[#6E7175]"> HT/an</span>
                       </p>
                     )}
-                    <p className="text-[10px] text-[#71717a] mb-2 mt-0.5">{capaciteLabel(p.capacite)}</p>
+                    <p className="text-[10px] text-[#6E7175] mb-2 mt-0.5">{capaciteLabel(p.capacite)}</p>
                     <button
                       type="button"
                       onClick={() => subscribe(p.value)}
                       disabled={busy !== null}
-                      className="w-full text-xs bg-[#f5851f] text-white hover:bg-[#e07518] px-2 py-1.5 rounded-lg font-semibold transition-colors disabled:opacity-60"
+                      className="w-full text-xs bg-[#F5E050] text-[#012A4A] hover:bg-[#E3CB2E] p-2.5 rounded-lg font-semibold transition-colors disabled:opacity-60"
                     >
                       {busy === 'checkout' ? '…' : 'Choisir'}
                     </button>
@@ -167,22 +167,22 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
             ) : (
               <div className="flex flex-wrap items-center gap-3">
                 {view.prixHT != null && (
-                  <p className="text-lg font-extrabold text-[#16284f]">
-                    {view.prixHT} €<span className="text-xs font-medium text-[#71717a]"> HT / an</span>
+                  <p className="text-lg font-extrabold text-[#012A4A]">
+                    {view.prixHT} €<span className="text-xs font-medium text-[#6E7175]"> HT / an</span>
                   </p>
                 )}
                 <button
                   type="button"
                   onClick={() => subscribe()}
                   disabled={busy !== null}
-                  className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
+                  className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
                 >
                   {busy === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
                   S’abonner
                 </button>
               </div>
             )}
-            <p className="text-[10px] text-[#a1a1aa] mt-2">
+            <p className="text-[10px] text-[#999A9D] mt-2">
               Prix hors taxes — la TVA applicable est calculée sur la page de paiement sécurisée Stripe.
             </p>
           </section>
@@ -266,11 +266,11 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
 
       {/* Accès actif sans abonnement Stripe (accordé manuellement / démo) */}
       {!licence && !view.hasSubscription && !view.hasCustomer && (
-        <section className="rounded-2xl border border-[#e4e4e7] bg-white p-5">
-          <p className="text-sm text-[#52525b]">
+        <section className="rounded-2xl border border-[#DFE0E1] bg-white p-5">
+          <p className="text-sm text-[#4E5155]">
             Votre accès est actif. Aucun abonnement en ligne n’est rattaché à ce compte —
             pour toute question, contactez{' '}
-            <a href="mailto:contact@reseauteurs.com" className="text-[#2563EB] hover:underline">
+            <a href="mailto:contact@reseauteurs.com" className="text-[#035AA6] hover:underline">
               contact@reseauteurs.com
             </a>.
           </p>
@@ -279,8 +279,8 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
 
       {/* Actions */}
       {!licence && (view.hasSubscription || view.hasCustomer) && (
-        <section className="rounded-2xl border border-[#e4e4e7] bg-white p-5 space-y-4">
-          <h2 className="text-xs font-semibold text-[#52525b] uppercase tracking-wide">
+        <section className="rounded-2xl border border-[#DFE0E1] bg-white p-5 space-y-4">
+          <h2 className="text-xs font-semibold text-[#4E5155] uppercase tracking-wide">
             Gérer mon abonnement
           </h2>
 
@@ -290,7 +290,7 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
               <button
                 type="button"
                 onClick={() => setSelectedPalier(selectedPalier === null ? (view.palier ?? '') : null)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1d4ed8]"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#035AA6] hover:text-[#02467F]"
               >
                 <TrendingUp size={15} aria-hidden />
                 Changer de palier
@@ -305,24 +305,24 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                         type="button"
                         disabled={current || busy !== null}
                         onClick={() => changePalier(p.value)}
-                        className={`text-left border rounded-xl p-3 transition-colors disabled:opacity-60 ${
+                        className={`text-left border rounded-xl p-2.5 transition-colors disabled:opacity-60 ${
                           current
-                            ? 'border-[#2563EB] bg-[#eff6ff] cursor-default'
-                            : 'border-[#e4e4e7] bg-white hover:border-[#2563EB]/50'
+                            ? 'border-[#035AA6] bg-[#EFF5FA] cursor-default'
+                            : 'border-[#DFE0E1] bg-white hover:border-[#035AA6]/50'
                         }`}
                       >
-                        <p className="text-xs font-semibold text-[#18181b] mb-0.5">
+                        <p className="text-xs font-semibold text-[#1D1E21] mb-0.5">
                           {p.value.charAt(0).toUpperCase() + p.value.slice(1)}
-                          {current && <span className="text-[#2563EB]"> · actuel</span>}
+                          {current && <span className="text-[#035AA6]"> · actuel</span>}
                         </p>
                         {p.prixHT != null && (
-                          <p className="text-xs font-bold text-[#16284f]">
-                            {p.prixHT} €<span className="text-[10px] font-medium text-[#71717a]"> HT/an</span>
+                          <p className="text-xs font-bold text-[#012A4A]">
+                            {p.prixHT} €<span className="text-[10px] font-medium text-[#6E7175]"> HT/an</span>
                           </p>
                         )}
-                        <p className="text-[10px] text-[#71717a] mt-0.5">{capaciteLabel(p.capacite)}</p>
+                        <p className="text-[10px] text-[#6E7175] mt-0.5">{capaciteLabel(p.capacite)}</p>
                         {busy === `palier:${p.value}` && (
-                          <Loader2 size={12} className="animate-spin text-[#2563EB] mt-1" />
+                          <Loader2 size={12} className="animate-spin text-[#035AA6] mt-1" />
                         )}
                       </button>
                     )
@@ -339,7 +339,7 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                 <button
                   type="button"
                   onClick={() => setReactivateOpen(true)}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 border border-green-300 bg-white hover:bg-green-50 px-4 py-2 rounded-xl transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 border border-green-300 bg-white hover:bg-green-50 p-2.5 rounded-xl transition-colors"
                 >
                   <RefreshCw size={14} aria-hidden />
                   Réactiver le renouvellement
@@ -348,7 +348,7 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
                 <button
                   type="button"
                   onClick={() => setCancelOpen(true)}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#71717a] border border-[#e4e4e7] bg-white hover:border-red-300 hover:text-red-600 px-4 py-2 rounded-xl transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#6E7175] border border-[#DFE0E1] bg-white hover:border-red-300 hover:text-red-600 p-2.5 rounded-xl transition-colors"
                 >
                   <XCircle size={14} aria-hidden />
                   Annuler l’abonnement
@@ -357,7 +357,7 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
 
             {/* Moyen de paiement */}
             {view.hasCustomer && (
-              <PortalButton className="inline-flex items-center gap-1.5 text-sm font-medium text-[#52525b] border border-[#e4e4e7] bg-white hover:border-[#2563EB] hover:text-[#2563EB] px-4 py-2 rounded-xl transition-colors disabled:opacity-60">
+              <PortalButton className="inline-flex items-center gap-1.5 text-sm font-medium text-[#4E5155] border border-[#DFE0E1] bg-white hover:border-[#035AA6] hover:text-[#035AA6] px-4 py-2 rounded-xl transition-colors disabled:opacity-60">
                 <CreditCard size={14} aria-hidden />
                 Moyen de paiement
               </PortalButton>
@@ -367,7 +367,7 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
             {view.hasCustomer && (
               <Link
                 href="/dashboard/factures"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1d4ed8] no-underline px-1"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#035AA6] hover:text-[#02467F] no-underline px-1"
               >
                 <FileText size={14} aria-hidden />
                 Mes factures
@@ -394,13 +394,13 @@ export function AbonnementManager({ view }: { view: AbonnementView }) {
 
 function EmptyState({ title, desc, href, cta }: { title: string; desc: string; href: string; cta: string }) {
   return (
-    <div className="rounded-2xl border border-[#e4e4e7] bg-white p-8 text-center">
-      <CreditCard size={30} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-      <p className="text-sm font-medium text-[#18181b] mb-1">{title}</p>
-      <p className="text-sm text-[#71717a] mb-4">{desc}</p>
+    <div className="rounded-2xl border border-[#DFE0E1] bg-white p-8 text-center">
+      <CreditCard size={30} className="text-[#CFD0D2] mx-auto mb-3" aria-hidden />
+      <p className="text-sm font-medium text-[#1D1E21] mb-1">{title}</p>
+      <p className="text-sm text-[#6E7175] mb-4">{desc}</p>
       <Link
         href={href}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors no-underline"
+        className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-[#035AA6] text-white text-sm font-semibold hover:bg-[#02467F] transition-colors no-underline"
       >
         {cta}
       </Link>

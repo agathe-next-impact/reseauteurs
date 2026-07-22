@@ -23,9 +23,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'text-sm px-2 py-1 gap-1',
-  md: 'text-sm px-4 py-1.5 gap-2',
-  lg: 'text-lg px-6 py-4 gap-2.5',
+  sm: 'text-sm p-2.5 gap-1',
+  md: 'text-sm p-2.5 gap-2',
+  lg: 'text-lg p-2.5 gap-2.5',
 }
 
 const iconSizes: Record<ButtonSize, number> = {
@@ -50,10 +50,9 @@ export function Button({
   return (
     <button
       disabled={isDisabled}
-      className={`group relative overflow-hidden inline-flex items-center justify-center font-medium rounded-full transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-medium rounded-full transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...rest}
     >
-      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/30 to-transparent group-hover:animate-shine" />
       {loading ? (
         <Loader2 size={iconSizes[size]} className="animate-spin" />
       ) : (

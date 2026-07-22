@@ -45,8 +45,8 @@ const clusterCircleColor = [
   'step',
   ['get', 'point_count'],
   MAP_COLORS.primary,          // 1–19 points
-  20, '#1d4ed8',               // 20–49
-  50, '#1e40af',               // 50+
+  20, '#02467F',               // 20–49
+  50, '#01365F',               // 50+
 ]
 
 // ── Expression MapLibre `match` pour la couleur des marqueurs par badge ────
@@ -379,7 +379,7 @@ export default function MapReseauteurs({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="w-2.5 h-2.5 rounded-full bg-[#2563EB]"
+                className="w-2.5 h-2.5 rounded-full bg-[#035AA6]"
                 style={{ animation: `dotBounce 1.4s ease-in-out ${i * 0.16}s infinite` }}
               />
             ))}
@@ -392,8 +392,8 @@ export default function MapReseauteurs({
             className="absolute inset-0 z-[600] bg-white/30 flex items-start justify-center pt-4 pointer-events-none"
             aria-hidden="true"
           >
-            <div className="bg-white rounded-full px-3 py-1 border border-[#e4e4e7] text-xs text-[#2563EB] font-medium flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#2563EB] animate-pulse" />
+            <div className="bg-white rounded-full px-3 py-1 border border-[#DFE0E1] text-xs text-[#035AA6] font-medium flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-[#035AA6] animate-pulse" />
               Mise à jour...
             </div>
           </div>
@@ -511,7 +511,7 @@ export default function MapReseauteurs({
                 <div>
                   <strong className="text-sm">{tooltip.title}</strong>
                   {tooltip.subtitle && (
-                    <div className="text-xs text-[#71717a] mt-0.5">{tooltip.subtitle}</div>
+                    <div className="text-xs text-[#6E7175] mt-0.5">{tooltip.subtitle}</div>
                   )}
                 </div>
               </div>

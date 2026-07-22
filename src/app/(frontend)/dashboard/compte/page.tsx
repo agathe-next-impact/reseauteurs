@@ -50,7 +50,7 @@ export default async function ComptePage() {
 
       <Reveal className="mb-6">
         <p className="rsn-eyebrow mb-2">Espace connecté</p>
-        <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+        <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
           <UserCog size={22} aria-hidden />
           Mon compte
         </h1>
@@ -124,7 +124,7 @@ export default async function ComptePage() {
               </div>
               <a
                 href="/api/account/export"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors no-underline shrink-0"
+                className="inline-flex items-center gap-1.5 p-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors no-underline shrink-0"
               >
                 <Download size={13} />
                 Télécharger

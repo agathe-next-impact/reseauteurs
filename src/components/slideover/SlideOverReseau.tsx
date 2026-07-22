@@ -114,12 +114,12 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
 
       {/* Erreur */}
       {!loading && error && slug && (
-        <div className="pt-12 text-center text-[#71717a]">
+        <div className="pt-12 text-center text-[#6E7175]">
           <AlertTriangle size={36} className="mx-auto mb-3 text-amber-400" />
           <p className="text-sm mb-1 font-medium">Impossible de charger ce réseau.</p>
           <button
             onClick={() => fetchData(slug)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#a855f7] hover:text-[#9333ea] transition-colors mt-2 cursor-pointer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#3E7CA6] hover:text-[#2E6389] transition-colors mt-2 cursor-pointer"
           >
             <RefreshCw size={13} />
             Réessayer
@@ -129,7 +129,7 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
 
       {/* Introuvable */}
       {!loading && !error && !data && slug && (
-        <div className="pt-12 text-center text-[#71717a]">
+        <div className="pt-12 text-center text-[#6E7175]">
           <Building2 size={36} className="mx-auto mb-3 text-gray-300" />
           <p className="text-sm">Réseau introuvable.</p>
         </div>
@@ -139,11 +139,11 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
       {data && !loading && (
         <div>
           {/* En-tête */}
-          <div className="pb-4 border-b border-[#e4e4e7]">
+          <div className="pb-4 border-b border-[#DFE0E1]">
             <div className="flex items-start gap-3">
               {/* Logo */}
               {data.logoUrl ? (
-                <div className="w-14 h-14 rounded-xl border border-[#e4e4e7] bg-gray-50 shrink-0 overflow-hidden flex items-center justify-center p-1">
+                <div className="w-14 h-14 rounded-xl border border-[#DFE0E1] bg-gray-50 shrink-0 overflow-hidden flex items-center justify-center p-1">
                   <Image
                     src={data.logoUrl}
                     alt={data.nom}
@@ -153,26 +153,26 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
                   />
                 </div>
               ) : (
-                <div className="w-14 h-14 rounded-xl border border-[#e4e4e7] bg-[#a855f7]/10 shrink-0 flex items-center justify-center">
-                  <Building2 size={24} className="text-[#a855f7]" />
+                <div className="w-14 h-14 border border-[#DFE0E1] shrink-0 flex items-center justify-center">
+                  <Building2 size={24} className="text-[#3E7CA6]" />
                 </div>
               )}
 
               <div className="min-w-0 flex-1">
                 {/* Nom + badge Partenaire */}
                 <div className="flex items-start gap-2 flex-wrap">
-                  <h2 className="text-base font-bold text-[#18181b] leading-tight">
+                  <h2 className="text-base font-bold text-[#1D1E21] leading-tight">
                     {data.nom}
                   </h2>
                   {isPartenaire && (
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#faf5ff] text-[#a855f7] border border-[#d8b4fe] shrink-0">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#E7F0F7] text-[#2E6389] border border-[#A9C9E4] shrink-0">
                       Partenaire
                     </span>
                   )}
                 </div>
 
                 {/* Ville */}
-                <div className="flex items-center gap-1.5 mt-1 text-sm text-[#71717a]">
+                <div className="flex items-center gap-1.5 mt-1 text-sm text-[#6E7175]">
                   <MapPin size={12} className="shrink-0" />
                   <span>{data.ville}</span>
                 </div>
@@ -183,12 +183,12 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
                     {data.parentNational.slug ? (
                       <Link
                         href={`/reseau/${data.parentNational.slug}`}
-                        className="text-xs text-[#2563EB] hover:underline"
+                        className="text-xs text-[#035AA6] hover:underline"
                       >
                         {data.parentNational.nom ?? 'Réseau national'}
                       </Link>
                     ) : (
-                      <span className="text-xs text-[#71717a]">
+                      <span className="text-xs text-[#6E7175]">
                         {data.parentNational.nom ?? 'Réseau national'}
                       </span>
                     )}
@@ -200,10 +200,10 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
 
           {/* CTA principal */}
           {data.slug && (
-            <div className="py-4 border-b border-[#e4e4e7]">
+            <div className="py-4 border-b border-[#DFE0E1]">
               <Link
                 href={`/reseau/${data.slug}`}
-                className="flex items-center justify-center gap-2 w-full bg-[#a855f7] text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-[#9333ea] transition-colors text-sm"
+                className="flex items-center justify-center gap-2 w-full bg-[#3E7CA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#2E6389] transition-colors text-sm"
               >
                 Voir la fiche du réseau
               </Link>
@@ -212,13 +212,13 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
 
           {/* Compteurs */}
           {(data.nbReseauteurs > 0 || data.nbEvenements > 0) && (
-            <div className="py-4 border-b border-[#e4e4e7]">
+            <div className="py-4 border-b border-[#DFE0E1]">
               <div className="flex items-center gap-5">
                 {data.nbReseauteurs > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm text-[#52525b]">
-                    <Users size={14} className="text-[#a855f7] shrink-0" />
+                  <div className="flex items-center gap-1.5 text-sm text-[#4E5155]">
+                    <Users size={14} className="text-[#3E7CA6] shrink-0" />
                     <span>
-                      <strong className="font-semibold text-[#18181b]">
+                      <strong className="font-semibold text-[#1D1E21]">
                         {data.nbReseauteurs}
                       </strong>{' '}
                       réseauteur{data.nbReseauteurs !== 1 ? 's' : ''}
@@ -226,10 +226,10 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
                   </div>
                 )}
                 {data.nbEvenements > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm text-[#52525b]">
-                    <CalendarDays size={14} className="text-[#a855f7] shrink-0" />
+                  <div className="flex items-center gap-1.5 text-sm text-[#4E5155]">
+                    <CalendarDays size={14} className="text-[#3E7CA6] shrink-0" />
                     <span>
-                      <strong className="font-semibold text-[#18181b]">
+                      <strong className="font-semibold text-[#1D1E21]">
                         {data.nbEvenements}
                       </strong>{' '}
                       événement{data.nbEvenements !== 1 ? 's' : ''}
@@ -242,8 +242,8 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
 
           {/* Description */}
           {data.description && (
-            <div className="py-4 border-b border-[#e4e4e7]">
-              <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line line-clamp-5">
+            <div className="py-4 border-b border-[#DFE0E1]">
+              <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line line-clamp-5">
                 {data.description}
               </p>
             </div>
@@ -256,7 +256,7 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
                 href={data.siteWeb}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                className="flex items-center gap-2 text-sm text-[#035AA6] hover:text-[#02467F] transition-colors"
               >
                 <Globe size={14} className="shrink-0" />
                 {data.siteWeb.replace(/^https?:\/\//, '').replace(/\/$/, '')}

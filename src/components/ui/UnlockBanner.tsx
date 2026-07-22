@@ -20,7 +20,7 @@ export function UnlockBanner({ plan, className = '' }: UnlockBannerProps) {
   return (
     <Link
       href={`/dashboard/abonnement?plan=${plan}#plan-${plan}`}
-      className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-amber-300 bg-gradient-to-r from-orange-50 to-amber-100 text-amber-900 text-sm no-underline transition-transform hover:-translate-y-px ${className}`}
+      className={`flex items-center gap-2.5 p-2.5 rounded-lg border border-amber-300 bg-amber-100 text-amber-900 text-sm no-underline transition-transform hover:-translate-y-px ${className}`}
     >
       <Sparkles size={16} className="text-amber-600 shrink-0" />
       <span className="flex-1">

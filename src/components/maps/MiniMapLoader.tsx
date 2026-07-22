@@ -13,7 +13,7 @@ const MiniMap = dynamic(() => import('./MiniMap'), {
   ssr: false,
   loading: () => (
     <div
-      className="h-48 w-full rounded-xl border border-[#e4e4e7] bg-[#f4f4f5] animate-pulse"
+      className="h-48 w-full rounded-xl border border-[#DFE0E1] bg-[#E9E9EA] animate-pulse"
       aria-hidden
     />
   ),

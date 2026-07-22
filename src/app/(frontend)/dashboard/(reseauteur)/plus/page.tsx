@@ -46,15 +46,15 @@ export default async function PlusPage() {
         <Reveal>
           <Link
             href="/dashboard/profil"
-            className="text-sm text-[#71717a] hover:text-[#2563EB] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
+            className="text-sm text-[#6E7175] hover:text-[#035AA6] no-underline inline-flex items-center gap-1 mb-4 transition-colors"
           >
             <ArrowLeft size={14} aria-hidden /> Mon profil
           </Link>
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2 mb-2">
-            <Sparkles size={20} className="text-[#f5851f]" aria-hidden />
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
+            <Sparkles size={20} className="text-[#8A6D0B]" aria-hidden />
             Réseauteur Plus
           </h1>
-          <p className="text-sm text-[#71717a] mb-8">
+          <p className="text-sm text-[#6E7175] mb-8">
             Créez et publiez vos propres événements de networking, visibles sur la carte et
             référencés sur la plateforme.
           </p>
@@ -69,17 +69,17 @@ export default async function PlusPage() {
         {/* Réseaux locaux possédés (ADR-0014 — remplace la déclaration de groupes administrés) */}
         {actif && (
           <div className="mt-6 rsn-card rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-[#18181b] mb-1 flex items-center gap-1.5">
-              <Network size={14} className="text-[#a855f7]" aria-hidden />
+            <h2 className="text-sm font-semibold text-[#1D1E21] mb-1 flex items-center gap-1.5">
+              <Network size={14} className="text-[#3E7CA6]" aria-hidden />
               Mes réseaux locaux
             </h2>
-            <p className="text-xs text-[#71717a] mb-3">
+            <p className="text-xs text-[#6E7175] mb-3">
               Créez vos fiches de réseaux locaux (affiliées à un réseau national ou indépendantes)
               et publiez leurs événements.
             </p>
             <Link
               href="/dashboard/mes-reseaux"
-              className="inline-flex items-center gap-1.5 text-xs bg-[#a855f7] text-white hover:bg-[#9333ea] px-4 py-2 rounded-xl font-semibold transition-colors no-underline"
+              className="inline-flex items-center gap-1.5 text-xs bg-[#3E7CA6] text-white hover:bg-[#2E6389] p-2.5 rounded-xl font-semibold transition-colors no-underline"
             >
               Gérer mes réseaux →
             </Link>

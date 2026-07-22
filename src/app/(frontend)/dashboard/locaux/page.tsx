@@ -95,13 +95,13 @@ export default async function DashboardLocauxPage() {
       <Reveal>
         <p className="rsn-eyebrow mb-2">Espace connecté</p>
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
-            <Network size={20} className="text-[#a855f7]" aria-hidden />
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
+            <Network size={20} className="text-[#3E7CA6]" aria-hidden />
             Mes groupes locaux
           </h1>
           <Link
             href="/dashboard/reseau"
-            className="text-sm text-[#71717a] hover:text-[#18181b] no-underline transition-colors"
+            className="text-sm text-[#6E7175] hover:text-[#1D1E21] no-underline transition-colors"
           >
             ← Mon réseau national
           </Link>
@@ -112,8 +112,8 @@ export default async function DashboardLocauxPage() {
       <div className="rsn-card rounded-2xl p-4 flex items-center gap-3">
         <Building2Small />
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-[#71717a]">Réseau national</p>
-          <p className="font-bold text-[#16284f] truncate">{national.nom as string}</p>
+          <p className="text-xs text-[#6E7175]">Réseau national</p>
+          <p className="font-bold text-[#012A4A] truncate">{national.nom as string}</p>
         </div>
         <div className="shrink-0 text-xs">
           {estPartenaire ? (
@@ -142,7 +142,7 @@ export default async function DashboardLocauxPage() {
               </p>
               <Link
                 href="/dashboard/reseau"
-                className="inline-flex items-center gap-1.5 text-xs bg-[#f5851f] text-white hover:bg-[#e07518] px-4 py-2 rounded-xl font-semibold transition-colors no-underline"
+                className="inline-flex items-center gap-1.5 text-xs bg-[#F5E050] text-[#012A4A] hover:bg-[#E3CB2E] p-2.5 rounded-xl font-semibold transition-colors no-underline"
               >
                 Souscrire un abonnement →
               </Link>
@@ -153,23 +153,23 @@ export default async function DashboardLocauxPage() {
 
       {/* Liste des groupes */}
       <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-            <Network size={14} className="text-[#a855f7]" aria-hidden />
+        <div className="px-6 py-4 border-b border-[#DFE0E1] flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
+            <Network size={14} className="text-[#3E7CA6]" aria-hidden />
             Groupes
-            <span className="text-[#a1a1aa] font-normal">({totalLocaux})</span>
+            <span className="text-[#999A9D] font-normal">({totalLocaux})</span>
           </h2>
           {/* E2.A — accounts-and-billing : CreerLocalButton avec gate palier serveur */}
           {estPartenaire && maxLocaux(national.palier as string | null) === 0 ? (
             // ADR-0014 : palier « fiche » — publication de la fiche seulement
-            <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+            <span className="flex items-center gap-1.5 text-xs text-[#999A9D]">
               <Lock size={13} aria-hidden />
               Palier fiche — montez de palier pour créer des groupes
             </span>
           ) : estPartenaire ? (
             <CreerLocalButton reseauNationalId={national.id as string | number} />
           ) : (
-            <span className="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+            <span className="flex items-center gap-1.5 text-xs text-[#999A9D]">
               <Lock size={13} aria-hidden />
               Abonnement requis
             </span>
@@ -178,20 +178,20 @@ export default async function DashboardLocauxPage() {
 
         {locauxDocs.length === 0 ? (
           <div className="p-12 text-center">
-            <Network size={36} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-            <p className="text-sm font-medium text-[#52525b] mb-2">Aucun groupe local</p>
+            <Network size={36} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+            <p className="text-sm font-medium text-[#4E5155] mb-2">Aucun groupe local</p>
             {estPartenaire ? (
-              <p className="text-sm text-[#71717a]">
+              <p className="text-sm text-[#6E7175]">
                 Créez votre premier groupe local pour structurer la présence régionale de votre réseau.
               </p>
             ) : (
-              <p className="text-sm text-[#71717a]">
+              <p className="text-sm text-[#6E7175]">
                 Souscrivez un abonnement pour créer des groupes locaux.
               </p>
             )}
           </div>
         ) : (
-          <div className="divide-y divide-[#e4e4e7]">
+          <div className="divide-y divide-[#DFE0E1]">
             {(locauxDocs as unknown as Record<string, unknown>[]).map((local) => {
               const logoMedia = local.logo as Media | null | undefined
               const logoUrl = logoMedia?.sizes?.thumbnail?.url ?? logoMedia?.url
@@ -210,30 +210,30 @@ export default async function DashboardLocauxPage() {
                       alt={`Logo ${local.nom as string}`}
                       width={40}
                       height={40}
-                      className="w-10 h-10 rounded-xl object-contain border border-[#e4e4e7] shrink-0"
+                      className="w-10 h-10 rounded-xl object-contain border border-[#DFE0E1] shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-[#f3e8ff]/50 flex items-center justify-center text-[#a855f7] shrink-0" aria-hidden>
+                    <div className="flex items-center justify-center text-[#3E7CA6] shrink-0" aria-hidden>
                       <Network size={16} />
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#18181b] truncate">
+                    <p className="text-sm font-semibold text-[#1D1E21] truncate">
                       {local.nom as string}
                     </p>
                     <div className="flex items-center gap-3 mt-0.5">
                       {(local.ville as string | null | undefined) && (
-                        <p className="text-xs text-[#71717a] flex items-center gap-1">
+                        <p className="text-xs text-[#6E7175] flex items-center gap-1">
                           <MapPin size={10} aria-hidden />
                           {local.ville as string}
                         </p>
                       )}
-                      <p className="text-xs text-[#71717a] flex items-center gap-1">
+                      <p className="text-xs text-[#6E7175] flex items-center gap-1">
                         <Users size={10} aria-hidden />
                         {(local.nbReseauteurs as number | null) ?? 0} membres
                       </p>
-                      <p className="text-xs text-[#71717a] flex items-center gap-1">
+                      <p className="text-xs text-[#6E7175] flex items-center gap-1">
                         <Calendar size={10} aria-hidden />
                         {(local.nbEvenements as number | null) ?? 0} événements
                       </p>
@@ -243,7 +243,7 @@ export default async function DashboardLocauxPage() {
                   <div className="shrink-0 flex items-center gap-3">
                     {/* Statut de délégation (lecture seule — Q2 : réassignation admin uniquement) */}
                     {isDelegue && (
-                      <span className="text-xs text-[#71717a] bg-[#f4f4f5] px-2 py-0.5 rounded-full">
+                      <span className="text-xs text-[#6E7175] bg-[#E9E9EA] px-2 py-0.5 rounded-full">
                         Délégué
                       </span>
                     )}
@@ -252,7 +252,7 @@ export default async function DashboardLocauxPage() {
                         href={`/reseau/${local.slug as string}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                        className="text-[#035AA6] hover:text-[#02467F] transition-colors"
                         aria-label={`Voir la fiche de ${local.nom as string}`}
                       >
                         <ExternalLink size={14} aria-hidden />
@@ -274,7 +274,7 @@ export default async function DashboardLocauxPage() {
 // Petit composant interne pour l'icône bâtiment
 function Building2Small() {
   return (
-    <div className="w-10 h-10 rounded-xl bg-[#bfdbfe]/20 flex items-center justify-center text-[#2563EB] shrink-0" aria-hidden>
+    <div className="flex items-center justify-center text-[#035AA6] shrink-0" aria-hidden>
       <Network size={18} />
     </div>
   )

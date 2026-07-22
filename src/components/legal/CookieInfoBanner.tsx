@@ -39,14 +39,14 @@ export default function CookieInfoBanner() {
         <button
           type="button"
           onClick={() => setConsent('denied')}
-          className="px-4 py-1.5 bg-white border border-gray-300 text-text-medium rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+          className="p-2.5 bg-white border border-gray-300 text-text-medium rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
         >
           Refuser
         </button>
         <button
           type="button"
           onClick={() => setConsent('granted')}
-          className="px-4 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
+          className="p-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
         >
           Accepter
         </button>

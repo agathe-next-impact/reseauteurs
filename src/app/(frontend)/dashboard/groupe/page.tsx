@@ -31,10 +31,10 @@ export default async function GroupePage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-100 mb-6">
             <Clock size={28} className="text-zinc-400" aria-hidden />
           </div>
-          <h1 className="text-2xl font-extrabold text-[#16284f] mb-3">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] mb-3">
             Groupes — bientôt disponible
           </h1>
-          <p className="text-[#52525b] leading-relaxed">
+          <p className="text-[#4E5155] leading-relaxed">
             La fonctionnalité de groupes sera disponible dans une prochaine version de RÉSEAUTEURS.
             Votre réseau et vos événements sont déjà accessibles depuis le tableau de bord.
           </p>

@@ -38,21 +38,21 @@ function jitter(base: number, i: number): number {
 }
 
 const CATEGORIES = [
-  { label: 'Conseil & Services', value: 'conseil', couleur: '#2563EB', ordre: 1 },
-  { label: 'BTP & Immobilier', value: 'btp', couleur: '#f5851f', ordre: 2 },
-  { label: 'Tech & Digital', value: 'tech', couleur: '#0284c7', ordre: 3 },
+  { label: 'Conseil & Services', value: 'conseil', couleur: '#035AA6', ordre: 1 },
+  { label: 'BTP & Immobilier', value: 'btp', couleur: '#F5E050', ordre: 2 },
+  { label: 'Tech & Digital', value: 'tech', couleur: '#8A6D0B', ordre: 3 },
   { label: 'Finance & Assurance', value: 'finance', couleur: '#16a34a', ordre: 4 },
-  { label: 'Santé & Bien-être', value: 'sante', couleur: '#a855f7', ordre: 5 },
+  { label: 'Santé & Bien-être', value: 'sante', couleur: '#3E7CA6', ordre: 5 },
   { label: 'Commerce & Distribution', value: 'commerce', couleur: '#eab308', ordre: 6 },
-  { label: 'Industrie', value: 'industrie', couleur: '#64748b', ordre: 7 },
+  { label: 'Industrie', value: 'industrie', couleur: '#6E7175', ordre: 7 },
   { label: 'Communication & Marketing', value: 'communication', couleur: '#ec4899', ordre: 8 },
 ]
 
 const TYPES_EVENEMENT = [
-  { label: 'Afterwork', value: 'afterwork', couleur: '#2563EB', ordre: 1 },
-  { label: 'Petit-déjeuner', value: 'petit-dejeuner', couleur: '#f5851f', ordre: 2 },
-  { label: 'Conférence', value: 'conference', couleur: '#0284c7', ordre: 3 },
-  { label: 'Réunion de réseau', value: 'reunion', couleur: '#a855f7', ordre: 4 },
+  { label: 'Afterwork', value: 'afterwork', couleur: '#035AA6', ordre: 1 },
+  { label: 'Petit-déjeuner', value: 'petit-dejeuner', couleur: '#F5E050', ordre: 2 },
+  { label: 'Conférence', value: 'conference', couleur: '#8A6D0B', ordre: 3 },
+  { label: 'Réunion de réseau', value: 'reunion', couleur: '#3E7CA6', ordre: 4 },
   { label: 'Atelier', value: 'atelier', couleur: '#16a34a', ordre: 5 },
 ]
 
@@ -113,10 +113,10 @@ const EVENEMENTS = [
 ]
 
 const PARTENAIRES = [
-  { nom: 'NeoBank Pro', lien: 'https://example.com/neobank', couleur: '#2563EB', description: 'Solutions bancaires pour indépendants et TPE.' },
+  { nom: 'NeoBank Pro', lien: 'https://example.com/neobank', couleur: '#035AA6', description: 'Solutions bancaires pour indépendants et TPE.' },
   { nom: "Assur'Entreprise", lien: 'https://example.com/assur', couleur: '#16a34a', description: 'Assurances professionnelles sur-mesure.' },
-  { nom: 'CloudFacture', lien: 'https://example.com/cloudfacture', couleur: '#0284c7', description: 'Facturation et comptabilité en ligne.' },
-  { nom: "Imprim'Express", lien: 'https://example.com/imprim', couleur: '#f5851f', description: 'Impression et signalétique pour événements.' },
+  { nom: 'CloudFacture', lien: 'https://example.com/cloudfacture', couleur: '#8A6D0B', description: 'Facturation et comptabilité en ligne.' },
+  { nom: "Imprim'Express", lien: 'https://example.com/imprim', couleur: '#F5E050', description: 'Impression et signalétique pour événements.' },
 ]
 
 /** Nombre d'entités que le seed peut créer (pour l'aperçu). */

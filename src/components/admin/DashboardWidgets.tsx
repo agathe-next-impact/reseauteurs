@@ -50,10 +50,10 @@ export default async function DashboardWidgets() {
     <div style={{ marginTop: 24 }}>
       <h3 style={titleStyle}>Vue d’ensemble</h3>
       <div style={gridStyle}>
-        <StatCard label="Réseauteurs" value={reseauteurs.totalDocs} color="#2563EB" />
-        <StatCard label="Événements" value={evenements.totalDocs} color="#f5851f" />
-        <StatCard label="Réseaux" value={reseaux.totalDocs} color="#16284f" />
-        <StatCard label="Partenaires" value={partenaires.totalDocs} color="#a855f7" />
+        <StatCard label="Réseauteurs" value={reseauteurs.totalDocs} color="#035AA6" />
+        <StatCard label="Événements" value={evenements.totalDocs} color="#F5E050" />
+        <StatCard label="Réseaux" value={reseaux.totalDocs} color="#012A4A" />
+        <StatCard label="Partenaires" value={partenaires.totalDocs} color="#3E7CA6" />
       </div>
 
       <h3 style={{ ...titleStyle, marginTop: 32 }}>Modération des réseauteurs</h3>
@@ -65,17 +65,17 @@ export default async function DashboardWidgets() {
 
       <h3 style={{ ...titleStyle, marginTop: 32 }}>Comptes par rôle</h3>
       <div style={gridStyle}>
-        <StatCard label="Réseauteurs" value={uReseauteurs.totalDocs} color="#2563EB" />
-        <StatCard label="Organisateurs" value={uOrganisateurs.totalDocs} color="#16284f" />
-        <StatCard label="Admins" value={uAdmins.totalDocs} color="#6b7280" />
+        <StatCard label="Réseauteurs" value={uReseauteurs.totalDocs} color="#035AA6" />
+        <StatCard label="Organisateurs" value={uOrganisateurs.totalDocs} color="#012A4A" />
+        <StatCard label="Admins" value={uAdmins.totalDocs} color="#6E7175" />
       </div>
 
       <h3 style={{ ...titleStyle, marginTop: 32 }}>Badges déclarés</h3>
       <div style={gridStyle}>
         <StatCard label="Bronze" value={bBronze.totalDocs} color="#b45309" />
-        <StatCard label="Argent" value={bArgent.totalDocs} color="#64748b" />
-        <StatCard label="Gold" value={bGold.totalDocs} color="#f5851f" />
-        <StatCard label="Platinum" value={bPlatinum.totalDocs} color="#2563EB" />
+        <StatCard label="Argent" value={bArgent.totalDocs} color="#6E7175" />
+        <StatCard label="Gold" value={bGold.totalDocs} color="#F5E050" />
+        <StatCard label="Platinum" value={bPlatinum.totalDocs} color="#035AA6" />
       </div>
     </div>
   )
@@ -85,13 +85,13 @@ function StatCard({ label, value, color }: { label: string; value: number | stri
   return (
     <div style={{
       padding: 16,
-      border: '1px solid #e5e7eb',
+      border: '1px solid #DFE0E1',
       borderRadius: 8,
       background: '#fff',
       textAlign: 'center',
     }}>
       <div style={{ fontSize: '1.5rem', fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: 4 }}>{label}</div>
+      <div style={{ fontSize: '0.8rem', color: '#6E7175', marginTop: 4 }}>{label}</div>
     </div>
   )
 }

@@ -58,7 +58,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 text-xs bg-[#a855f7] text-white hover:bg-[#9333ea] px-3 py-1.5 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-1.5 text-xs bg-[#3E7CA6] text-white hover:bg-[#2E6389] p-2.5 rounded-lg font-medium transition-colors"
         >
           <Plus size={13} aria-hidden />
           Nouveau groupe
@@ -68,16 +68,16 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
   }
 
   return (
-    <div className="border border-[#a855f7]/30 bg-[#faf9f5] rounded-2xl p-4 mt-2">
+    <div className="border border-[#3E7CA6]/30 bg-[#F2F2F2] rounded-2xl p-4 mt-2">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-          <Network size={14} className="text-[#a855f7]" aria-hidden />
+        <p className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
+          <Network size={14} className="text-[#3E7CA6]" aria-hidden />
           Nouveau groupe local
         </p>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-[#71717a] hover:text-[#18181b] transition-colors"
+          className="text-[#6E7175] hover:text-[#1D1E21] transition-colors"
           aria-label="Fermer le formulaire"
         >
           <X size={16} />
@@ -92,7 +92,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
 
       <form ref={formRef} action={formAction} className="space-y-3">
         <div>
-          <label htmlFor="local-nom" className="block text-xs font-medium text-[#52525b] mb-1">
+          <label htmlFor="local-nom" className="block text-xs font-medium text-[#4E5155] mb-1">
             Nom du groupe <span className="text-red-500" aria-hidden>*</span>
           </label>
           <input
@@ -102,13 +102,13 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
             required
             maxLength={100}
             placeholder="ex. BNI Clermont-Ferrand"
-            className="w-full border border-[#e4e4e7] rounded-xl px-3 py-2 text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/30 focus:border-[#a855f7] bg-white"
+            className="w-full border border-[#DFE0E1] rounded-xl px-3 py-2 text-sm text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#3E7CA6]/30 focus:border-[#3E7CA6] bg-white"
             aria-required="true"
           />
         </div>
 
         <div>
-          <label htmlFor="local-ville" className="block text-xs font-medium text-[#52525b] mb-1">
+          <label htmlFor="local-ville" className="block text-xs font-medium text-[#4E5155] mb-1">
             Ville <span className="text-red-500" aria-hidden>*</span>
           </label>
           <input
@@ -118,14 +118,14 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
             required
             maxLength={100}
             placeholder="ex. Clermont-Ferrand"
-            className="w-full border border-[#e4e4e7] rounded-xl px-3 py-2 text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/30 focus:border-[#a855f7] bg-white"
+            className="w-full border border-[#DFE0E1] rounded-xl px-3 py-2 text-sm text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#3E7CA6]/30 focus:border-[#3E7CA6] bg-white"
             aria-required="true"
           />
         </div>
 
         <div>
-          <label htmlFor="local-description" className="block text-xs font-medium text-[#52525b] mb-1">
-            Description <span className="text-[#a1a1aa] font-normal">(optionnel)</span>
+          <label htmlFor="local-description" className="block text-xs font-medium text-[#4E5155] mb-1">
+            Description <span className="text-[#999A9D] font-normal">(optionnel)</span>
           </label>
           <textarea
             id="local-description"
@@ -133,7 +133,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
             rows={2}
             maxLength={500}
             placeholder="Présentez ce groupe en quelques mots…"
-            className="w-full border border-[#e4e4e7] rounded-xl px-3 py-2 text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/30 focus:border-[#a855f7] bg-white resize-none"
+            className="w-full border border-[#DFE0E1] rounded-xl px-3 py-2 text-sm text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#3E7CA6]/30 focus:border-[#3E7CA6] bg-white resize-none"
           />
         </div>
 
@@ -141,7 +141,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
           <button
             type="submit"
             disabled={pending}
-            className="flex items-center gap-1.5 text-xs bg-[#a855f7] text-white hover:bg-[#9333ea] px-4 py-2 rounded-xl font-semibold transition-colors disabled:opacity-60"
+            className="flex items-center gap-1.5 text-xs bg-[#3E7CA6] text-white hover:bg-[#2E6389] p-2.5 rounded-xl font-semibold transition-colors disabled:opacity-60"
           >
             {pending ? (
               <>
@@ -159,7 +159,7 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
             type="button"
             onClick={() => setOpen(false)}
             disabled={pending}
-            className="text-xs text-[#71717a] hover:text-[#18181b] font-medium transition-colors disabled:opacity-40"
+            className="text-xs text-[#6E7175] hover:text-[#1D1E21] font-medium transition-colors disabled:opacity-40"
           >
             Annuler
           </button>

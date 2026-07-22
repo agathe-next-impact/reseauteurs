@@ -23,7 +23,7 @@ export function LegalLayout({ title, updatedAt, children }: LegalLayoutProps) {
           <span className="text-text-medium">{title}</span>
         </nav>
         <article className="rsn-card p-8 sm:p-12">
-          <header className="mb-8 pb-6 border-b border-[#e4e4e7]">
+          <header className="mb-8 pb-6 border-b border-[#DFE0E1]">
             <h1 className="text-3xl font-bold text-text-dark mb-2">{title}</h1>
             <p className="text-sm text-text-light">
               Dernière mise a jour : <time>{updatedAt}</time>

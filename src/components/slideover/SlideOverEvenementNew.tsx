@@ -145,12 +145,12 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
 
       {/* Erreur */}
       {!loading && error && slug && (
-        <div className="pt-12 text-center text-[#71717a]">
+        <div className="pt-12 text-center text-[#6E7175]">
           <AlertTriangle size={36} className="mx-auto mb-3 text-amber-400" />
           <p className="text-sm mb-1 font-medium">Impossible de charger cet événement.</p>
           <button
             onClick={() => fetchData(slug)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#2563EB] hover:text-[#1d4ed8] transition-colors mt-2 cursor-pointer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#035AA6] hover:text-[#02467F] transition-colors mt-2 cursor-pointer"
           >
             <RefreshCw size={13} />
             Réessayer
@@ -160,7 +160,7 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
 
       {/* Introuvable */}
       {!loading && !error && !data && slug && (
-        <div className="pt-12 text-center text-[#71717a]">
+        <div className="pt-12 text-center text-[#6E7175]">
           <Calendar size={36} className="mx-auto mb-3 text-gray-300" />
           <p className="text-sm">Événement introuvable.</p>
         </div>
@@ -187,28 +187,28 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
             {data.type?.label && (
               <span
                 className="text-xs font-medium px-2.5 py-1 rounded-full text-white"
-                style={{ background: data.type.couleur ?? '#16284f' }}
+                style={{ background: data.type.couleur ?? '#012A4A' }}
               >
                 {data.type.label}
               </span>
             )}
             {data.isPast && (
-              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-[#71717a]">
+              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-[#6E7175]">
                 Terminé
               </span>
             )}
           </div>
 
           {/* Titre */}
-          <h2 className="text-lg font-bold text-[#16284f] leading-tight mb-3">
+          <h2 className="text-lg font-bold text-[#012A4A] leading-tight mb-3">
             {data.titre}
           </h2>
 
           {/* Date & lieu */}
-          <div className="space-y-2 mb-4 pb-4 border-b border-[#e4e4e7]">
+          <div className="space-y-2 mb-4 pb-4 border-b border-[#DFE0E1]">
             {data.dateDebut && (
-              <div className="flex items-center gap-2 text-sm text-[#52525b]">
-                <CalendarDays size={14} className="shrink-0 text-[#71717a]" />
+              <div className="flex items-center gap-2 text-sm text-[#4E5155]">
+                <CalendarDays size={14} className="shrink-0 text-[#6E7175]" />
                 <span>
                   {formatDate(data.dateDebut)}
                   {formatTime(data.dateDebut) && ` à ${formatTime(data.dateDebut)}`}
@@ -217,8 +217,8 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
               </div>
             )}
             {data.lieuVille && (
-              <div className="flex items-start gap-2 text-sm text-[#52525b]">
-                <MapPin size={14} className="shrink-0 mt-0.5 text-[#71717a]" />
+              <div className="flex items-start gap-2 text-sm text-[#4E5155]">
+                <MapPin size={14} className="shrink-0 mt-0.5 text-[#6E7175]" />
                 <div>
                   {data.lieuNom && <span className="font-medium">{data.lieuNom} — </span>}
                   {data.lieuAdresse && `${data.lieuAdresse}, `}
@@ -236,12 +236,12 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                 href={data.lienInscription}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full bg-[#f5851f] text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-[#e47318] transition-colors text-sm"
+                className="flex items-center justify-center gap-2 w-full bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm"
               >
                 S&apos;inscrire à cet événement
                 <ExternalLink size={14} />
               </a>
-              <p className="text-xs text-[#71717a] text-center mt-1.5">
+              <p className="text-xs text-[#6E7175] text-center mt-1.5">
                 Redirige vers le site de {data.reseau?.nom ?? 'l&apos;organisateur'}
               </p>
             </div>
@@ -249,8 +249,8 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
 
           {/* Description */}
           {data.description && (
-            <div className="mb-4 pb-4 border-b border-[#e4e4e7]">
-              <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">
+            <div className="mb-4 pb-4 border-b border-[#DFE0E1]">
+              <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">
                 {data.description}
               </p>
             </div>
@@ -258,8 +258,8 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
 
           {/* Réseauteur organisateur (ADR-0013) */}
           {data.organisateurReseauteur && (
-            <div className="mb-4 pb-4 border-b border-[#e4e4e7]">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+            <div className="mb-4 pb-4 border-b border-[#DFE0E1]">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
                 Organisé par
               </h3>
               <div className="flex items-center gap-3">
@@ -270,23 +270,23 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                     alt=""
                     width={40}
                     height={40}
-                    className="w-10 h-10 rounded-full object-cover border border-[#e4e4e7]"
+                    className="w-10 h-10 rounded-full object-cover border border-[#DFE0E1]"
                   />
                 ) : (
                   // Accent orange = organisateur réseauteur Plus (vs bleu pour un réseau — ADR-0013)
-                  <div className="w-10 h-10 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#c2410c] font-bold text-sm" aria-hidden>
+                  <div className="w-10 h-10 rounded-full bg-[#FEFBE6] flex items-center justify-center text-[#8A6D0B] font-bold text-sm" aria-hidden>
                     {data.organisateurReseauteur.prenom?.charAt(0)}
                     {data.organisateurReseauteur.nom?.charAt(0)}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[#16284f] truncate">
+                  <p className="text-sm font-semibold text-[#012A4A] truncate">
                     {data.organisateurReseauteur.prenom} {data.organisateurReseauteur.nom}
                   </p>
                   {data.organisateurReseauteur.slug && (
                     <Link
                       href={`/reseauteur/${data.organisateurReseauteur.slug}`}
-                      className="text-xs text-[#c2410c] hover:underline"
+                      className="text-xs text-[#8A6D0B] hover:underline"
                     >
                       Voir le profil réseauteur
                     </Link>
@@ -298,8 +298,8 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
 
           {/* Réseau organisateur */}
           {data.reseau && (
-            <div className="mb-4 pb-4 border-b border-[#e4e4e7]">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+            <div className="mb-4 pb-4 border-b border-[#DFE0E1]">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
                 Organisé par
               </h3>
               <div className="flex items-center gap-3">
@@ -310,17 +310,17 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
                     alt={data.reseau.nom ?? ''}
                     width={40}
                     height={40}
-                    className="w-10 h-10 rounded-lg object-contain bg-gray-50 p-0.5 border border-[#e4e4e7]"
+                    className="w-10 h-10 rounded-lg object-contain bg-gray-50 p-0.5 border border-[#DFE0E1]"
                   />
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[#16284f] truncate">
+                  <p className="text-sm font-semibold text-[#012A4A] truncate">
                     {data.reseau.nom}
                   </p>
                   {data.reseau.slug && (
                     <Link
                       href={`/reseau/${data.reseau.slug}`}
-                      className="text-xs text-[#2563EB] hover:underline"
+                      className="text-xs text-[#035AA6] hover:underline"
                     >
                       Voir la fiche réseau
                     </Link>
@@ -335,7 +335,7 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
             <div className="mt-2">
               <Link
                 href={`/evenement/${data.slug}`}
-                className="flex items-center justify-center gap-2 w-full border border-[#e4e4e7] text-[#52525b] font-medium py-2 px-4 rounded-xl hover:border-[#2563EB] hover:text-[#2563EB] transition-colors text-sm"
+                className="flex items-center justify-center gap-2 w-full border border-[#DFE0E1] text-[#4E5155] font-medium p-2.5 rounded-xl hover:border-[#035AA6] hover:text-[#035AA6] transition-colors text-sm"
               >
                 Voir la fiche complète
               </Link>

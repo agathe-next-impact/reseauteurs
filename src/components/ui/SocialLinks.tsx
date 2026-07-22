@@ -69,7 +69,7 @@ export function SocialLinks({ links }: SocialLinksProps) {
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium rounded-full border border-gray-200 text-text-medium hover:border-gray-400 hover:text-text-dark transition-colors"
+            className="inline-flex items-center gap-1.5 p-2.5 text-sm font-medium rounded-full border border-gray-200 text-text-medium hover:border-gray-400 hover:text-text-dark transition-colors"
             title={label}
           >
             <SocialIcon platform={social.plateforme} />

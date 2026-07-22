@@ -80,11 +80,11 @@ export default function FiltresEvenementsReseauteurs({
   const content = (
     <>
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-base font-semibold text-[#18181b]">Filtrer les événements</h2>
+        <h2 className="text-base font-semibold text-[#1D1E21]">Filtrer les événements</h2>
         {onClose && (
           <button
             type="button"
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
+            className="p-2.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
             onClick={onClose}
             aria-label="Fermer les filtres"
           >
@@ -97,7 +97,7 @@ export default function FiltresEvenementsReseauteurs({
       <div className="mb-5">
         <label
           htmlFor="filtre-ville-ev"
-          className="block text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2"
+          className="block text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2"
         >
           Ville
         </label>
@@ -112,7 +112,7 @@ export default function FiltresEvenementsReseauteurs({
             placeholder="Paris, Lyon, Bordeaux..."
             value={filters.ville}
             onChange={(e) => onFilterChange({ ...filters, ville: e.target.value })}
-            className="w-full pl-8 pr-3 py-2 text-sm border border-[#e4e4e7] rounded-xl focus:outline-none focus:border-[#2563EB] transition-colors bg-white"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-[#DFE0E1] rounded-xl focus:outline-none focus:border-[#035AA6] transition-colors bg-white"
           />
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function FiltresEvenementsReseauteurs({
       <div className="mb-3">
         <label
           htmlFor="filtre-date-debut"
-          className="block text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2"
+          className="block text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2"
         >
           <span className="flex items-center gap-1.5">
             <Calendar size={12} />
@@ -133,7 +133,7 @@ export default function FiltresEvenementsReseauteurs({
           type="date"
           value={filters.dateDebut}
           onChange={(e) => onFilterChange({ ...filters, dateDebut: e.target.value })}
-          className="w-full px-3 py-2 text-sm border border-[#e4e4e7] rounded-xl focus:outline-none focus:border-[#2563EB] transition-colors bg-white"
+          className="w-full px-3 py-2 text-sm border border-[#DFE0E1] rounded-xl focus:outline-none focus:border-[#035AA6] transition-colors bg-white"
         />
       </div>
 
@@ -141,7 +141,7 @@ export default function FiltresEvenementsReseauteurs({
       <div className="mb-5">
         <label
           htmlFor="filtre-date-fin"
-          className="block text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2"
+          className="block text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2"
         >
           Jusqu&apos;au
         </label>
@@ -150,14 +150,14 @@ export default function FiltresEvenementsReseauteurs({
           type="date"
           value={filters.dateFin}
           onChange={(e) => onFilterChange({ ...filters, dateFin: e.target.value })}
-          className="w-full px-3 py-2 text-sm border border-[#e4e4e7] rounded-xl focus:outline-none focus:border-[#2563EB] transition-colors bg-white"
+          className="w-full px-3 py-2 text-sm border border-[#DFE0E1] rounded-xl focus:outline-none focus:border-[#035AA6] transition-colors bg-white"
         />
       </div>
 
       {/* Réseau */}
       {reseaux.length > 0 && (
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
             Réseau organisateur
           </p>
           <div className="space-y-0.5 max-h-40 overflow-y-auto pr-1">
@@ -172,7 +172,7 @@ export default function FiltresEvenementsReseauteurs({
                   onCheckedChange={() => toggleReseau(r.slug)}
                   aria-label={`Réseau ${r.nom}`}
                 />
-                <span className="text-sm text-[#18181b] truncate">{r.nom}</span>
+                <span className="text-sm text-[#1D1E21] truncate">{r.nom}</span>
               </div>
             ))}
           </div>
@@ -183,7 +183,7 @@ export default function FiltresEvenementsReseauteurs({
       {hasActiveFilters && (
         <button
           onClick={resetFilters}
-          className="flex items-center gap-1.5 text-sm text-[#71717a] hover:text-[#18181b] transition-colors mb-4 cursor-pointer"
+          className="flex items-center gap-1.5 text-sm text-[#6E7175] hover:text-[#1D1E21] transition-colors mb-4 cursor-pointer"
         >
           <RotateCcw size={13} />
           Réinitialiser les filtres
@@ -192,12 +192,12 @@ export default function FiltresEvenementsReseauteurs({
 
       {/* Compteur */}
       <div
-        className="mt-auto pt-4 border-t border-[#e4e4e7]"
+        className="mt-auto pt-4 border-t border-[#DFE0E1]"
         role="status"
         aria-live="polite"
         aria-atomic="true"
       >
-        <div className="bg-[#16284f] rounded-xl py-2 px-3 text-center">
+        <div className="bg-[#012A4A] rounded-xl py-2 px-3 text-center">
           <span className="text-sm font-semibold text-white">
             {resultCount} événement{resultCount !== 1 ? 's' : ''} visible{resultCount !== 1 ? 's' : ''}
           </span>

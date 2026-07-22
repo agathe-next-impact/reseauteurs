@@ -12,7 +12,7 @@ export default function FooterAccountLink() {
   if (!user) return null
   return (
     <li>
-      <Link href="/dashboard" className="text-[#71717a] hover:text-[#2563EB] no-underline transition-colors">
+      <Link href="/dashboard" className="text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors">
         Mon espace
       </Link>
     </li>

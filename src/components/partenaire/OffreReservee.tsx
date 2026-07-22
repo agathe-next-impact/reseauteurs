@@ -36,37 +36,37 @@ export default function OffreReservee({ slug }: { slug: string }) {
 
   return (
     <section aria-labelledby="offre-titre">
-      <h2 id="offre-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
-        <Tag size={14} className="text-[#f5851f]" aria-hidden />
+      <h2 id="offre-titre" className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
+        <Tag size={14} className="text-[#8A6D0B]" aria-hidden />
         Offre réservée aux réseauteurs
       </h2>
 
       {/* Chargement : garde la hauteur pour éviter le saut de mise en page */}
       {state === null ? (
-        <div className="rounded-xl border border-dashed border-[#e4e4e7] bg-[#faf9f5] p-4 min-h-[64px] animate-pulse" aria-hidden />
+        <div className="rounded-xl border border-dashed border-[#DFE0E1] bg-[#F2F2F2] p-4 min-h-[64px] animate-pulse" aria-hidden />
       ) : state.canSee && state.offre ? (
-        <div className="rounded-xl border border-[#fed7aa] bg-[#fff7ed] p-4">
-          <p className="text-sm font-bold text-[#c2410c]">{state.offre.titre}</p>
+        <div className="rounded-xl border border-[#EFE08F] bg-[#FEFBE6] p-4">
+          <p className="text-sm font-bold text-[#8A6D0B]">{state.offre.titre}</p>
           {state.offre.description && (
-            <p className="text-sm text-[#9a3412] mt-1.5 whitespace-pre-line">{state.offre.description}</p>
+            <p className="text-sm text-[#6E5608] mt-1.5 whitespace-pre-line">{state.offre.description}</p>
           )}
           {state.offre.lien && (
             <a
               href={state.offre.lien}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 bg-[#f5851f] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#e07710] transition-colors text-sm no-underline"
+              className="mt-3 inline-flex items-center gap-1.5 bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm no-underline"
             >
               En profiter <ExternalLink size={13} aria-hidden />
             </a>
           )}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-[#e4e4e7] bg-[#faf9f5] p-4 flex items-start gap-3">
-          <Lock size={16} className="text-[#a1a1aa] shrink-0 mt-0.5" aria-hidden />
+        <div className="rounded-xl border border-dashed border-[#DFE0E1] bg-[#F2F2F2] p-4 flex items-start gap-3">
+          <Lock size={16} className="text-[#999A9D] shrink-0 mt-0.5" aria-hidden />
           <div>
-            <p className="text-sm text-[#52525b]">Cette offre est réservée aux réseauteurs.</p>
-            <Link href="/inscription" className="text-sm text-[#2563EB] font-medium no-underline">
+            <p className="text-sm text-[#4E5155]">Cette offre est réservée aux réseauteurs.</p>
+            <Link href="/inscription" className="text-sm text-[#035AA6] font-medium no-underline">
               Créez votre compte réseauteur gratuit →
             </Link>
           </div>

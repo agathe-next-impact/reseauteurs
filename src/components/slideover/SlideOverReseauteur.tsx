@@ -20,10 +20,10 @@ import SlideOver from './SlideOver'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 const BADGE_STYLES: Record<string, { label: string; bg: string; text: string }> = {
-  bronze: { label: 'Bronze', bg: '#fef3c7', text: '#92400e' },
-  argent: { label: 'Argent', bg: '#f1f5f9', text: '#475569' },
-  gold: { label: 'Gold', bg: '#fef9c3', text: '#a16207' },
-  platinum: { label: 'Platinum', bg: '#dbeafe', text: '#1d4ed8' },
+  bronze: { label: 'Bronze', bg: '#F3EFDC', text: '#6E5608' },
+  argent: { label: 'Argent', bg: '#E9E9EA', text: '#3F4247' },
+  gold: { label: 'Gold', bg: '#FBF4D3', text: '#8A6D0B' },
+  platinum: { label: 'Platinum', bg: '#DCEAF5', text: '#02467F' },
 }
 
 interface ReseauteurDetail {
@@ -88,7 +88,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
   }, [slug])
 
   const badgeStyle = data?.badge ? BADGE_STYLES[data.badge] : null
-  const secteurColor = data?.secteur?.couleur ?? '#2563EB'
+  const secteurColor = data?.secteur?.couleur ?? '#035AA6'
 
   return (
     <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet>
@@ -109,12 +109,12 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
       {/* Erreur */}
       {!loading && error && slug && (
-        <div className="pt-12 text-center text-[#71717a]">
+        <div className="pt-12 text-center text-[#6E7175]">
           <AlertTriangle size={36} className="mx-auto mb-3 text-amber-400" />
           <p className="text-sm mb-1 font-medium">Impossible de charger ce profil.</p>
           <button
             onClick={() => fetchData(slug)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#2563EB] hover:text-[#1d4ed8] transition-colors mt-2 cursor-pointer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#035AA6] hover:text-[#02467F] transition-colors mt-2 cursor-pointer"
           >
             <RefreshCw size={13} />
             Réessayer
@@ -124,7 +124,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
       {/* Introuvable */}
       {!loading && !error && !data && slug && (
-        <div className="pt-12 text-center text-[#71717a]">
+        <div className="pt-12 text-center text-[#6E7175]">
           <User size={36} className="mx-auto mb-3 text-gray-300" />
           <p className="text-sm">Réseauteur introuvable.</p>
         </div>
@@ -136,7 +136,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
           {/* En-tête avec couleur de secteur */}
           <div
             className="relative -mx-6 -mt-4 mb-5 h-20"
-            style={{ background: `linear-gradient(135deg, ${secteurColor}30, ${secteurColor}10)` }}
+            style={{ background: `${secteurColor}1F` }}
           >
             {/* Photo */}
             <div className="absolute -bottom-8 left-6">
@@ -167,17 +167,17 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
           </div>
 
           {/* Identité */}
-          <div className="pt-10 pb-4 border-b border-[#e4e4e7]">
+          <div className="pt-10 pb-4 border-b border-[#DFE0E1]">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-lg font-bold text-[#18181b]">
+                <h2 className="text-lg font-bold text-[#1D1E21]">
                   {data.prenom} {data.nom}
                 </h2>
                 {data.fonction && (
-                  <p className="text-sm text-[#71717a]">{data.fonction}</p>
+                  <p className="text-sm text-[#6E7175]">{data.fonction}</p>
                 )}
                 {data.entreprise && (
-                  <p className="text-sm font-medium text-[#52525b]">{data.entreprise}</p>
+                  <p className="text-sm font-medium text-[#4E5155]">{data.entreprise}</p>
                 )}
               </div>
               {/* Badge */}
@@ -192,7 +192,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
             </div>
 
             {/* Ville */}
-            <div className="flex items-center gap-1.5 mt-2 text-sm text-[#71717a]">
+            <div className="flex items-center gap-1.5 mt-2 text-sm text-[#6E7175]">
               <MapPin size={13} className="shrink-0" />
               <span>{data.ville}{data.departement ? ` (${data.departement})` : ''}</span>
             </div>
@@ -202,7 +202,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
               <div className="mt-2">
                 <span
                   className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full text-white"
-                  style={{ background: data.secteur.couleur ?? '#2563EB' }}
+                  style={{ background: data.secteur.couleur ?? '#035AA6' }}
                 >
                   {data.secteur.label}
                 </span>
@@ -212,10 +212,10 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
           {/* CTA principal */}
           {data.slug && (
-            <div className="py-4 border-b border-[#e4e4e7]">
+            <div className="py-4 border-b border-[#DFE0E1]">
               <Link
                 href={`/reseauteur/${data.slug}`}
-                className="flex items-center justify-center gap-2 w-full bg-[#2563EB] text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm"
+                className="flex items-center justify-center gap-2 w-full bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm"
               >
                 Voir le profil complet
               </Link>
@@ -224,8 +224,8 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
           {/* Description */}
           {data.description && (
-            <div className="py-4 border-b border-[#e4e4e7]">
-              <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">
+            <div className="py-4 border-b border-[#DFE0E1]">
+              <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">
                 {data.description}
               </p>
             </div>
@@ -233,15 +233,15 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
           {/* Réseaux fréquentés */}
           {data.reseauxFrequentes.length > 0 && (
-            <div className="py-4 border-b border-[#e4e4e7]">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+            <div className="py-4 border-b border-[#DFE0E1]">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
                 Réseaux fréquentés
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {data.reseauxFrequentes.map((r) => (
                   <span
                     key={r.id}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-[#bfdbfe] text-[#1d4ed8]"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-[#A9C9E4] text-[#02467F]"
                   >
                     {r.logoUrl && (
                       <img
@@ -261,15 +261,15 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
           {/* Compétences */}
           {data.competences.length > 0 && (
-            <div className="py-4 border-b border-[#e4e4e7]">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+            <div className="py-4 border-b border-[#DFE0E1]">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
                 Compétences
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {data.competences.map((c, i) => (
                   <span
                     key={i}
-                    className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-[#52525b]"
+                    className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-[#4E5155]"
                   >
                     {c}
                   </span>
@@ -280,14 +280,14 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
 
           {/* Contacts (facultatifs) */}
           {(data.telephone || data.emailContact || data.site || data.linkedin) && (
-            <div className="py-4 border-b border-[#e4e4e7] space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+            <div className="py-4 border-b border-[#DFE0E1] space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
                 Contact
               </h3>
               {data.telephone && (
                 <a
                   href={`tel:${data.telephone}`}
-                  className="flex items-center gap-2 text-sm text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                  className="flex items-center gap-2 text-sm text-[#035AA6] hover:text-[#02467F] transition-colors"
                 >
                   <Phone size={14} className="shrink-0" />
                   {data.telephone}
@@ -296,7 +296,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
               {data.emailContact && (
                 <a
                   href={`mailto:${data.emailContact}`}
-                  className="flex items-center gap-2 text-sm text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                  className="flex items-center gap-2 text-sm text-[#035AA6] hover:text-[#02467F] transition-colors"
                 >
                   <Mail size={14} className="shrink-0" />
                   {data.emailContact}
@@ -307,7 +307,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
                   href={data.site}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                  className="flex items-center gap-2 text-sm text-[#035AA6] hover:text-[#02467F] transition-colors"
                 >
                   <Globe size={14} className="shrink-0" />
                   {data.site.replace(/^https?:\/\//, '').replace(/\/$/, '')}
@@ -318,7 +318,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
                   href={data.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                  className="flex items-center gap-2 text-sm text-[#035AA6] hover:text-[#02467F] transition-colors"
                 >
                   <ExternalLink size={14} className="shrink-0" />
                   LinkedIn

@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Hanken_Grotesk } from 'next/font/google'
+import { Inter, Inter_Tight } from 'next/font/google'
 import { Toaster } from 'sonner'
 import AuthProvider from '@/components/nav/AuthProvider'
 import AuthNav from '@/components/nav/AuthNav'
@@ -18,10 +18,21 @@ import { buildOrganizationJsonLd, buildWebSiteJsonLd } from '@/lib/jsonld'
 import { SITE_NAME, SITE_TAGLINE } from '@/lib/site'
 import './styles.css'
 
-const hanken = Hanken_Grotesk({
+// Jeu typographique « institution neutre » : Inter pour le corps et l'UI,
+// Inter Tight (compagnon resserré, dessiné pour le display) pour les titres.
+// `weight` omis → next/font sert la VARIABLE font : toutes les graisses
+// (400→800 utilisées ici) pour le poids d'un seul fichier par famille.
+// Le subset `latin` de Google couvre U+0152-0153, donc « œ » (cœur, œuvre)
+// est inclus : pas besoin de `latin-ext`.
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-hanken',
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const interTight = Inter_Tight({
+  subsets: ['latin'],
+  variable: '--font-inter-tight',
   display: 'swap',
 })
 
@@ -34,7 +45,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   // `(frontend)` en dynamique et annulait l'ISR — audit perf P1). L'état auth de la nav
   // est hydraté côté client par AuthProvider (GET /api/auth/me).
   return (
-    <html lang="fr" className={hanken.variable} suppressHydrationWarning>
+    <html lang="fr" className={`${inter.variable} ${interTight.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://js.stripe.com" />
         {/* CDN cartes : connexion TLS prête avant le style/glyphes/tuiles MapLibre
@@ -42,7 +53,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
       </head>
-      <body suppressHydrationWarning className="font-[family-name:var(--font-hanken)] overflow-x-hidden antialiased">
+      <body suppressHydrationWarning className="font-[family-name:var(--font-inter)] overflow-x-hidden antialiased">
         {/* Thème : clair par défaut. Ré-applique le mode sombre choisi AVANT
             peinture pour éviter le flash (FOUC). Script parser-bloquant en
             tête de <body> : document.body existe déjà à son exécution. */}

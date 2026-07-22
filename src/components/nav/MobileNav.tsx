@@ -72,7 +72,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
           <>
             <Link
               href="/dashboard"
-              className="p-3 rounded-lg text-text-medium hover:text-primary hover:bg-primary-light/50 transition-colors"
+              className="p-2.5 rounded-lg text-text-medium hover:text-primary hover:bg-primary-light/50 transition-colors"
               aria-label="Mon espace"
             >
               <LayoutDashboard size={20} />
@@ -80,7 +80,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
             <button
               onClick={handleLogout}
               disabled={isPending}
-              className="p-3 rounded-lg text-text-medium hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+              className="p-2.5 rounded-lg text-text-medium hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
               aria-label="Déconnexion"
             >
               {isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
@@ -90,14 +90,14 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
           <>
             <Link
               href="/login"
-              className="p-3 rounded-lg text-text-medium hover:text-primary hover:bg-primary-light/50 transition-colors"
+              className="p-2.5 rounded-lg text-text-medium hover:text-primary hover:bg-primary-light/50 transition-colors"
               aria-label="Connexion"
             >
               <LogIn size={20} />
             </Link>
             <Link
               href="/inscription"
-              className="p-3 rounded-lg bg-primary text-white hover:bg-primary/80 transition-colors"
+              className="p-2.5 rounded-lg bg-primary text-white hover:bg-primary/80 transition-colors"
               aria-label="Inscription"
             >
               <UserPlus size={20} />
@@ -125,7 +125,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
 
           {/* Slide-in panel */}
           <nav
-            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#e4e4e7] flex flex-col animate-[slideLeft_200ms_ease-out]"
+            className="absolute top-0 right-0 bottom-0 w-[280px] bg-white border-l border-[#DFE0E1] flex flex-col animate-[slideLeft_200ms_ease-out]"
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navigation"
@@ -135,7 +135,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
               <span className="text-sm font-semibold text-text-dark">Menu</span>
               <button
                 onClick={close}
-                className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
+                className="p-2.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
                 aria-label="Fermer le menu"
               >
                 <X size={18} />
@@ -203,7 +203,7 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
                   <button
                     onClick={handleLogout}
                     disabled={isPending}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-text-light hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex items-center gap-3 w-full p-2.5 rounded-lg text-sm font-medium text-text-light hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {isPending ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
                     Déconnexion
@@ -213,14 +213,14 @@ export default function MobileNav({ user, plan = 'gratuit', role = 'fournisseur'
                 <div className="space-y-2">
                   <Link
                     href="/login"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-medium no-underline hover:bg-gray-50 hover:text-text-dark transition-colors"
+                    className="flex items-center gap-3 p-2.5 rounded-lg text-sm font-medium text-text-medium no-underline hover:bg-gray-50 hover:text-text-dark transition-colors"
                   >
                     <LogIn size={18} />
                     Connexion
                   </Link>
                   <Link
                     href="/inscription"
-                    className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-full bg-primary text-white text-sm font-medium no-underline hover:bg-primary/80 transition-colors"
+                    className="flex items-center justify-center gap-2 w-full p-2.5 rounded-full bg-primary text-white text-sm font-medium no-underline hover:bg-primary/80 transition-colors"
                   >
                     <UserPlus size={18} />
                     Inscription

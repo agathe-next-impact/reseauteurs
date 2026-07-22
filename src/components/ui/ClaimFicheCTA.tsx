@@ -16,7 +16,7 @@ export function ClaimFicheCTA({ ficheId }: { ficheId: number | string }) {
       </p>
       <Link
         href={`/inscription?claim=${ficheId}`}
-        className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
+        className="inline-flex items-center justify-center p-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors text-sm no-underline"
       >
         Revendiquer ma fiche
       </Link>

@@ -108,7 +108,7 @@ export default function AgendaView({ data, onEventClick, typesEvenement }: Agend
             {group.items.map((feature) => {
               const p = feature.properties
               const type = p.type as string
-              const borderColor = (p.typeCouleur as string) ?? '#6b7280'
+              const borderColor = (p.typeCouleur as string) ?? '#6E7175'
 
               return (
                 <div
@@ -124,7 +124,7 @@ export default function AgendaView({ data, onEventClick, typesEvenement }: Agend
 
                   {/* Card content button */}
                   <button
-                    className="flex-1 flex items-start gap-3 p-3 text-left bg-transparent border-none cursor-pointer"
+                    className="flex-1 flex items-start gap-3 p-2.5 text-left bg-transparent border-none cursor-pointer"
                     onClick={() => onEventClick(String(p.slug ?? p.id))}
                   >
                     {/* Date badge */}
@@ -164,7 +164,7 @@ export default function AgendaView({ data, onEventClick, typesEvenement }: Agend
                   {/* iCal button */}
                   <a
                     href={`/api/ical/${p.id}`}
-                    className="shrink-0 self-center mr-3 flex items-center gap-1 px-2.5 py-1.5 text-sm font-semibold text-primary bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                    className="shrink-0 self-center mr-3 flex items-center gap-1 p-2.5 text-sm font-semibold text-primary bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                     title="Ajouter au calendrier"
                     onClick={(e) => e.stopPropagation()}
                   >

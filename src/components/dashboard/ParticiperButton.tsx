@@ -38,7 +38,7 @@ export default function ParticiperButton({ eventId, initialParticipating }: Part
     <button
       onClick={handleToggle}
       disabled={loading}
-      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
+      className={`inline-flex items-center gap-2 p-2.5 text-sm font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
         participating
           ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
           : 'bg-primary text-white hover:bg-primary-hover'

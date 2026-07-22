@@ -46,34 +46,34 @@ export const MAP_STYLE_DARK = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-s
  * Ordre = progression Bronze → Argent → Gold → Platinum.
  */
 export const BADGE_MARKER_COLORS = [
-  { value: 'bronze', label: 'Bronze', color: '#b45309' },
-  { value: 'argent', label: 'Argent', color: '#64748b' },
-  { value: 'gold', label: 'Gold', color: '#f5851f' },
-  { value: 'platinum', label: 'Platinum', color: '#2563EB' },
+  { value: 'bronze', label: 'Bronze', color: '#8A6D0B' },
+  { value: 'argent', label: 'Argent', color: '#6E7175' },
+  { value: 'gold', label: 'Gold', color: '#F5E050' },
+  { value: 'platinum', label: 'Platinum', color: '#035AA6' },
 ] as const
 
 /** Couleur de repli d'un marqueur réseauteur sans badge renseigné. */
-export const BADGE_MARKER_FALLBACK = '#9ca3af'
+export const BADGE_MARKER_FALLBACK = '#CFD0D2'
 
 /** Couleurs utilisées pour les marqueurs et clusters — tokens RÉSEAUTEURS (DESIGN.md §2) */
 export const MAP_COLORS = {
   /** Bleu primaire : marqueur réseauteur standard, cluster */
-  primary: '#2563EB',
+  primary: '#035AA6',
   /**
-   * Orange accent : CTA, conversion.
+   * Jaune accent : CTA, conversion.
    * Conservé pour les fiches événements (MiniMap) et d'autres usages futurs.
    * N'est plus utilisé comme couleur de marqueur « Premium » sur la carte des
    * événements (ADR-0012 : événement Premium supprimé).
    */
-  premium: '#f5851f',
+  premium: '#F5E050',
   /** Navy : marqueur événement organisé par un réseau */
-  evenement: '#16284f',
-  /** Orange accent : marqueur événement organisé par un réseauteur Plus (ADR-0013) */
-  evenementReseauteur: '#f5851f',
-  /** Violet secondaire : marqueur réseau local (groupe/section — ADR-0012) */
-  reseau: '#a855f7',
+  evenement: '#012A4A',
+  /** Jaune accent : marqueur événement organisé par un réseauteur Plus (ADR-0013) */
+  evenementReseauteur: '#F5E050',
+  /** Bleu médian : marqueur réseau local (groupe/section — ADR-0012) */
+  reseau: '#3E7CA6',
   /** Gris neutre : états vides, marqueurs sans catégorie */
-  neutral: '#9ca3af',
+  neutral: '#999A9D',
   /** Blanc : bordure des marqueurs */
   white: '#ffffff',
 } as const

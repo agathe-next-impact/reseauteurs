@@ -57,10 +57,10 @@ interface FiltresReseauteursProps {
 }
 
 const BADGES = [
-  { value: 'bronze', label: 'Bronze', couleur: '#92400e', description: '0–1 événement/mois' },
-  { value: 'argent', label: 'Argent', couleur: '#475569', description: '2–5 événements/mois' },
+  { value: 'bronze', label: 'Bronze', couleur: '#6E5608', description: '0–1 événement/mois' },
+  { value: 'argent', label: 'Argent', couleur: '#4E5155', description: '2–5 événements/mois' },
   { value: 'gold', label: 'Gold', couleur: '#a16207', description: '6–10 événements/mois' },
-  { value: 'platinum', label: 'Platinum', couleur: '#1d4ed8', description: '+10 événements/mois' },
+  { value: 'platinum', label: 'Platinum', couleur: '#02467F', description: '+10 événements/mois' },
 ] as const
 
 export default function FiltresReseauteurs({
@@ -119,11 +119,11 @@ export default function FiltresReseauteurs({
   const content = (
     <>
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-base font-semibold text-[#18181b]">Filtrer les réseauteurs</h2>
+        <h2 className="text-base font-semibold text-[#1D1E21]">Filtrer les réseauteurs</h2>
         {onClose && (
           <button
             type="button"
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
+            className="p-2.5 rounded-md hover:bg-gray-100 text-gray-500 cursor-pointer"
             onClick={onClose}
             aria-label="Fermer les filtres"
           >
@@ -134,7 +134,7 @@ export default function FiltresReseauteurs({
 
       {/* Ville */}
       <div className="mb-5">
-        <label className="block text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
           Ville
         </label>
         <div className="relative">
@@ -147,7 +147,7 @@ export default function FiltresReseauteurs({
             placeholder="Paris, Lyon, Clermont..."
             value={filters.ville}
             onChange={handleVille}
-            className="w-full pl-8 pr-3 py-2 text-sm border border-[#e4e4e7] rounded-xl focus:outline-none focus:border-[#2563EB] transition-colors bg-white"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-[#DFE0E1] rounded-xl focus:outline-none focus:border-[#035AA6] transition-colors bg-white"
             aria-label="Filtrer par ville"
           />
         </div>
@@ -156,7 +156,7 @@ export default function FiltresReseauteurs({
       {/* Secteur */}
       {categories.length > 0 && (
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
             Secteur d&apos;activité
           </p>
           <div className="space-y-0.5">
@@ -178,7 +178,7 @@ export default function FiltresReseauteurs({
                     aria-hidden="true"
                   />
                 )}
-                <span className="text-sm text-[#18181b]">{cat.label}</span>
+                <span className="text-sm text-[#1D1E21]">{cat.label}</span>
               </div>
             ))}
           </div>
@@ -188,7 +188,7 @@ export default function FiltresReseauteurs({
       {/* Réseau fréquenté */}
       {reseaux.length > 0 && (
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
             Réseau fréquenté
           </p>
           <div className="space-y-0.5 max-h-36 overflow-y-auto pr-1">
@@ -203,7 +203,7 @@ export default function FiltresReseauteurs({
                   onCheckedChange={() => toggleReseau(r.slug)}
                   aria-label={`Réseau ${r.nom}`}
                 />
-                <span className="text-sm text-[#18181b] truncate">{r.nom}</span>
+                <span className="text-sm text-[#1D1E21] truncate">{r.nom}</span>
               </div>
             ))}
           </div>
@@ -212,7 +212,7 @@ export default function FiltresReseauteurs({
 
       {/* Badge */}
       <div className="mb-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#71717a] mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-2">
           Badge
         </p>
         <div className="space-y-0.5">
@@ -233,7 +233,7 @@ export default function FiltresReseauteurs({
               >
                 {b.label}
               </span>
-              <span className="text-xs text-[#71717a]">{b.description}</span>
+              <span className="text-xs text-[#6E7175]">{b.description}</span>
             </div>
           ))}
         </div>
@@ -243,7 +243,7 @@ export default function FiltresReseauteurs({
       {hasActiveFilters && (
         <button
           onClick={resetFilters}
-          className="flex items-center gap-1.5 text-sm text-[#71717a] hover:text-[#18181b] transition-colors mb-4 cursor-pointer"
+          className="flex items-center gap-1.5 text-sm text-[#6E7175] hover:text-[#1D1E21] transition-colors mb-4 cursor-pointer"
         >
           <RotateCcw size={13} />
           Réinitialiser les filtres
@@ -252,12 +252,12 @@ export default function FiltresReseauteurs({
 
       {/* Compteur */}
       <div
-        className="mt-auto pt-4 border-t border-[#e4e4e7]"
+        className="mt-auto pt-4 border-t border-[#DFE0E1]"
         role="status"
         aria-live="polite"
         aria-atomic="true"
       >
-        <div className="bg-[#2563EB] rounded-xl py-2 px-3 text-center">
+        <div className="bg-[#035AA6] rounded-xl py-2 px-3 text-center">
           <span className="text-sm font-semibold text-white">
             {resultCount} réseauteur{resultCount !== 1 ? 's' : ''} visible{resultCount !== 1 ? 's' : ''}
           </span>

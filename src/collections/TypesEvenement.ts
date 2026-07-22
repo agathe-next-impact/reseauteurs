@@ -54,7 +54,7 @@ export const TypesEvenement: CollectionConfig = {
       required: true,
       label: 'Couleur (hex)',
       admin: {
-        description: 'Code couleur hexadecimal, ex: #1e40af',
+        description: 'Code couleur hexadecimal, ex: #01365F',
       },
     },
     {

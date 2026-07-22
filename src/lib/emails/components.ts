@@ -73,7 +73,7 @@ function cardColors(variant: CardVariant): { bg: string; border: string; title: 
       return { bg: emailTheme.color.infoBg, border: emailTheme.color.infoBorder, title: emailTheme.color.info }
     case 'default':
     default:
-      return { bg: '#f9fafb', border: emailTheme.color.borderMuted, title: emailTheme.color.textDark }
+      return { bg: '#FAFAFA', border: emailTheme.color.borderMuted, title: emailTheme.color.textDark }
   }
 }
 

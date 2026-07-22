@@ -226,7 +226,7 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
 
           <Reveal>
             {/* Accent par organisateur (ADR-0013) : orange = réseauteur Plus, bleu = réseau */}
-            <p className="rsn-eyebrow" style={{ color: isPlusEvent ? '#fdba74' : '#93c5fd' }}>
+            <p className="rsn-eyebrow" style={{ color: isPlusEvent ? '#EAD673' : '#8BB4D9' }}>
               {typeDoc?.label ?? 'Événement business'}
               {isPlusEvent && ' · organisé par un réseauteur'}
             </p>
@@ -306,21 +306,21 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
               />
             </div>
           ) : (
-            <div className="w-full aspect-[3/1] bg-gradient-to-br from-[#bfdbfe]/30 to-[#e0f2fe]/20" />
+            <div className="w-full aspect-[3/1] bg-[#E7F0F7]" />
           )}
 
           {/* Description */}
           <div className="px-6 py-6 space-y-8">
             {e.descriptionCourte && (
               <Reveal>
-                <p className="text-base text-[#18181b] font-medium leading-relaxed">{e.descriptionCourte}</p>
+                <p className="text-base text-[#1D1E21] font-medium leading-relaxed">{e.descriptionCourte}</p>
               </Reveal>
             )}
             {e.description && (
               <Reveal>
                 <section aria-labelledby="desc-titre">
-                  <h2 id="desc-titre" className="text-sm font-semibold text-[#18181b] mb-2">À propos de cet événement</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.description}</p>
+                  <h2 id="desc-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">À propos de cet événement</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{e.description}</p>
                 </section>
               </Reveal>
             )}
@@ -329,8 +329,8 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {e.intervenants && (
               <Reveal>
                 <section aria-labelledby="intervenants-titre">
-                  <h2 id="intervenants-titre" className="text-sm font-semibold text-[#18181b] mb-2">Intervenant(s)</h2>
-                  <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.intervenants}</p>
+                  <h2 id="intervenants-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">Intervenant(s)</h2>
+                  <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{e.intervenants}</p>
                 </section>
               </Reveal>
             )}
@@ -339,12 +339,12 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {participationRows.length > 0 && (
               <Reveal>
                 <section aria-labelledby="participation-titre">
-                  <h2 id="participation-titre" className="text-sm font-semibold text-[#18181b] mb-3">Participation</h2>
+                  <h2 id="participation-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">Participation</h2>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                     {participationRows.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between gap-3 border-b border-[#f4f4f5] py-1.5">
-                        <dt className="text-xs text-[#71717a]">{row.label}</dt>
-                        <dd className="text-xs font-semibold text-[#18181b] text-right">{row.value}</dd>
+                      <div key={row.label} className="flex items-center justify-between gap-3 border-b border-[#E9E9EA] py-1.5">
+                        <dt className="text-xs text-[#6E7175]">{row.label}</dt>
+                        <dd className="text-xs font-semibold text-[#1D1E21] text-right">{row.value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -356,7 +356,7 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {(pratiques.length > 0 || e.infosPratiques) && (
               <Reveal>
                 <section aria-labelledby="pratiques-titre">
-                  <h2 id="pratiques-titre" className="text-sm font-semibold text-[#18181b] mb-2">Informations pratiques</h2>
+                  <h2 id="pratiques-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">Informations pratiques</h2>
                   {pratiques.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
                       {pratiques.map((p) => (
@@ -367,7 +367,7 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                     </div>
                   )}
                   {e.infosPratiques && (
-                    <p className="text-sm text-[#52525b] leading-relaxed whitespace-pre-line">{e.infosPratiques}</p>
+                    <p className="text-sm text-[#4E5155] leading-relaxed whitespace-pre-line">{e.infosPratiques}</p>
                   )}
                 </section>
               </Reveal>
@@ -377,10 +377,10 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {galerieUrls.length > 0 && (
               <Reveal>
                 <section aria-labelledby="galerie-ev-titre">
-                  <h2 id="galerie-ev-titre" className="text-sm font-semibold text-[#18181b] mb-3">En images</h2>
+                  <h2 id="galerie-ev-titre" className="text-sm font-semibold text-[#1D1E21] mb-3">En images</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {galerieUrls.map((url, i) => (
-                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#e4e4e7]">
+                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-[#DFE0E1]">
                         <Image src={url} alt={`Photo ${i + 1} de l'événement ${e.titre}`} fill className="object-cover" sizes="(max-width: 640px) 50vw, 240px" />
                       </div>
                     ))}
@@ -393,16 +393,16 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {(e.contactNom || e.contactEmail || e.contactTelephone) && (
               <Reveal>
                 <section aria-labelledby="contact-ev-titre">
-                  <h2 id="contact-ev-titre" className="text-sm font-semibold text-[#18181b] mb-2">Contact</h2>
-                  {e.contactNom && <p className="text-sm text-[#52525b] mb-2">{e.contactNom}</p>}
+                  <h2 id="contact-ev-titre" className="text-sm font-semibold text-[#1D1E21] mb-2">Contact</h2>
+                  {e.contactNom && <p className="text-sm text-[#4E5155] mb-2">{e.contactNom}</p>}
                   <div className="flex flex-wrap gap-2">
                     {e.contactEmail && (
-                      <a href={`mailto:${e.contactEmail}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                      <a href={`mailto:${e.contactEmail}`} className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors">
                         {e.contactEmail}
                       </a>
                     )}
                     {e.contactTelephone && (
-                      <a href={`tel:${e.contactTelephone}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e4e4e7] text-sm text-[#52525b] hover:border-[#2563EB] hover:text-[#2563EB] no-underline transition-colors">
+                      <a href={`tel:${e.contactTelephone}`} className="inline-flex items-center gap-1.5 p-2.5 rounded-xl border border-[#DFE0E1] text-sm text-[#4E5155] hover:border-[#035AA6] hover:text-[#035AA6] no-underline transition-colors">
                         {e.contactTelephone}
                       </a>
                     )}
@@ -415,14 +415,14 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {organisateurRz && (
               <Reveal>
                 <section aria-labelledby="organisateur-titre">
-                  <h2 id="organisateur-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                  <h2 id="organisateur-titre" className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
                     <Users size={14} aria-hidden />
                     Organisé par
                   </h2>
                   {/* Accent orange = organisateur réseauteur Plus (vs bleu pour un réseau — ADR-0013) */}
                   <Link
                     href={`/reseauteur/${organisateurRz.slug}`}
-                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#f5851f]/50 transition-colors no-underline group"
+                    className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#F5E050]/50 transition-colors no-underline group"
                   >
                     {organisateurPhotoUrl ? (
                       <Image
@@ -430,22 +430,22 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                         alt={`Photo de ${organisateurRz.prenom} ${organisateurRz.nom}`}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full object-cover border border-[#e4e4e7] shrink-0"
+                        className="w-10 h-10 rounded-full object-cover border border-[#DFE0E1] shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#c2410c] font-bold text-sm shrink-0" aria-hidden>
+                      <div className="w-10 h-10 rounded-full bg-[#FEFBE6] flex items-center justify-center text-[#8A6D0B] font-bold text-sm shrink-0" aria-hidden>
                         {organisateurRz.prenom?.charAt(0)}{organisateurRz.nom?.charAt(0)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#c2410c] transition-colors">
+                      <p className="text-sm font-semibold text-[#1D1E21] group-hover:text-[#8A6D0B] transition-colors">
                         {organisateurRz.prenom} {organisateurRz.nom}
                       </p>
-                      <p className="text-xs text-[#71717a]">
+                      <p className="text-xs text-[#6E7175]">
                         Réseauteur{organisateurRz.ville ? ` · ${organisateurRz.ville}` : ''}
                       </p>
                     </div>
-                    <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#c2410c] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                    <ArrowRight size={14} className="text-[#999A9D] group-hover:text-[#8A6D0B] transition-colors shrink-0 rsn-arrow" aria-hidden />
                   </Link>
                 </section>
               </Reveal>
@@ -455,13 +455,13 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {reseau && (
               <Reveal>
                 <section aria-labelledby="reseau-titre">
-                  <h2 id="reseau-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                  <h2 id="reseau-titre" className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
                     <Network size={14} aria-hidden />
                     Réseau organisateur
                   </h2>
                   <Link
                     href={`/reseau/${reseau.slug}`}
-                    className="rsn-lift flex items-center gap-3 p-3 rounded-xl border border-[#e4e4e7] hover:border-[#2563EB]/40 transition-colors no-underline group"
+                    className="rsn-lift flex items-center gap-3 p-2.5 rounded-xl border border-[#DFE0E1] hover:border-[#035AA6]/40 transition-colors no-underline group"
                   >
                     {reseauLogoUrl ? (
                       <Image
@@ -469,18 +469,18 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                         alt={`Logo ${reseau.nom}`}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-lg object-contain border border-[#e4e4e7] shrink-0"
+                        className="w-10 h-10 rounded-lg object-contain border border-[#DFE0E1] shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-lg bg-[#bfdbfe]/30 flex items-center justify-center text-[#2563EB] font-bold text-sm shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-[#A9C9E4]/30 flex items-center justify-center text-[#035AA6] font-bold text-sm shrink-0">
                         {reseau.nom.charAt(0)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#18181b] group-hover:text-[#2563EB] transition-colors">{reseau.nom}</p>
-                      {reseau.ville && <p className="text-xs text-[#71717a]">{reseau.ville}</p>}
+                      <p className="text-sm font-semibold text-[#1D1E21] group-hover:text-[#035AA6] transition-colors">{reseau.nom}</p>
+                      {reseau.ville && <p className="text-xs text-[#6E7175]">{reseau.ville}</p>}
                     </div>
-                    <ArrowRight size={14} className="text-[#a1a1aa] group-hover:text-[#2563EB] transition-colors shrink-0 rsn-arrow" aria-hidden />
+                    <ArrowRight size={14} className="text-[#999A9D] group-hover:text-[#035AA6] transition-colors shrink-0 rsn-arrow" aria-hidden />
                   </Link>
                 </section>
               </Reveal>
@@ -489,10 +489,10 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {participants.length > 0 && (
               <Reveal>
                 <section aria-labelledby="participants-titre">
-                  <h2 id="participants-titre" className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+                  <h2 id="participants-titre" className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
                     <Users size={14} aria-hidden />
                     Réseauteurs présents
-                    <span className="text-[#a1a1aa] font-normal">({participants.length})</span>
+                    <span className="text-[#999A9D] font-normal">({participants.length})</span>
                   </h2>
                   <div className="flex flex-wrap gap-2" role="list" aria-label="Réseauteurs présents">
                     {participants.map((p) => {
@@ -503,26 +503,26 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
                           key={p.id}
                           href={`/reseauteur/${p.slug}`}
                           role="listitem"
-                          className="rsn-linkrow inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-[#f4f4f5] border border-[#e4e4e7] hover:border-[#2563EB] no-underline transition-colors group"
+                          className="rsn-linkrow inline-flex items-center gap-2 p-2.5 rounded-full bg-[#E9E9EA] border border-[#DFE0E1] hover:border-[#035AA6] no-underline transition-colors group"
                         >
                           {pPhotoUrl ? (
                             <Image src={pPhotoUrl} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" aria-hidden />
                           ) : (
                             <span
-                              className="w-6 h-6 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-[10px] font-bold flex items-center justify-center"
+                              className="w-6 h-6 rounded-full bg-[#035AA6]/10 text-[#035AA6] text-[10px] font-bold flex items-center justify-center"
                               aria-hidden
                             >
                               {p.prenom?.charAt(0)}{p.nom?.charAt(0)}
                             </span>
                           )}
-                          <span className="text-xs font-medium text-[#52525b] group-hover:text-[#2563EB] transition-colors">
+                          <span className="text-xs font-medium text-[#4E5155] group-hover:text-[#035AA6] transition-colors">
                             {p.prenom} {p.nom}
                           </span>
                         </Link>
                       )
                     })}
                   </div>
-                  <p className="text-xs text-[#a1a1aa] mt-2">
+                  <p className="text-xs text-[#999A9D] mt-2">
                     Réseauteurs de la plateforme ayant signalé leur présence.
                   </p>
                 </section>
@@ -533,7 +533,7 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
             {typeof e.lieuLatitude === 'number' && typeof e.lieuLongitude === 'number' && (
               <Reveal>
                 <section aria-labelledby="lieu-titre">
-                  <h2 id="lieu-titre" className="text-sm font-semibold text-[#18181b] mb-2 flex items-center gap-1.5">
+                  <h2 id="lieu-titre" className="text-sm font-semibold text-[#1D1E21] mb-2 flex items-center gap-1.5">
                     <MapPin size={14} aria-hidden />
                     Lieu
                   </h2>
@@ -560,17 +560,17 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
           />
 
           {/* Pied de fiche */}
-          <div className="px-6 py-5 border-t border-[#e4e4e7] bg-[#faf9f5] flex flex-wrap gap-4 justify-between items-center">
+          <div className="px-6 py-5 border-t border-[#DFE0E1] bg-[#F2F2F2] flex flex-wrap gap-4 justify-between items-center">
             <Link
               href="/evenements"
-              className="rsn-linkrow text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8] no-underline transition-colors flex items-center gap-1"
+              className="rsn-linkrow text-sm text-[#035AA6] font-medium hover:text-[#02467F] no-underline transition-colors flex items-center gap-1"
             >
               ← Tous les événements
             </Link>
             {/* CTA vers la carte des événements */}
             <Link
               href={`/evenements?vue=carte&ville=${encodeURIComponent(e.lieuVille ?? '')}`}
-              className="rsn-linkrow inline-flex items-center gap-1.5 text-sm text-[#71717a] hover:text-[#2563EB] no-underline transition-colors"
+              className="rsn-linkrow inline-flex items-center gap-1.5 text-sm text-[#6E7175] hover:text-[#035AA6] no-underline transition-colors"
             >
               <MapPin size={13} aria-hidden />
               Voir sur la carte
@@ -578,7 +578,7 @@ export default async function FicheEvenementPage({ params }: { params: Promise<{
           </div>
           {/* Ligne de validation (créé par + dernière mise à jour) */}
           {(e.updatedAt || e.creePar) && (
-            <div className="px-6 py-2.5 border-t border-[#e4e4e7] bg-white text-[11px] text-[#a1a1aa] flex flex-wrap gap-x-3 gap-y-0.5">
+            <div className="px-6 py-2.5 border-t border-[#DFE0E1] bg-white text-[11px] text-[#999A9D] flex flex-wrap gap-x-3 gap-y-0.5">
               {e.creePar && <span>Créé par {e.creePar}</span>}
               {e.updatedAt && <span>{e.creePar ? '· ' : ''}Mis à jour le {new Date(e.updatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
             </div>

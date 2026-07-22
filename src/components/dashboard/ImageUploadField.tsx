@@ -89,22 +89,22 @@ export function ImageUploadField({
 
   return (
     <div>
-      <p className="block text-xs font-medium text-[#52525b] mb-1">{label}</p>
+      <p className="block text-xs font-medium text-[#4E5155] mb-1">{label}</p>
       <div className="flex items-center gap-4">
         <div
-          className={`w-16 h-16 ${previewShape} border border-[#e4e4e7] bg-[#faf9f5] flex items-center justify-center overflow-hidden shrink-0`}
+          className={`w-16 h-16 ${previewShape} border border-[#DFE0E1] bg-[#F2F2F2] flex items-center justify-center overflow-hidden shrink-0`}
         >
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt={alt} className="w-full h-full object-cover" />
           ) : (
-            <ImageIcon size={20} className="text-[#d4d4d8]" aria-hidden />
+            <ImageIcon size={20} className="text-[#CFD0D2]" aria-hidden />
           )}
         </div>
         <div className="min-w-0">
           <label
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-[#e4e4e7] cursor-pointer transition-colors ${
-              busy ? 'opacity-60 cursor-wait' : 'hover:border-[#2563EB] hover:text-[#2563EB]'
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-[#DFE0E1] cursor-pointer transition-colors ${
+              busy ? 'opacity-60 cursor-wait' : 'hover:border-[#035AA6] hover:text-[#035AA6]'
             }`}
           >
             {busy ? <Loader2 size={15} className="animate-spin" aria-hidden /> : <Upload size={15} aria-hidden />}
@@ -117,7 +117,7 @@ export function ImageUploadField({
               className="hidden"
             />
           </label>
-          <p className="text-xs text-[#a1a1aa] mt-1.5">
+          <p className="text-xs text-[#999A9D] mt-1.5">
             {hint ? `${hint} ` : ''}JPG, PNG ou WebP — max {MAX_SIZE_MB} Mo.
           </p>
         </div>

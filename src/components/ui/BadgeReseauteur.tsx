@@ -15,27 +15,27 @@ interface BadgeReseauteurProps {
 const BADGE_CONFIG: Record<BadgeVariant, { label: string; bg: string; text: string; border: string }> = {
   bronze: {
     label: 'Bronze',
-    bg: '#fef9c3',
-    text: '#92400e',
-    border: '#fde047',
+    bg: '#F3EFDC',
+    text: '#6E5608',
+    border: '#DCD3A8',
   },
   argent: {
     label: 'Argent',
-    bg: '#f4f4f5',
-    text: '#3f3f46',
-    border: '#d4d4d8',
+    bg: '#E9E9EA',
+    text: '#3F4247',
+    border: '#CFD0D2',
   },
   gold: {
     label: 'Gold',
-    bg: '#fff7ed',
-    text: '#c2410c',
-    border: '#fed7aa',
+    bg: '#FBF4D3',
+    text: '#8A6D0B',
+    border: '#F5E050',
   },
   platinum: {
     label: 'Platinum',
-    bg: '#dbeafe',
-    text: '#1d4ed8',
-    border: '#93c5fd',
+    bg: '#DCEAF5',
+    text: '#02467F',
+    border: '#8BB4D9',
   },
 }
 
@@ -64,7 +64,7 @@ export function BadgePartenaire({ className = '' }: { className?: string }) {
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border ${className}`}
-      style={{ background: '#fff7ed', color: '#c2410c', borderColor: '#fed7aa' }}
+      style={{ background: '#F5E050', color: '#012A4A', borderColor: '#E3CB2E' }}
       aria-label="Réseau partenaire"
     >
       Partenaire
@@ -76,7 +76,7 @@ export function BadgePremium({ className = '' }: { className?: string }) {
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border ${className}`}
-      style={{ background: '#fff7ed', color: '#c2410c', borderColor: '#f5851f' }}
+      style={{ background: '#FEFBE6', color: '#8A6D0B', borderColor: '#F5E050' }}
       aria-label="Événement Premium"
     >
       Premium

@@ -159,7 +159,7 @@ export default function FAQUtilisateursPage() {
         tone="blue"
         icon={<HelpCircle size={13} aria-hidden />}
         eyebrow="FAQ"
-        title={<>FAQ utilisateurs</>}
+        title={<>FAQ <span>utilisateurs</span></>}
         lead="Toutes les réponses aux questions les plus fréquentes des visiteurs et membres de RÉSEAUTEURS."
       />
       <div className="max-w-3xl mx-auto px-6 py-12">

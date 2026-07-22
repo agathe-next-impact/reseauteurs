@@ -103,14 +103,14 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
   }
 
   const inputClass =
-    'w-full rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] transition-colors disabled:opacity-50'
-  const labelClass = 'block text-xs font-medium text-[#52525b] mb-1'
+    'w-full rounded-xl border border-[#DFE0E1] bg-white px-3 py-2 text-sm text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6]/30 focus:border-[#035AA6] transition-colors disabled:opacity-50'
+  const labelClass = 'block text-xs font-medium text-[#4E5155] mb-1'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Identité */}
       <fieldset className="space-y-3">
-        <legend className="text-sm font-semibold text-[#18181b] mb-3">Identité</legend>
+        <legend className="text-sm font-semibold text-[#1D1E21] mb-3">Identité</legend>
         <ImageUploadField
           label="Photo de profil"
           hint="Portrait carré recommandé."
@@ -186,7 +186,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
 
       {/* Localisation */}
       <fieldset className="space-y-3">
-        <legend className="text-sm font-semibold text-[#18181b] mb-3">Localisation</legend>
+        <legend className="text-sm font-semibold text-[#1D1E21] mb-3">Localisation</legend>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label htmlFor="ville" className={labelClass}>Ville *</label>
@@ -228,8 +228,8 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
 
       {/* Contacts facultatifs */}
       <fieldset className="space-y-3">
-        <legend className="text-sm font-semibold text-[#18181b] mb-1">
-          Contacts <span className="text-xs font-normal text-[#71717a]">(facultatifs — vous contrôlez ce qui est visible)</span>
+        <legend className="text-sm font-semibold text-[#1D1E21] mb-1">
+          Contacts <span className="text-xs font-normal text-[#6E7175]">(facultatifs — vous contrôlez ce qui est visible)</span>
         </legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -287,26 +287,26 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
       {/* Réseaux fréquentés — têtes de réseau ou groupes locaux (décision 2026-07-17) */}
       {reseauxLocaux.length > 0 && (
         <fieldset>
-          <legend className="text-sm font-semibold text-[#18181b] mb-1 flex items-center gap-1.5">
-            <Network size={14} className="text-[#a855f7]" aria-hidden />
+          <legend className="text-sm font-semibold text-[#1D1E21] mb-1 flex items-center gap-1.5">
+            <Network size={14} className="text-[#3E7CA6]" aria-hidden />
             Réseaux fréquentés
           </legend>
-          <p className="text-xs text-[#71717a] mb-3">
+          <p className="text-xs text-[#6E7175] mb-3">
             Cochez les réseaux que vous fréquentez — réseau national ou groupe local.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-[#e4e4e7] rounded-xl p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-[#DFE0E1] rounded-xl p-3">
             {reseauxLocaux.map((r) => (
-              <label key={r.id} className="flex items-center gap-2 cursor-pointer group text-sm text-[#18181b] hover:text-[#a855f7] transition-colors">
+              <label key={r.id} className="flex items-center gap-2 cursor-pointer group text-sm text-[#1D1E21] hover:text-[#3E7CA6] transition-colors">
                 <input
                   type="checkbox"
                   name="reseauxFrequentes"
                   value={String(r.id)}
                   defaultChecked={currentReseauxIds.has(String(r.id))}
-                  className="rounded text-[#a855f7] focus:ring-[#a855f7]/30"
+                  className="rounded text-[#3E7CA6] focus:ring-[#3E7CA6]/30"
                 />
                 <span className="truncate">
                   {r.nom}
-                  {r.ville && <span className="text-xs text-[#71717a] ml-1">({r.ville})</span>}
+                  {r.ville && <span className="text-xs text-[#6E7175] ml-1">({r.ville})</span>}
                 </span>
               </label>
             ))}
@@ -316,7 +316,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
 
       {/* Badge networking */}
       <fieldset>
-        <legend className="text-sm font-semibold text-[#18181b] mb-3">Badge réseauteur</legend>
+        <legend className="text-sm font-semibold text-[#1D1E21] mb-3">Badge réseauteur</legend>
         <label htmlFor="evenementsParMois" className={labelClass}>
           Combien d&apos;événements de networking fréquentez-vous chaque mois ?
         </label>
@@ -332,14 +332,14 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
             </option>
           ))}
         </select>
-        <p className="text-xs text-[#a1a1aa] mt-1.5">
+        <p className="text-xs text-[#999A9D] mt-1.5">
           Ce badge est déclaratif et s&apos;affiche sur votre profil public et la carte.
         </p>
       </fieldset>
 
       {/* Confidentialité */}
-      <fieldset className="pt-3 border-t border-[#e4e4e7]">
-        <legend className="text-sm font-semibold text-[#18181b] mb-3">Confidentialité</legend>
+      <fieldset className="pt-3 border-t border-[#DFE0E1]">
+        <legend className="text-sm font-semibold text-[#1D1E21] mb-3">Confidentialité</legend>
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -352,7 +352,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
             }
             className="mt-0.5 rounded"
           />
-          <span className="text-sm text-[#52525b]">
+          <span className="text-sm text-[#4E5155]">
             Ne pas référencer mon profil dans les moteurs de recherche (opt-out d&apos;indexation)
           </span>
         </label>
@@ -373,7 +373,7 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [] }: ProfilFormProps) 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#2563EB] text-white font-semibold text-sm hover:bg-[#1d4ed8] disabled:opacity-60 transition-colors focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+        className="w-full sm:w-auto p-2.5 rounded-xl bg-[#035AA6] text-white font-semibold text-sm hover:bg-[#02467F] disabled:opacity-60 transition-colors focus-visible:ring-2 focus-visible:ring-[#035AA6] focus-visible:ring-offset-2"
       >
         {isPending ? 'Enregistrement…' : 'Enregistrer'}
       </button>

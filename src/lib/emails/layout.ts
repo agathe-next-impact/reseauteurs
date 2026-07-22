@@ -37,16 +37,16 @@ function headStyles(accent: Accent): string {
       .btn a { display:block !important; width:100% !important; box-sizing:border-box !important; }
     }
 
-    /* Dark mode — dark band #0d0d10 + surfaces zinc (identité RÉSEAUTEURS) */
+    /* Dark mode — dark band #0C1219 + surfaces zinc (identité RÉSEAUTEURS) */
     @media (prefers-color-scheme: dark) {
-      body { background:#0d0d10 !important; }
-      .page-bg { background:#0d0d10 !important; }
-      .card { background:#18181b !important; color:#f4f4f5 !important; }
-      .h1, .body-text, .intro { color:#f4f4f5 !important; }
-      .text-muted { color:#d4d4d8 !important; }
-      .divider, .info-row, .info-row-border { border-color:#3f3f46 !important; }
-      .footer { color:#a1a1aa !important; border-color:#3f3f46 !important; }
-      .footer a { color:#d4d4d8 !important; }
+      body { background:#0C1219 !important; }
+      .page-bg { background:#0C1219 !important; }
+      .card { background:#1D1E21 !important; color:#E9E9EA !important; }
+      .h1, .body-text, .intro { color:#E9E9EA !important; }
+      .text-muted { color:#CFD0D2 !important; }
+      .divider, .info-row, .info-row-border { border-color:#3F4247 !important; }
+      .footer { color:#999A9D !important; border-color:#3F4247 !important; }
+      .footer a { color:#CFD0D2 !important; }
       .accent-bar { background:${bar} !important; }
     }
   </style>

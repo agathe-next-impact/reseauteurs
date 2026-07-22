@@ -35,8 +35,8 @@ export interface TeteLite {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] transition-colors'
-const labelClass = 'block text-xs font-medium text-[#52525b] mb-1'
+  'w-full rounded-xl border border-[#DFE0E1] bg-white px-3 py-2 text-sm text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6]/30 focus:border-[#035AA6] transition-colors'
+const labelClass = 'block text-xs font-medium text-[#4E5155] mb-1'
 
 export function MesReseauxClient({
   reseaux,
@@ -91,13 +91,13 @@ export function MesReseauxClient({
       {editing !== null ? (
         <form onSubmit={onSubmit} className="rsn-card rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-[#18181b]">
+            <h2 className="text-sm font-semibold text-[#1D1E21]">
               {current ? `Modifier « ${current.nom} »` : 'Nouveau réseau local'}
             </h2>
             <button
               type="button"
               onClick={() => setEditing(null)}
-              className="p-1 rounded-lg text-[#71717a] hover:text-[#18181b] hover:bg-[#f4f4f5] transition-colors"
+              className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#1D1E21] hover:bg-[#E9E9EA] transition-colors"
               aria-label="Fermer le formulaire"
             >
               <X size={16} />
@@ -127,13 +127,13 @@ export function MesReseauxClient({
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-[#a1a1aa] mt-1">
+              <p className="text-xs text-[#999A9D] mt-1">
                 Rattachez votre groupe à son réseau national, ou laissez « indépendant ».
               </p>
             </div>
           )}
           {current && (
-            <p className="text-xs text-[#71717a] bg-[#fafafa] border border-[#e4e4e7] rounded-xl px-3 py-2">
+            <p className="text-xs text-[#6E7175] bg-[#fafafa] border border-[#DFE0E1] rounded-xl px-3 py-2">
               {current.parentNom
                 ? <>Affilié au réseau <strong>{current.parentNom}</strong> (rattachement non modifiable — contactez-nous si besoin).</>
                 : <>Réseau indépendant (rattachement non modifiable — contactez-nous si besoin).</>}
@@ -172,7 +172,7 @@ export function MesReseauxClient({
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex items-center gap-2 bg-[#a855f7] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#9333ea] transition-colors text-sm disabled:opacity-60"
+              className="inline-flex items-center gap-2 bg-[#3E7CA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#2E6389] transition-colors text-sm disabled:opacity-60"
             >
               {pending && <Loader2 size={15} className="animate-spin" aria-hidden />}
               {current ? 'Enregistrer' : 'Créer le réseau'}
@@ -181,7 +181,7 @@ export function MesReseauxClient({
               type="button"
               onClick={() => setEditing(null)}
               disabled={pending}
-              className="text-sm text-[#71717a] hover:text-[#18181b] transition-colors"
+              className="text-sm text-[#6E7175] hover:text-[#1D1E21] transition-colors"
             >
               Annuler
             </button>
@@ -190,14 +190,14 @@ export function MesReseauxClient({
       ) : (
         <div className="flex items-center gap-3">
           {quotaAtteint ? (
-            <p className="text-xs text-[#71717a] bg-[#fafafa] border border-[#e4e4e7] rounded-xl px-3 py-2">
+            <p className="text-xs text-[#6E7175] bg-[#fafafa] border border-[#DFE0E1] rounded-xl px-3 py-2">
               Vous avez atteint la limite de {maxReseaux} réseaux locaux.
             </p>
           ) : (
             <button
               type="button"
               onClick={() => setEditing('new')}
-              className="inline-flex items-center gap-2 bg-[#a855f7] text-white font-semibold py-2.5 px-5 rounded-xl hover:bg-[#9333ea] transition-colors text-sm"
+              className="inline-flex items-center gap-2 bg-[#3E7CA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#2E6389] transition-colors text-sm"
             >
               <Plus size={15} aria-hidden />
               Créer un réseau local
@@ -208,38 +208,38 @@ export function MesReseauxClient({
 
       {/* Liste des réseaux possédés */}
       <div className="rsn-card rounded-2xl">
-        <div className="px-6 py-4 border-b border-[#e4e4e7]">
-          <h2 className="text-sm font-semibold text-[#18181b] flex items-center gap-1.5">
-            <Network size={14} className="text-[#a855f7]" aria-hidden />
+        <div className="px-6 py-4 border-b border-[#DFE0E1]">
+          <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
+            <Network size={14} className="text-[#3E7CA6]" aria-hidden />
             Mes réseaux locaux
-            <span className="text-[#a1a1aa] font-normal">({reseaux.length}/{maxReseaux})</span>
+            <span className="text-[#999A9D] font-normal">({reseaux.length}/{maxReseaux})</span>
           </h2>
         </div>
         {reseaux.length === 0 ? (
           <div className="p-8 text-center">
-            <Network size={28} className="text-[#d4d4d8] mx-auto mb-3" aria-hidden />
-            <p className="text-sm text-[#71717a]">
+            <Network size={28} className="text-[#CFD0D2] mx-auto mb-3" aria-hidden />
+            <p className="text-sm text-[#6E7175]">
               Aucun réseau local pour l&apos;instant. Créez votre première fiche pour apparaître
               sur la carte des réseaux et publier vos événements.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-[#e4e4e7]">
+          <div className="divide-y divide-[#DFE0E1]">
             {reseaux.map((r) => (
               <div key={r.id} className="flex items-center gap-3 px-6 py-4">
-                <div className="w-10 h-10 rounded-xl bg-[#f3e8ff]/50 flex items-center justify-center text-[#a855f7] shrink-0" aria-hidden>
+                <div className="flex items-center justify-center text-[#3E7CA6] shrink-0" aria-hidden>
                   <Network size={16} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#18181b] truncate">{r.nom}</p>
+                  <p className="text-sm font-semibold text-[#1D1E21] truncate">{r.nom}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-0.5">
                     {r.ville && (
-                      <span className="text-xs text-[#71717a] flex items-center gap-1">
+                      <span className="text-xs text-[#6E7175] flex items-center gap-1">
                         <MapPin size={10} aria-hidden />
                         {r.ville}
                       </span>
                     )}
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full ${r.parentNom ? 'bg-[#f3e8ff]/60 text-[#7e22ce]' : 'bg-[#f4f4f5] text-[#52525b]'}`}>
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full ${r.parentNom ? 'bg-[#E7F0F7] text-[#2E6389]' : 'bg-[#E9E9EA] text-[#4E5155]'}`}>
                       {r.parentNom ? `Affilié à ${r.parentNom}` : 'Réseau indépendant'}
                     </span>
                   </div>
@@ -248,7 +248,7 @@ export function MesReseauxClient({
                   <button
                     type="button"
                     onClick={() => setEditing(r)}
-                    className="p-1.5 rounded-lg text-[#71717a] hover:text-[#a855f7] hover:bg-[#f3e8ff]/50 transition-colors"
+                    className="p-2.5 rounded-lg text-[#6E7175] hover:text-[#3E7CA6] hover:bg-[#E7F0F7]/50 transition-colors"
                     aria-label={`Modifier ${r.nom}`}
                   >
                     <Pencil size={14} />
@@ -258,7 +258,7 @@ export function MesReseauxClient({
                       href={`/reseau/${r.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#2563EB] hover:text-[#1d4ed8] transition-colors"
+                      className="text-[#035AA6] hover:text-[#02467F] transition-colors"
                       aria-label={`Voir la fiche de ${r.nom}`}
                     >
                       <ExternalLink size={14} aria-hidden />
@@ -305,12 +305,12 @@ function InvitationNational() {
   }
 
   return (
-    <div className="bg-[#eff6ff]/40 border border-[#2563EB]/20 rounded-2xl p-5">
-      <h2 className="text-sm font-semibold text-[#18181b] mb-1 flex items-center gap-1.5">
-        <Mail size={14} className="text-[#2563EB]" aria-hidden />
+    <div className="bg-[#EFF5FA]/40 border border-[#035AA6]/20 rounded-2xl p-5">
+      <h2 className="text-sm font-semibold text-[#1D1E21] mb-1 flex items-center gap-1.5">
+        <Mail size={14} className="text-[#035AA6]" aria-hidden />
         Le réseau national n&apos;existe pas encore ?
       </h2>
-      <p className="text-xs text-[#71717a] mb-3">
+      <p className="text-xs text-[#6E7175] mb-3">
         Invitez-le à créer sa fiche sur RÉSEAUTEURS : indiquez son nom et un email de contact,
         nous lui envoyons une invitation en votre nom (3 invitations par jour maximum).
       </p>
@@ -341,7 +341,7 @@ function InvitationNational() {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center justify-center gap-2 bg-[#2563EB] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60 shrink-0"
+          className="inline-flex items-center justify-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60 shrink-0"
         >
           {pending ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Mail size={14} aria-hidden />}
           Inviter

@@ -64,7 +64,7 @@ export default function ContactPage() {
         tone="blue"
         icon={<MessageCircle size={13} aria-hidden />}
         eyebrow="Contact"
-        title={<>Nous contacter</>}
+        title={<>Nous <span>contacter</span></>}
         lead="Une question, une suggestion, un signalement ? Écrivez-nous : nous répondons généralement sous 2 jours ouvrés."
       />
 
@@ -73,10 +73,10 @@ export default function ContactPage() {
         <Reveal>
           <div className="rsn-card p-8 text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 mb-4">
-              <Mail size={22} className="text-[#2563EB]" aria-hidden />
+              <Mail size={22} className="text-[#035AA6]" aria-hidden />
             </div>
-            <h2 className="text-xl font-bold text-[#16284f] mb-2">Nous écrire</h2>
-            <p className="text-[#52525b] mb-4">
+            <h2 className="text-xl font-bold text-[#012A4A] mb-2">Nous écrire</h2>
+            <p className="text-[#4E5155] mb-4">
               Contactez-nous par email à l&apos;adresse ci-dessous.
             </p>
             <a
@@ -98,19 +98,19 @@ export default function ContactPage() {
             {motifs.map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={i * 70}>
                 <div className="flex items-start gap-4 rsn-card p-5 rsn-lift">
-                  <div className="w-10 h-10 bg-[#bfdbfe]/40 flex items-center justify-center shrink-0">
-                    <Icon size={18} className="text-[#2563EB]" aria-hidden />
+                  <div className="flex items-center justify-center shrink-0">
+                    <Icon size={18} className="text-[#035AA6]" aria-hidden />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#18181b] mb-1">{title}</h3>
-                    <p className="text-sm text-[#52525b] leading-relaxed">{desc}</p>
+                    <h3 className="font-semibold text-[#1D1E21] mb-1">{title}</h3>
+                    <p className="text-sm text-[#4E5155] leading-relaxed">{desc}</p>
                   </div>
                 </div>
               </Reveal>
             ))}
           </div>
           <Reveal>
-            <p className="text-sm text-[#71717a] text-center mt-6">
+            <p className="text-sm text-[#6E7175] text-center mt-6">
               Pour faciliter le traitement, indiquez le motif en objet de votre email (ex.{' '}
               <em>« Signalement de contenu »</em>, <em>« RGPD — droit d&apos;accès »</em>).
             </p>
@@ -120,8 +120,8 @@ export default function ContactPage() {
         {/* Adresse postale */}
         <Reveal>
           <div className="rsn-card p-6 text-center">
-            <h2 className="font-semibold text-[#18181b] mb-2">Adresse postale</h2>
-            <p className="text-sm text-[#52525b]">
+            <h2 className="font-semibold text-[#1D1E21] mb-2">Adresse postale</h2>
+            <p className="text-sm text-[#4E5155]">
               HBLGB
               <br />
               47 rue Vivienne, 75002 Paris

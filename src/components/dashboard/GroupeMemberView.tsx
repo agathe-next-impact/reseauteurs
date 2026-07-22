@@ -19,7 +19,7 @@ const palierBadgeClasses: Record<'0' | '5' | '10' | '15', string> = {
   '0': 'bg-gray-100 text-gray-600 border border-gray-300',
   '5': 'bg-emerald-50 text-emerald-700 border border-emerald-300',
   '10': 'bg-emerald-100 text-emerald-800 border border-emerald-400',
-  '15': 'bg-gradient-to-r from-amber-100 to-emerald-100 text-emerald-800 border border-emerald-400',
+  '15': 'bg-emerald-100 text-emerald-800 border border-emerald-400',
 }
 
 /**
@@ -128,7 +128,7 @@ export default function GroupeMemberView({
           </code>
           <button
             onClick={handleCopy}
-            className="p-1.5 text-text-light hover:text-text-dark transition-colors cursor-pointer"
+            className="p-2.5 text-text-light hover:text-text-dark transition-colors cursor-pointer"
             aria-label="Copier le code"
           >
             {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}

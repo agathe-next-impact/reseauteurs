@@ -49,7 +49,7 @@ export default async function PartenairesPage() {
         tone="orange"
         icon={<Building2 size={13} aria-hidden />}
         eyebrow="Entreprises"
-        title={<>Elles soutiennent le networking français</>}
+        title={<>Elles soutiennent <span>le networking français</span></>}
         lead={
           <>
             Ces entreprises croient en la valeur du networking professionnel et soutiennent{' '}
@@ -62,11 +62,11 @@ export default async function PartenairesPage() {
         {/* Grille des partenaires */}
         {docs.length === 0 ? (
           <div className="text-center py-16">
-            <Building2 size={40} className="text-[#d4d4d8] mx-auto mb-4" aria-hidden />
-            <p className="text-sm font-medium text-[#52525b] mb-2">
+            <Building2 size={40} className="text-[#CFD0D2] mx-auto mb-4" aria-hidden />
+            <p className="text-sm font-medium text-[#4E5155] mb-2">
               Aucune entreprise pour l&apos;instant
             </p>
-            <p className="text-sm text-[#71717a]">Vous souhaitez rejoindre ces entreprises ?</p>
+            <p className="text-sm text-[#6E7175]">Vous souhaitez rejoindre ces entreprises ?</p>
           </div>
         ) : (
           <Reveal className="mb-16">
@@ -80,7 +80,7 @@ export default async function PartenairesPage() {
                 const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url
 
                 const inner = (
-                  <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#e4e4e7] rsn-lift rsn-shine h-full group">
+                  <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#DFE0E1] rsn-lift rsn-shine h-full group">
                     {logoUrl ? (
                       <Image
                         src={logoUrl}
@@ -91,18 +91,18 @@ export default async function PartenairesPage() {
                       />
                     ) : (
                       <div className="h-12 flex items-center justify-center">
-                        <span className="text-sm font-bold text-[#c2410c]">{p.nom}</span>
+                        <span className="text-sm font-bold text-[#8A6D0B]">{p.nom}</span>
                       </div>
                     )}
                     {logoUrl && (
-                      <p className="text-xs font-medium text-[#52525b] text-center">{p.nom}</p>
+                      <p className="text-xs font-medium text-[#4E5155] text-center">{p.nom}</p>
                     )}
                     {p.description && (
-                      <p className="text-xs text-[#71717a] text-center line-clamp-2">
+                      <p className="text-xs text-[#6E7175] text-center line-clamp-2">
                         {p.description}
                       </p>
                     )}
-                    <span className="text-xs text-[#f5851f] flex items-center gap-0.5 mt-auto group-hover:underline">
+                    <span className="text-xs text-[#8A6D0B] flex items-center gap-0.5 mt-auto group-hover:underline">
                       Voir la fiche
                       <ArrowRight size={11} aria-hidden />
                     </span>
@@ -131,7 +131,7 @@ export default async function PartenairesPage() {
 
         {/* Bloc CTA B2B — devenir partenaire */}
         <Reveal>
-          <div className="bg-gradient-to-br from-[#f5851f] to-[#e07710] p-8 md:p-10 text-white text-center flex flex-col gap-4">
+          <div className="bg-[#F5E050] p-8 md:p-10 text-[#012A4A] text-center flex flex-col gap-4">
             <Building2 size={32} className="mx-auto mb-4 opacity-80" aria-hidden />
             <h2 className="text-xl sm:text-2xl font-bold mb-3">
               Vous représentez une entreprise ou un réseau ?
@@ -143,7 +143,7 @@ export default async function PartenairesPage() {
             </p>
             <Link
               href="/inscription?type=partenaire"
-              className="w-xs mx-auto inline-flex items-center gap-2 px-6 py-3 bg-white text-[#c2410c] font-bold text-sm hover:bg-[#fff7ed] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="w-xs mx-auto inline-flex items-center gap-2 px-6 py-3 bg-white text-[#8A6D0B] font-bold text-sm hover:bg-[#FEFBE6] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Référencer mon entreprise
               <ArrowRight size={16} aria-hidden className="rsn-arrow" />

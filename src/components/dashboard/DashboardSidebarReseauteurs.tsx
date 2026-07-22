@@ -129,25 +129,25 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
 
   return (
     <aside
-      className="hidden md:flex flex-col w-[240px] shrink-0 bg-white border-r border-[#e4e4e7] h-[calc(100vh-64px)] sticky top-16"
+      className="hidden md:flex flex-col w-[240px] shrink-0 bg-white border-r border-[#DFE0E1] h-[calc(100vh-64px)] sticky top-16"
       aria-label="Navigation tableau de bord"
     >
       {/* Brand */}
       <Link
         href="/"
-        className="flex items-center gap-2 px-4 py-3 border-b border-[#e4e4e7] no-underline"
+        className="flex items-center gap-2 px-4 py-3 border-b border-[#DFE0E1] no-underline"
         aria-label="Accueil RÉSEAUTEURS"
       >
-        <span className="text-sm font-extrabold tracking-tight text-[#16284f]">RÉSEAUTEURS</span>
+        <span className="text-sm font-extrabold tracking-tight text-[#012A4A]">RÉSEAUTEURS</span>
       </Link>
 
       {/* Utilisateur */}
-      <div className="px-4 py-4 border-b border-[#e4e4e7]">
-        <div className="w-9 h-9 rounded-full bg-[#bfdbfe]/40 flex items-center justify-center text-[#2563EB] font-bold text-sm mb-2">
+      <div className="px-4 py-4 border-b border-[#DFE0E1]">
+        <div className="w-9 h-9 rounded-full bg-[#A9C9E4]/40 flex items-center justify-center text-[#035AA6] font-bold text-sm mb-2">
           {displayName.charAt(0).toUpperCase()}
         </div>
-        <p className="text-sm font-medium text-[#18181b] truncate">{displayName}</p>
-        <p className="text-xs text-[#71717a]">{roleLabels[role]}</p>
+        <p className="text-sm font-medium text-[#1D1E21] truncate">{displayName}</p>
+        <p className="text-xs text-[#6E7175]">{roleLabels[role]}</p>
       </div>
 
       {/* Navigation */}
@@ -163,8 +163,8 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
               href={item.href}
               className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors no-underline ${
                 isActive
-                  ? 'bg-[#bfdbfe]/30 text-[#2563EB] border-r-2 border-[#2563EB]'
-                  : 'text-[#52525b] hover:bg-[#f4f4f5] hover:text-[#18181b]'
+                  ? 'bg-[#A9C9E4]/30 text-[#035AA6] border-r-2 border-[#035AA6]'
+                  : 'text-[#4E5155] hover:bg-[#E9E9EA] hover:text-[#1D1E21]'
               }`}
               aria-current={isActive ? 'page' : undefined}
             >
@@ -176,11 +176,11 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
       </nav>
 
       {/* Déconnexion */}
-      <div className="border-t border-[#e4e4e7] p-3">
+      <div className="border-t border-[#DFE0E1] p-3">
         <button
           onClick={handleLogout}
           disabled={isPending}
-          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-[#71717a] hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-[#6E7175] hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
         >
           {isPending ? <Loader2 size={17} className="animate-spin" /> : <LogOut size={17} />}
           Déconnexion

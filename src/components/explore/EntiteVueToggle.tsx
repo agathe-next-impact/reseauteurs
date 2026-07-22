@@ -73,7 +73,7 @@ export default function EntiteVueToggle({ entite, vue }: EntiteVueToggleProps) {
     <div className="flex items-center gap-3 flex-wrap">
       {/* Bascule vue */}
       <div
-        className="flex items-center bg-[#f4f4f5] rounded-xl p-0.5 gap-0.5"
+        className="flex items-center bg-[#E9E9EA] rounded-xl p-0.5 gap-0.5"
         role="group"
         aria-label="Basculer entre l'annuaire et la carte"
       >
@@ -84,10 +84,10 @@ export default function EntiteVueToggle({ entite, vue }: EntiteVueToggleProps) {
               key={v}
               type="button"
               onClick={() => switchVue(v)}
-              className={`px-3.5 py-1.5 text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
+              className={`p-2.5 text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#035AA6] ${
                 vue === v
-                  ? 'bg-white text-[#16284f]'
-                  : 'text-[#71717a] hover:text-[#18181b]'
+                  ? 'bg-white text-[#012A4A]'
+                  : 'text-[#6E7175] hover:text-[#1D1E21]'
               }`}
               aria-pressed={vue === v}
             >

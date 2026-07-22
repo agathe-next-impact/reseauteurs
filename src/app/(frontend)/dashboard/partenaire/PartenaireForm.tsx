@@ -28,8 +28,8 @@ interface SerializedPartenaire {
 const MAX_SIZE_MB = 4.5
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 const inputClass =
-  'w-full rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-sm text-[#18181b] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB] transition-colors'
-const labelClass = 'block text-xs font-medium text-[#52525b] mb-1'
+  'w-full rounded-xl border border-[#DFE0E1] bg-white px-3 py-2 text-sm text-[#1D1E21] focus:outline-none focus:ring-2 focus:ring-[#035AA6]/30 focus:border-[#035AA6] transition-colors'
+const labelClass = 'block text-xs font-medium text-[#4E5155] mb-1'
 
 export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenaire }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(partenaire.logoUrl)
@@ -116,7 +116,7 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
         <p className="rsn-eyebrow">Espace connecté</p>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-extrabold text-[#16284f] flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2">
             <Building2 size={20} aria-hidden />
             Mon espace partenaire
           </h1>
@@ -125,7 +125,7 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
               href={`/partenaire/${partenaire.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[#f5851f] hover:text-[#c2410c] font-medium no-underline transition-colors"
+              className="text-sm text-[#8A6D0B] hover:text-[#8A6D0B] font-medium no-underline transition-colors"
             >
               Voir ma fiche publique →
             </Link>
@@ -135,7 +135,7 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
         {/* ── Abonnement ──────────────────────────────────────────── */}
         <section
           className={`rounded-2xl border p-5 mb-6 ${
-            isActif ? 'border-green-200 bg-green-50' : 'border-[#fed7aa] bg-[#fff7ed]'
+            isActif ? 'border-green-200 bg-green-50' : 'border-[#EFE08F] bg-[#FEFBE6]'
           }`}
         >
           {isActif ? (
@@ -159,26 +159,26 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
             </div>
           ) : (
             <div className="flex items-start gap-3">
-              <AlertTriangle size={20} className="text-[#f5851f] shrink-0 mt-0.5" aria-hidden />
+              <AlertTriangle size={20} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-[#c2410c]">Abonnement inactif — fiche non publiée</p>
-                <p className="text-xs text-[#9a3412] mt-0.5">
+                <p className="text-sm font-semibold text-[#8A6D0B]">Abonnement inactif — fiche non publiée</p>
+                <p className="text-xs text-[#6E5608] mt-0.5">
                   Activez votre abonnement pour apparaître sur la page d&apos;accueil, la page Partenaires,
                   et publier votre fiche + votre offre.
                 </p>
-                <p className="text-lg font-extrabold text-[#16284f] mt-3">
-                  {PRIX_ANNONCEUR_HT} €<span className="text-xs font-medium text-[#71717a]"> HT / an</span>
+                <p className="text-lg font-extrabold text-[#012A4A] mt-3">
+                  {PRIX_ANNONCEUR_HT} €<span className="text-xs font-medium text-[#6E7175]"> HT / an</span>
                 </p>
                 <button
                   type="button"
                   onClick={subscribe}
                   disabled={sub !== null}
-                  className="mt-2 inline-flex items-center gap-2 bg-[#f5851f] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#e07710] transition-colors text-sm disabled:opacity-60"
+                  className="mt-2 inline-flex items-center gap-2 bg-[#F5E050] text-[#012A4A] font-semibold p-2.5 rounded-xl hover:bg-[#E3CB2E] transition-colors text-sm disabled:opacity-60"
                 >
                   {sub === 'checkout' ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
                   Activer mon abonnement
                 </button>
-                <p className="text-[10px] text-[#a1a1aa] mt-1.5">
+                <p className="text-[10px] text-[#999A9D] mt-1.5">
                   Prix hors taxes — la TVA applicable est calculée au paiement.
                 </p>
               </div>
@@ -188,20 +188,20 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
 
         {/* ── Logo ────────────────────────────────────────────────── */}
         <section className="rsn-card rounded-2xl p-5 mb-6">
-          <h2 className="text-sm font-semibold text-[#18181b] mb-1">Logo</h2>
-          <p className="text-xs text-[#71717a] mb-3">Carré recommandé (400×400). JPG, PNG ou WebP — max {MAX_SIZE_MB} Mo.</p>
+          <h2 className="text-sm font-semibold text-[#1D1E21] mb-1">Logo</h2>
+          <p className="text-xs text-[#6E7175] mb-3">Carré recommandé (400×400). JPG, PNG ou WebP — max {MAX_SIZE_MB} Mo.</p>
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-xl border border-[#e4e4e7] bg-[#faf9f5] flex items-center justify-center overflow-hidden shrink-0">
+            <div className="w-20 h-20 rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] flex items-center justify-center overflow-hidden shrink-0">
               {hasLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl as string} alt="Logo" className="w-full h-full object-contain" />
               ) : (
-                <ImageIcon size={22} className="text-[#d4d4d8]" aria-hidden />
+                <ImageIcon size={22} className="text-[#CFD0D2]" aria-hidden />
               )}
             </div>
             <label
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-[#e4e4e7] cursor-pointer transition-colors ${
-                uploadingLogo ? 'opacity-60 cursor-wait' : 'hover:border-[#2563EB] hover:text-[#2563EB]'
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-[#DFE0E1] cursor-pointer transition-colors ${
+                uploadingLogo ? 'opacity-60 cursor-wait' : 'hover:border-[#035AA6] hover:text-[#035AA6]'
               }`}
             >
               {uploadingLogo ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
@@ -214,7 +214,7 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
         {/* ── Fiche + offre ───────────────────────────────────────── */}
         <form onSubmit={handleSave} className="rsn-card rounded-2xl p-5 space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-[#18181b] mb-3 flex items-center gap-1.5">
+            <h2 className="text-sm font-semibold text-[#1D1E21] mb-3 flex items-center gap-1.5">
               <Building2 size={14} aria-hidden /> Fiche partenaire
             </h2>
             <div className="space-y-3">
@@ -243,11 +243,11 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#e4e4e7]">
-            <h2 className="text-sm font-semibold text-[#18181b] mb-1 flex items-center gap-1.5">
-              <Tag size={14} className="text-[#f5851f]" aria-hidden /> Offre réservée aux réseauteurs
+          <div className="pt-4 border-t border-[#DFE0E1]">
+            <h2 className="text-sm font-semibold text-[#1D1E21] mb-1 flex items-center gap-1.5">
+              <Tag size={14} className="text-[#8A6D0B]" aria-hidden /> Offre réservée aux réseauteurs
             </h2>
-            <p className="text-xs text-[#71717a] mb-3">
+            <p className="text-xs text-[#6E7175] mb-3">
               Visible uniquement par les réseauteurs connectés (dans leur espace « Offres entreprises »).
               Laissez le titre vide pour ne pas proposer d&apos;offre.
             </p>
@@ -270,13 +270,13 @@ export function PartenaireForm({ partenaire }: { partenaire: SerializedPartenair
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex items-center gap-2 bg-[#2563EB] text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-[#1d4ed8] transition-colors text-sm disabled:opacity-60"
+            className="inline-flex items-center gap-2 bg-[#035AA6] text-white font-semibold p-2.5 rounded-xl hover:bg-[#02467F] transition-colors text-sm disabled:opacity-60"
           >
             {pending && <Loader2 size={15} className="animate-spin" aria-hidden />}
             Enregistrer ma fiche
           </button>
           {!isActif && (
-            <p className="text-xs text-[#a1a1aa] flex items-center gap-1.5">
+            <p className="text-xs text-[#999A9D] flex items-center gap-1.5">
               <ExternalLink size={11} aria-hidden />
               Votre fiche sera publiée dès l&apos;activation de l&apos;abonnement.
             </p>

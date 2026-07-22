@@ -2,26 +2,26 @@
  * Tokens visuels des emails — alignés sur l'identité RÉSEAUTEURS
  * (source : .claude/design/DESIGN.md et src/app/(frontend)/styles.css).
  *
- *   Canvas #faf9f5 · bleu de marque #2563EB · orange conversion/CTA #f5851f
- *   navy #16284f (titres) · neutres zinc · bordure #e4e4e7 · dark band #0d0d10
+ *   Canvas #F2F2F2 · bleu de marque #035AA6 · orange conversion/CTA #F5E050
+ *   navy #012A4A (titres) · neutres zinc · bordure #DFE0E1 · dark band #0C1219
  */
 export const emailTheme = {
   color: {
-    primary: '#2563EB', // bleu de marque
-    primaryHover: '#1D4ED8',
-    primaryLight: '#EFF6FF', // tint bleu clair (cards highlight, code, encarts)
-    bgPage: '#FAF9F5', // canvas clair
+    primary: '#035AA6', // bleu de marque
+    primaryHover: '#02467F',
+    primaryLight: '#EFF5FA', // tint bleu clair (cards highlight, code, encarts)
+    bgPage: '#F2F2F2', // canvas clair
     bgCard: '#FFFFFF',
-    textDark: '#16284F', // navy — titres
-    textMedium: '#3F3F46', // zinc-700 — corps
-    textMuted: '#71717A', // zinc-500
-    textSubtle: '#A1A1AA', // zinc-400
-    border: '#E4E4E7', // zinc-200
-    borderLight: '#E4E4E7',
-    borderMuted: '#E4E4E7',
+    textDark: '#012A4A', // navy — titres
+    textMedium: '#3F4247', // zinc-700 — corps
+    textMuted: '#6E7175', // zinc-500
+    textSubtle: '#999A9D', // zinc-400
+    border: '#DFE0E1', // zinc-200
+    borderLight: '#DFE0E1',
+    borderMuted: '#DFE0E1',
     // « premium » = orange de conversion (mise en avant / CTA fort — cf. DESIGN.md)
-    premiumFrom: '#F5851F',
-    premiumTo: '#C2410C',
+    premiumFrom: '#F5E050',
+    premiumTo: '#8A6D0B',
     danger: '#DC2626',
     dangerBg: '#FEF2F2',
     dangerBorder: '#FECACA',
@@ -31,14 +31,14 @@ export const emailTheme = {
     warning: '#B45309',
     warningBg: '#FFFBEB',
     warningBorder: '#FDE68A',
-    info: '#2563EB',
-    infoBg: '#EFF6FF',
-    infoBorder: '#BFDBFE',
+    info: '#035AA6',
+    infoBg: '#EFF5FA',
+    infoBorder: '#A9C9E4',
   },
   font: {
-    // Hanken Grotesk en tête (rendu on-brand là où la police est disponible),
+    // Inter en tête (rendu on-brand là où la police est disponible),
     // repli sur la stack système — les clients email ne chargent pas de webfont.
-    sans: "'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    sans: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     mono: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
   },
   radius: { sm: '4px', md: '6px', lg: '8px' },
