@@ -6,10 +6,15 @@ import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION, SITE_LANG } from '@/lib/site
  * Manifeste d'application web — servi sur /manifest.webmanifest.
  *
  * Rend le site INSTALLABLE (écran d'accueil mobile, dock desktop) et le fait
- * s'ouvrir en plein écran, sans barre d'URL. Il n'y a volontairement PAS de
- * service worker : aucun cache hors-ligne, aucune interception de requête — donc
- * aucun risque de servir du contenu périmé face à l'ISR, ni d'interférer avec
- * l'admin Payload, Stripe ou les routes authentifiées.
+ * s'ouvrir en plein écran, sans barre d'URL.
+ *
+ * Service worker (`public/sw.js`, ajouté le 2026-07-23) : présent mais
+ * VOLONTAIREMENT INERTE. Il n'existe que parce que Chrome/Edge n'émettent
+ * `beforeinstallprompt` — donc n'autorisent aucune bannière d'installation — sans
+ * service worker déclarant un gestionnaire `fetch`. Il ne met rien en cache et
+ * n'appelle jamais `respondWith()` : la garantie d'origine tient toujours — aucun
+ * contenu périmé face à l'ISR, aucune interférence avec l'admin Payload, Stripe
+ * ou les routes authentifiées.
  *
  * Les couleurs suivent le thème CLAIR, qui est le défaut du site (DESIGN.md §8) :
  * la bascule sombre est un choix utilisateur stocké en localStorage, que le

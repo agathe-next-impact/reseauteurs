@@ -12,6 +12,8 @@ import ScrollToTop from '@/components/nav/ScrollToTop'
 import FooterReseauteurs from '@/components/nav/FooterReseauteurs'
 import ThemeToggle from '@/components/nav/ThemeToggle'
 import CookieInfoBanner from '@/components/legal/CookieInfoBanner'
+import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
+import InstallPWABanner from '@/components/pwa/InstallPWABanner'
 import GoogleAnalytics from '@/components/seo/GoogleAnalytics'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { buildRootMetadata, buildRootViewport } from '@/lib/seo'
@@ -127,6 +129,12 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <FooterReseauteurs />
         <BottomNavReseauteurs />
         <CookieInfoBanner />
+        {/* PWA — le SW inerte rend Chrome/Edge éligibles à `beforeinstallprompt` ;
+            la bannière lit `useSearchParams` (vue=carte), d'où le Suspense. */}
+        <ServiceWorkerRegistrar />
+        <Suspense>
+          <InstallPWABanner />
+        </Suspense>
         <Toaster
           position="bottom-right"
           toastOptions={{ style: { fontFamily: 'inherit' } }}
