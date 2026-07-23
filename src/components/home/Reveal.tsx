@@ -40,7 +40,14 @@ export default function Reveal({
           }
         }
       },
-      { threshold: 0.14, rootMargin: '0px 0px -8% 0px' },
+      // threshold: 0 — IMPÉRATIF, ne pas remonter. Un seuil en ratio de surface est
+      // INATTEIGNABLE pour un bloc plus haut que `viewport / seuil` : avec l'ancien
+      // 0.14, la grille de /evenements?vue=agenda (7418 px en 1 colonne, mobile 844 px)
+      // plafonnait à 0.114, `isIntersecting` ne basculait jamais, et les 24 cartes
+      // restaient à opacity 0 même après avoir fait défiler toute la page.
+      // C'est `rootMargin` qui porte le retard d'apparition (bloc entré de 8 % dans
+      // l'écran), pas le seuil — le rendu perçu des blocs courts est inchangé.
+      { threshold: 0, rootMargin: '0px 0px -8% 0px' },
     )
 
     io.observe(el)

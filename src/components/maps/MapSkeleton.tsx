@@ -1,6 +1,6 @@
 export default function MapSkeleton() {
   return (
-    <div className="flex h-[calc(100dvh-4rem-1px)]">
+    <div className="flex h-[calc(100dvh-4rem-1px-var(--ir-bottomnav-h))]">
       {/* Sidebar skeleton — matches FiltresRevendeurs/FiltresEvenements layout */}
       <aside className="hidden md:flex flex-col w-[280px] shrink-0 p-4 bg-white border-r border-border" aria-hidden="true">
         <div className="animate-pulse space-y-6">

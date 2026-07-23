@@ -10,11 +10,13 @@ export default function CookieInfoBanner() {
   // Banner affiche uniquement tant que l'utilisateur n'a ni accepte ni refuse.
   if (consent !== 'pending') return null
 
+  // bottom = 1rem au-dessus de la barre de navigation basse (--ir-bottomnav-h,
+  // qui vaut 0 au-delà de lg où la barre est masquée).
   return (
     <div
       role="dialog"
       aria-label="Information cookies"
-      className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-40 bg-white border border-gray-200 rounded-xl p-4"
+      className="fixed bottom-[calc(1rem+var(--ir-bottomnav-h))] left-4 right-4 sm:right-auto sm:max-w-sm z-40 bg-white border border-gray-200 rounded-xl p-4"
     >
       <div className="flex items-start gap-3">
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary-light flex items-center justify-center">

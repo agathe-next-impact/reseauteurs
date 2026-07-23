@@ -325,6 +325,18 @@ body {
   /* Surfaces composites pilotées par thème (clair par défaut) */
   --ir-header-bg: rgba(255, 255, 255, 0.82);
   --ir-chip-bg: rgba(12, 18, 25, 0.04);
+
+  /* Hauteur de la barre de navigation basse (BottomNavReseauteurs).
+     0 au-delà de lg (1024px) : la barre est masquée, rien à compenser.
+     Tout ce qui touche le bas de l'écran s'y réfère — cartes plein écran,
+     pied de page, bandeau cookies, bouton de filtres — au lieu de figer 56px. */
+  --ir-bottomnav-h: 0px;
+}
+
+@media (max-width: 1023.98px) {
+  :root {
+    --ir-bottomnav-h: calc(3.5rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* ============================================================

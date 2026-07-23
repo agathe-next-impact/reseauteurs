@@ -2,8 +2,8 @@
 
 import { useCallback, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { SlidersHorizontal } from 'lucide-react'
-import { DebouncedFilterInput } from './DebouncedFilterInput'
+import PanneauFiltresPliable from './PanneauFiltresPliable'
+import ChampLieuFiltre from './ChampLieuFiltre'
 
 interface EvenementsClientFiltersProps {
   reseaux: Array<{ slug: string; nom: string }>
@@ -26,7 +26,9 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
     dateDebut: searchParams.get('dateDebut') ?? '',
   }
 
-  const hasFilters = Object.values(current).some(Boolean)
+  // Compté, pas booléen : replié, l'accordéon doit annoncer COMBIEN de critères
+  // s'appliquent, sinon la liste paraît complète alors qu'elle est filtrée.
+  const nbActifs = Object.values(current).filter(Boolean).length
 
   const update = useCallback(
     (key: string, value: string) => {
@@ -56,36 +58,19 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
   }, [router, pathname, searchParams])
 
   return (
-    <div className="bg-white rounded-2xl border border-[#DFE0E1] p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
-          <SlidersHorizontal size={14} aria-hidden />
-          Filtrer
-        </h2>
-        {hasFilters && (
-          <button
-            onClick={reset}
-            className="text-xs text-[#6E7175] hover:text-[#8A6D0B] flex items-center gap-1 cursor-pointer transition-colors"
-            aria-label="Effacer tous les filtres"
-          >
-            Effacer
-          </button>
-        )}
-      </div>
-
+    <PanneauFiltresPliable nbActifs={nbActifs} onReset={reset}>
       {/* Ville */}
       <div>
         <label htmlFor="ev-filter-ville" className="block text-xs font-medium text-[#4E5155] mb-1">
           Ville
         </label>
-        <DebouncedFilterInput
+        <ChampLieuFiltre
+          mode="ville"
           id="ev-filter-ville"
-          type="text"
           urlValue={current.ville}
           onCommit={(v) => update('ville', v)}
           placeholder="Paris, Lyon…"
           className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent"
-          autoComplete="address-level2"
         />
       </div>
 
@@ -94,12 +79,12 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
         <label htmlFor="ev-filter-departement" className="block text-xs font-medium text-[#4E5155] mb-1">
           Département
         </label>
-        <DebouncedFilterInput
+        <ChampLieuFiltre
+          mode="departement"
           id="ev-filter-departement"
-          type="text"
           urlValue={current.departement}
           onCommit={(v) => update('departement', v)}
-          placeholder="Rhône, Paris…"
+          placeholder="Rhône, 69, Paris…"
           className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#8A6D0B] focus:border-transparent"
         />
       </div>
@@ -180,6 +165,6 @@ export default function EvenementsClientFilters({ reseaux, types = [] }: Eveneme
           Mise à jour…
         </p>
       )}
-    </div>
+    </PanneauFiltresPliable>
   )
 }

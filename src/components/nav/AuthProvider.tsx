@@ -10,11 +10,14 @@
  * bascule sur l'état réel après montage.
  */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import type { DashboardRole } from '@/lib/dashboard-nav'
 
 export interface AuthUser {
   email: string
   nomSociete: string
-  role: 'reseauteur' | 'organisateur' | 'admin'
+  role: DashboardRole
+  /** Organisateur d'une tête de réseau (dérivé côté serveur) — débloque « Mes groupes ». */
+  isNational?: boolean
 }
 
 interface AuthState {

@@ -6,6 +6,7 @@ import { Toaster } from 'sonner'
 import AuthProvider from '@/components/nav/AuthProvider'
 import AuthNav from '@/components/nav/AuthNav'
 import MobileNavReseauteurs from '@/components/nav/MobileNavReseauteurs'
+import BottomNavReseauteurs from '@/components/nav/BottomNavReseauteurs'
 import RouteProgressBar from '@/components/nav/RouteProgressBar'
 import ScrollToTop from '@/components/nav/ScrollToTop'
 import FooterReseauteurs from '@/components/nav/FooterReseauteurs'
@@ -13,9 +14,10 @@ import ThemeToggle from '@/components/nav/ThemeToggle'
 import CookieInfoBanner from '@/components/legal/CookieInfoBanner'
 import GoogleAnalytics from '@/components/seo/GoogleAnalytics'
 import { JsonLd } from '@/components/seo/JsonLd'
-import { buildRootMetadata } from '@/lib/seo'
+import { buildRootMetadata, buildRootViewport } from '@/lib/seo'
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from '@/lib/jsonld'
 import { SITE_NAME, SITE_TAGLINE } from '@/lib/site'
+import { PUBLIC_NAV_LINKS } from '@/lib/public-nav'
 import './styles.css'
 
 // Jeu typographique « institution neutre » : Inter pour le corps et l'UI,
@@ -37,6 +39,7 @@ const interTight = Inter_Tight({
 })
 
 export const metadata = buildRootMetadata()
+export const viewport = buildRootViewport()
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
@@ -91,32 +94,19 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           </Link>
 
           {/* Nav desktop dès lg (1024px) : en dessous, logo+liens+auth ne tiennent pas
-              dans la largeur (débordement 640–900px constaté) → hamburger jusqu'à lg. */}
+              dans la largeur (débordement 640–900px constaté). Les 4 liens publics
+              passent alors dans la barre basse (BottomNavReseauteurs), le hamburger
+              ne gardant que l'espace membre. */}
           <nav className="flex items-center gap-1 lg:gap-5" aria-label="Navigation principale">
-            <Link
-              href="/reseauteurs"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
-            >
-              Réseauteurs
-            </Link>
-            <Link
-              href="/evenements"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
-            >
-              Événements
-            </Link>
-            <Link
-              href="/reseaux"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
-            >
-              Réseaux
-            </Link>
-            <Link
-              href="/partenaires"
-              className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
-            >
-              Entreprises
-            </Link>
+            {PUBLIC_NAV_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="ir-plasma-nav-link text-sm no-underline transition-colors hidden lg:inline font-medium"
+              >
+                {label}
+              </Link>
+            ))}
             <ThemeToggle />
             <div className="hidden lg:flex">
               <AuthNav />
@@ -135,6 +125,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <main>{children}</main>
 
         <FooterReseauteurs />
+        <BottomNavReseauteurs />
         <CookieInfoBanner />
         <Toaster
           position="bottom-right"

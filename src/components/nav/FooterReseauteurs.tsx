@@ -28,8 +28,10 @@ function LinkedinIcon() {
 export default function FooterReseauteurs() {
   const year = new Date().getFullYear()
 
+  // pb = hauteur de la barre de navigation basse (0 au-delà de lg) : sans cela
+  // la barre fixe recouvre la dernière ligne du pied de page sur mobile/tablette.
   return (
-    <footer className="ir-plasma-footer bg-white border-t border-[#DFE0E1] mt-16">
+    <footer className="ir-plasma-footer bg-white border-t border-[#DFE0E1] mt-16 pb-[var(--ir-bottomnav-h)]">
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
         <div>
           <h3 className="text-sm font-semibold text-[#1D1E21] mb-4">Annuaire</h3>

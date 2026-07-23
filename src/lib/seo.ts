@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import {
   SITE_URL,
   SITE_NAME,
@@ -121,7 +121,44 @@ export function buildRootMetadata(): Metadata {
     },
     // Les favicons sont fournis par les conventions de fichiers Next.js
     // (src/app/icon.svg + icon.png + apple-icon.png) → balises <link> auto-générées.
+    // Le manifeste l'est aussi (src/app/manifest.ts → <link rel="manifest">).
+    appleWebApp: {
+      capable: true,
+      title: SITE_NAME,
+      // 'default' : barre d'état opaque, texte sombre — cohérent avec le thème clair.
+      // 'black-translucent' ferait passer le contenu SOUS la barre d'état, ce qui
+      // exigerait de gérer env(safe-area-inset-top) dans l'en-tête collant.
+      statusBarStyle: 'default',
+    },
+    other: {
+      // `appleWebApp.capable` n'émet plus, depuis Next 15, que la balise
+      // standardisée `mobile-web-app-capable` — qu'iOS n'interprète pas. iOS ≥ 16.4
+      // ouvre en plein écran grâce au `display: standalone` du manifeste, mais les
+      // versions antérieures ne s'appuient QUE sur cette balise historique.
+      'apple-mobile-web-app-capable': 'yes',
+    },
     formatDetection: { telephone: false, email: false, address: false },
+  }
+}
+
+/**
+ * Viewport racine — exporté par le layout `(frontend)`.
+ *
+ * `themeColor` colore la barre système en mode installé (et la barre d'URL sur
+ * Chrome Android). Valeur unique, alignée sur le thème CLAIR : le mode sombre du
+ * site est un choix explicite en localStorage, pas `prefers-color-scheme`, donc une
+ * variante `media` se désynchroniserait des utilisateurs ayant basculé à la main.
+ *
+ * `viewportFit` reste au défaut ('auto') : le contenu n'est pas étendu sous les
+ * encoches. Passer à 'cover' imposerait d'ajouter env(safe-area-inset-top) à
+ * l'en-tête collant, sous peine de le voir passer sous la barre d'état iOS.
+ */
+export function buildRootViewport(): Viewport {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#FFFFFF',
+    colorScheme: 'light',
   }
 }
 

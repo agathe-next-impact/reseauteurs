@@ -340,7 +340,7 @@ export default function MapEvenementsReseauteurs({
   }, [])
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem-1px)]" aria-label="Carte des événements">
+    <div className="flex flex-col h-[calc(100dvh-4rem-1px-var(--ir-bottomnav-h))]" aria-label="Carte des événements">
       {/* Barre de navigation supérieure : bascule vue + affichage du panneau */}
       <div className="rsn-map-topbar">
         <div className="rsn-map-topbar-start">{toolbar}</div>

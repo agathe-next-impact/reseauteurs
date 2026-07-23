@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Calendar, Pencil, Trash2, X } from 'lucide-react'
 import { createEvenement, updateEvenement, deleteEvenement } from './actions'
 import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 import type { Media } from '@/types/reseauteurs-domain'
 
 interface EvenementsManagerProps {
@@ -373,13 +374,14 @@ export function EvenementsManager({ evenements, types, secteurs = [] }: Evenemen
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label htmlFor="lieuVille" className={labelClass}>Ville</label>
-                <input
+                <ChampLieuAutocomplete
+                  mode="ville"
                   id="lieuVille"
                   name="lieuVille"
-                  type="text"
                   maxLength={100}
                   defaultValue={editingEvenement?.lieuVille as string ?? ''}
                   className={inputClass}
+                  champsLies={{ departement: 'lieuDepartement' }}
                 />
               </div>
               <div>
@@ -395,13 +397,20 @@ export function EvenementsManager({ evenements, types, secteurs = [] }: Evenemen
               </div>
               <div>
                 <label htmlFor="lieuAdresse" className={labelClass}>Adresse</label>
-                <input
+                {/* Saisir l'adresse remplit ville, code postal et département. */}
+                <ChampLieuAutocomplete
+                  mode="adresse"
                   id="lieuAdresse"
                   name="lieuAdresse"
-                  type="text"
                   maxLength={300}
+                  placeholder="12 rue de la République…"
                   defaultValue={editingEvenement?.lieuAdresse as string ?? ''}
                   className={inputClass}
+                  champsLies={{
+                    codePostal: 'lieuCodePostal',
+                    ville: 'lieuVille',
+                    departement: 'lieuDepartement',
+                  }}
                 />
               </div>
               <div>
@@ -410,7 +419,15 @@ export function EvenementsManager({ evenements, types, secteurs = [] }: Evenemen
               </div>
               <div>
                 <label htmlFor="lieuDepartement" className={labelClass}>Département</label>
-                <input id="lieuDepartement" name="lieuDepartement" type="text" maxLength={100} placeholder="Rhône, Paris…" defaultValue={editingEvenement?.lieuDepartement as string ?? ''} className={inputClass} />
+                <ChampLieuAutocomplete
+                  mode="departement"
+                  id="lieuDepartement"
+                  name="lieuDepartement"
+                  maxLength={100}
+                  placeholder="Rhône, 69, Paris…"
+                  defaultValue={editingEvenement?.lieuDepartement as string ?? ''}
+                  className={inputClass}
+                />
               </div>
             </div>
 

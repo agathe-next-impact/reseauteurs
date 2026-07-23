@@ -11,6 +11,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import type { DashboardRole } from '@/lib/dashboard-nav'
 
 export async function GET() {
   const hdrs = await headers()
@@ -19,12 +20,36 @@ export async function GET() {
 
   if (!user) return NextResponse.json({ user: null })
 
-  // Rôle de navigation (mapping historique : partenaire retombe sur reseauteur côté nav).
+  // Les 4 rôles (ADR-0013) : le menu mobile affiche la navigation de l'espace membre,
+  // qui diffère par rôle — rabattre `partenaire` sur `reseauteur` (mapping historique)
+  // lui montrait « Mon profil / Participations » au lieu de « Ma fiche partenaire ».
   const r = user.role as string
-  const role: 'reseauteur' | 'organisateur' | 'admin' =
-    r === 'organisateur' ? 'organisateur' : r === 'admin' ? 'admin' : 'reseauteur'
+  const role: DashboardRole =
+    r === 'organisateur' ? 'organisateur'
+    : r === 'admin' ? 'admin'
+    : r === 'partenaire' ? 'partenaire'
+    : 'reseauteur'
+
+  // ADR-0012 : national dérivé du niveau du réseau possédé (jamais déclaré par le client).
+  let isNational = false
+  if (role === 'organisateur') {
+    const { totalDocs } = await payload.find({
+      collection: 'reseaux',
+      where: {
+        and: [{ user: { equals: user.id } }, { niveau: { not_equals: 'local' } }],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+    isNational = totalDocs > 0
+  }
 
   return NextResponse.json({
-    user: { email: user.email ?? '', nomSociete: (user.nomSociete as string) ?? '', role },
+    user: {
+      email: user.email ?? '',
+      nomSociete: (user.nomSociete as string) ?? '',
+      role,
+      isNational,
+    },
   })
 }

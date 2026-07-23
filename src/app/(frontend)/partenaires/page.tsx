@@ -50,7 +50,11 @@ export default async function PartenairesPage() {
         tone="orange"
         icon={<Building2 size={13} aria-hidden />}
         eyebrow="Entreprises"
-        title={<>Elles soutiennent <span>le networking français</span></>}
+        title={
+          <>
+            Elles soutiennent <span>le networking français</span>
+          </>
+        }
         lead={
           <>
             Ces entreprises croient en la valeur du networking professionnel et soutiennent{' '}
@@ -67,7 +71,14 @@ export default async function PartenairesPage() {
             <p className="text-sm font-medium text-[#4E5155] mb-2">
               Aucune entreprise pour l&apos;instant
             </p>
-            <p className="text-sm text-[#6E7175]">Vous souhaitez rejoindre ces entreprises ?</p>
+            <p className="text-sm text-[#6E7175] mb-5">Soyez la première à les rejoindre.</p>
+            <Link
+              href="/inscription?type=partenaire"
+              className="ir-atlas-primary rsn-linkrow w-max mx-auto"
+            >
+              <Building2 size={15} aria-hidden />
+              Devenir partenaire
+            </Link>
           </div>
         ) : (
           <Reveal className="mb-16">
@@ -145,22 +156,34 @@ export default async function PartenairesPage() {
 
         {/* Bloc CTA B2B — devenir partenaire */}
         <Reveal>
-          <div className="bg-[#F5E050] p-8 md:p-10 text-[#012A4A] text-center flex flex-col gap-4">
+          <div className="bg-[#3E7CA6] p-8 md:p-10 text-[#012A4A] text-center flex flex-col gap-4">
             <Building2 size={32} className="mx-auto mb-4 opacity-80" aria-hidden />
-            <h2 className="text-xl sm:text-2xl font-bold mb-3">
-              Vous représentez une entreprise ou un réseau ?
+            <h2 className="text-white text-xl sm:text-2xl font-bold mb-3">
+              Vous représentez une entreprise ?
             </h2>
-            <p className="text-sm sm:text-base opacity-90 mx-auto mb-6">
+            <p className="text-white text-sm sm:text-base opacity-90 mx-auto mb-6">
               Référencez votre entreprise sur RÉSEAUTEURS et touchez des milliers de professionnels
-              du networking partout en France. Logo en page d&apos;accueil, page dédiée, visibilité
-              maximale.
+              du networking partout en France : logo en page d&apos;accueil, fiche dédiée, et une
+              offre réservée aux réseauteurs visible dans leur espace.
             </p>
             <Link
               href="/inscription?type=partenaire"
-              className="w-xs mx-auto inline-flex items-center gap-2 px-6 py-3 bg-white text-[#8A6D0B] font-bold text-sm hover:bg-[#FEFBE6] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="w-max mx-auto inline-flex items-center gap-2 px-6 py-3 bg-white text-[#8A6D0B] font-bold text-sm hover:bg-[#FEFBE6] transition-colors no-underline rsn-linkrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              Référencer mon entreprise
+              <Building2 size={15} aria-hidden />
+              Devenir partenaire
             </Link>
+            {/* Un réseau d'affaires n'est pas un annonceur : parcours distinct (ADR-0014). */}
+            <p className="text-white/80 text-xs mt-4">
+              Vous gérez un réseau d&apos;affaires ?{' '}
+              <Link
+                href="/inscription?type=organisateur"
+                className="font-semibold text-white underline"
+              >
+                Inscrivez votre réseau
+              </Link>
+              .
+            </p>
           </div>
         </Reveal>
       </div>

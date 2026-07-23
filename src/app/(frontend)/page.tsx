@@ -5,26 +5,33 @@
  * Structure « bento » inspirée d'un tableau de bord SaaS (grille de cellules
  * bordées, charts, micro-interactions) portée sur les tokens RÉSEAUTEURS :
  *   Hero + tableau de bord → Bandeau réseaux (marquee) → Bande d'accès →
- *   Trois piliers → Vue d'ensemble (donut badges) → Classement réseaux (bars) →
- *   Comment ça fonctionne → Chiffres clés (compteurs + courbe) →
- *   Couverture nationale → Partenaires → Newsletter.
+ *   Avantages Réseauteur+ → Vue d'ensemble (donut badges) →
+ *   Comment ça fonctionne → Chiffres clés (compteurs + courbe) → Newsletter.
+ *
+ * Retirées le 2026-07-23 (décision produit) : « Classement des réseaux » (bars),
+ * « Couverture nationale » (carte animée), « Bandeau partenaires », puis
+ * « Le cœur du modèle / Trois entités » — remplacée à sa place par la section
+ * « Avantages Réseauteur+ ». Les requêtes qui ne servaient qu'à elles ont été
+ * supprimées avec elles.
  */
 import Link from 'next/link'
 import Image from 'next/image'
 import { getPayload, type Where } from 'payload'
 import config from '@payload-config'
-import { Users, Calendar, Network, MapPin, Star, Search, TrendingUp, Award, Sparkles } from 'lucide-react'
+import { Users, Calendar, Network, Star, Search, TrendingUp, Award, Sparkles, Check, Mail } from 'lucide-react'
 import { withDbRetry } from '@/lib/db-retry'
 import { buildMetadata } from '@/lib/seo'
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/site'
+import { PRIX_PLUS_HT } from '@/lib/tarifs'
+import { AVANTAGES_GRATUIT, AVANTAGES_PLUS } from '@/lib/offres-reseauteur'
+import CTAInscrireReseau from '@/components/cta/CTAInscrireReseau'
 import Reveal from '@/components/home/Reveal'
 import CountUp from '@/components/home/CountUp'
 import DonutChart, { type DonutSegment } from '@/components/home/DonutChart'
 import DonutWithLegend from '@/components/home/DonutWithLegend'
-import BarMini, { type BarDatum } from '@/components/home/BarMini'
 import TrendArea from '@/components/home/TrendArea'
 import type { Metadata } from 'next'
-import type { Media, Reseau, Partenaire } from '@/types/reseauteurs-domain'
+import type { Media, Reseau } from '@/types/reseauteurs-domain'
 
 export const revalidate = 300 // ISR 5 min
 
@@ -90,7 +97,6 @@ export default async function HomePage() {
     { totalDocs: evenementCount },
     { totalDocs: reseauCount },
     { docs: reseauxPartenaires },
-    { docs: partenaires },
     { docs: topReseauxDocs },
     { totalDocs: bronzeCount },
     { totalDocs: argentCount },
@@ -135,21 +141,6 @@ export default async function HomePage() {
           overrideAccess: true,
         }),
       { label: 'home:find reseaux partenaires' },
-    ),
-    withDbRetry(
-      () =>
-        payload.find({
-          collection: 'partenaires',
-          where: { statut: { equals: 'actif' } },
-          select: { nom: true, logo: true, lien: true, description: true } as Record<
-            string,
-            boolean
-          >,
-          depth: 1,
-          limit: 12,
-          overrideAccess: true,
-        }),
-      { label: 'home:find partenaires' },
     ),
     withDbRetry(
       () =>
@@ -206,7 +197,6 @@ export default async function HomePage() {
   ])
 
   const reseauxBandeau = reseauxPartenaires as Reseau[]
-  const partenairesActifs = partenaires as Partenaire[]
   const topReseaux = (topReseauxDocs as Reseau[]).map((r) => ({
     nom: r.nom,
     slug: r.slug,
@@ -243,21 +233,6 @@ export default async function HomePage() {
     color: b.color,
   }))
   const badgeSum = badgeValues.reduce((s, n) => s + n, 0)
-
-  // ── Bars « classement des réseaux » ────────────────────────────────
-  const reseauxBarsSource = reseauxAvecMembres.length > 0 ? reseauxAvecMembres : []
-  const reseauBarsPreview = reseauxBarsSource.length === 0
-  const reseauBars: BarDatum[] = reseauBarsPreview
-    ? RESEAUX_CONNUS.slice(0, 6).map((nom, i) => ({
-        label: nom,
-        value: [42, 34, 27, 19, 13, 8][i],
-        color: CHART_COLORS[i % CHART_COLORS.length],
-      }))
-    : reseauxBarsSource.slice(0, 6).map((r, i) => ({
-        label: r.nom,
-        value: r.nbReseauteurs,
-        color: CHART_COLORS[i % CHART_COLORS.length],
-      }))
 
   // ── Courbe de croissance ───────────────────────────────────────────
   const growthSeries = buildGrowthSeries(reseauteurCount)
@@ -372,13 +347,32 @@ export default async function HomePage() {
       </section>
 
       {/* ─── BANDEAU RÉSEAUX (marquee — « on les rassemble ») ─── */}
+      {/* Même gabarit de section que ses voisines : py-16 md:py-20, en-tête
+          `rsn-eyebrow` + `rsn-h2` + `rsn-sub` dans un `Reveal`, puis mb-12 avant
+          le contenu. Le marquee reste full-bleed (sans `px-6`) : son masque
+          dégradé gère les bords, une gouttière couperait l'effet de défilement. */}
       <section
-        className="bg-white border-b border-[#DFE0E1] py-10"
-        aria-label="Réseaux d'affaires référencés"
+        className="bg-white border-b border-[#DFE0E1] py-16 md:py-20"
+        aria-labelledby="reseaux-reunis-titre"
       >
-        <p className="text-center text-xs font-semibold uppercase tracking-widest text-[#6E7175] mb-6">
-          Tous les réseaux réunis
-        </p>
+        <div className="px-6">
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="rsn-eyebrow justify-center">
+                <Network size={13} aria-hidden />
+                Les réseaux d&apos;affaires
+              </p>
+              <h2 id="reseaux-reunis-titre" className="rsn-h2 mx-auto">
+                Tous les réseaux <span>réunis</span>
+              </h2>
+              <p className="rsn-sub mx-auto">
+                RÉSEAUTEURS ne remplace aucun réseau : il les rassemble. BNI, DCF, CJD, Dynabuy,
+                Rotary, CPME — retrouvez-les tous au même endroit.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+
         <div className="rsn-marquee-mask">
           <div className="rsn-marquee-track">
             {marqueeItems.map((item, idx) => {
@@ -422,6 +416,10 @@ export default async function HomePage() {
             })}
           </div>
         </div>
+
+        <Reveal>
+          <CTAInscrireReseau className="px-6 mt-12" />
+        </Reveal>
       </section>
 
       {/* ─── BANDE D'ACCÈS (bento 4 colonnes) ─────────────────── */}
@@ -471,74 +469,56 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── TROIS PILIERS (le test des 30 s) ─────────────────── */}
-      <section className="py-16 md:py-20" aria-labelledby="trois-piliers-titre">
+      {/* ─── AVANTAGES RÉSEAUTEUR+ (2 colonnes) ───────────────── */}
+      {/* Remplace « Le cœur du modèle / Trois entités » (retiré le 2026-07-23).
+          `rsn-split` = la grille 2 colonnes du site (bordée, flush, repliée en
+          1 colonne sous 900px) — même gabarit que « Vue d'ensemble ». */}
+      <section className="py-16 md:py-20" aria-labelledby="avantages-plus-titre">
         <div className="px-6">
           <Reveal>
-            <div className="text-center mb-12">
-              <p className="rsn-eyebrow justify-center">
-                <Sparkles size={13} aria-hidden />
-                Le cœur du modèle
-              </p>
-              <h2 id="trois-piliers-titre" className="rsn-h2 mx-auto">
-                Trois entités, <span>une plateforme</span>
-              </h2>
-              <p className="rsn-sub mx-auto">
-                Réseauteurs, événements, réseaux — tout ce que vous cherchez dans le networking
-                professionnel, au même endroit.
-              </p>
+            <div className="rsn-split">
+              <div>
+                <p className="rsn-eyebrow">
+                  <Star size={13} aria-hidden />
+                  Réseauteur+
+                </p>
+                <h2 id="avantages-plus-titre" className="rsn-h2">
+                  Les avantages <span>Réseauteur+</span>
+                </h2>
+                <p className="rsn-sub">
+                  Avec Réseauteur+, vous ne vous contentez plus de participer aux événements : vous
+                  les créez. Invitez la communauté à découvrir votre entreprise, partager un café ou
+                  un déjeuner, et développez votre réseau tout au long de l&apos;année.
+                </p>
+                <p className="text-3xl font-extrabold text-[#8A6D0B] mt-8">
+                  {PRIX_PLUS_HT} € <span className="text-base font-semibold">HT / an</span>
+                </p>
+                <div className="ir-atlas-actions">
+                  <Link href="/inscription?type=reseauteur" className="ir-atlas-primary rsn-linkrow">
+                    <Star size={15} aria-hidden />
+                    Devenir Réseauteur+
+                  </Link>
+                </div>
+              </div>
+
+              <div>
+                <p className="rsn-panel-title mb-5">Tout le compte gratuit, plus :</p>
+                <ul className="flex flex-col gap-4">
+                  {AVANTAGES_PLUS.map((a) => (
+                    <li key={a} className="flex items-start gap-3 text-[#4E5155] leading-relaxed">
+                      <Check size={18} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+                <p className="ir-atlas-microcopy">
+                  Petit-déjeuner networking, afterwork, visite d&apos;entreprise, atelier — les
+                  autres réseauteurs s&apos;inscrivent directement à vos événements depuis la
+                  plateforme.
+                </p>
+              </div>
             </div>
           </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Users,
-                title: 'Réseauteurs',
-                desc: 'Trouvez les professionnels qui réseautent près de chez vous. Entrepreneurs, dirigeants, indépendants — visibles sur la carte.',
-                href: '/reseauteurs',
-                cta: 'Voir les réseauteurs',
-                color: '#035AA6',
-              },
-              {
-                icon: Calendar,
-                title: 'Événements',
-                desc: 'Tous les événements business — afterworks, petits-déjeuners, conférences, réunions de réseaux — sur une seule carte.',
-                href: '/evenements',
-                cta: 'Voir les événements',
-                color: '#8A6D0B',
-              },
-              {
-                icon: Network,
-                title: 'Réseaux',
-                desc: "Découvrez tous les réseaux d'affaires (BNI, DCF, CJD, Dynabuy…), leurs membres, leurs événements et leurs spécialités.",
-                href: '/reseaux',
-                cta: 'Voir les réseaux',
-                color: '#3E7CA6',
-              },
-            ].map(({ icon: Icon, title, desc, href, cta, color }, i) => (
-              <Reveal key={title} delay={i * 90}>
-                <div className="bg-white border border-[#DFE0E1] p-6 flex flex-col gap-4 rsn-lift h-full">
-                  <div className="flex items-center" style={{ color }}>
-                    <Icon size={26} aria-hidden />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-[#012A4A] mb-2">{title}</h3>
-                    <p className="text-sm text-[#4E5155] leading-relaxed">{desc}</p>
-                  </div>
-                  <div className="mt-auto pt-2">
-                    <Link
-                      href={href}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold no-underline rsn-linkrow"
-                      style={{ color }}
-                    >
-                      {cta}
-                    </Link>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -617,39 +597,33 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── CLASSEMENT DES RÉSEAUX (bars) ────────────────────── */}
-      <section className="py-16" aria-labelledby="classement-titre">
+      {/* ─── COMMENT ÇA FONCTIONNE ────────────────────────────── */}
+      {/* Mise en page « atlas » comme le reste de la page : les cellules d'une
+          .grid sont FLUSH (`.ir-atlas-page :where(.grid){gap:0}` neutralise les
+          `gap-*` de Tailwind), l'espacement vient donc du PADDING des cellules,
+          pas d'un gap. Les `max-w-*` / `mx-auto` sont eux aussi neutralisés. */}
+      <section
+        className="bg-white border-y border-[#DFE0E1] py-16 md:py-20"
+        aria-labelledby="comment-titre"
+      >
         <div className="px-6">
           <Reveal>
-            <div className="rsn-panel">
-              <div className="rsn-panel-head">
-                <div>
-                  <h2 id="classement-titre" className="rsn-panel-title text-base">
-                    Les réseaux les plus suivis
-                  </h2>
-                </div>
-                <span className="rsn-tag">
-                  {reseauBarsPreview ? 'aperçu' : 'par nombre de membres'}
-                </span>
-              </div>
-              <div className="rsn-panel-body">
-                <BarMini bars={reseauBars} height={210} valueSuffix=" membres" />
-              </div>
+            <div className="text-center mb-12">
+              <p className="rsn-eyebrow justify-center">
+                <Sparkles size={13} aria-hidden />
+                Comment ça marche
+              </p>
+              <h2 id="comment-titre" className="rsn-h2 mx-auto">
+                Trois étapes, <span>deux niveaux de compte</span>
+              </h2>
+              <p className="rsn-sub mx-auto">
+                L&apos;inscription est gratuite et prend moins de deux minutes. Le niveau
+                Réseauteur+ s&apos;ajoute quand vous voulez organiser vos propres rencontres.
+              </p>
             </div>
           </Reveal>
-        </div>
-      </section>
-
-      {/* ─── COMMENT ÇA FONCTIONNE ────────────────────────────── */}
-      <section className="bg-white border-y border-[#DFE0E1] py-16" aria-labelledby="comment-titre">
-        <div className="px-6">
           <Reveal>
-            <h2 id="comment-titre" className="rsn-h2 text-center mx-auto mb-12">
-              Comment <span>ça fonctionne</span>
-            </h2>
-          </Reveal>
-          <Reveal>
-            <ol className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            <ol className="grid grid-cols-1 sm:grid-cols-3">
               {[
                 {
                   step: '1',
@@ -673,7 +647,10 @@ export default async function HomePage() {
                   bg: '#E7F0F7',
                 },
               ].map(({ step, title, desc, color, bg }) => (
-                <li key={step} className="flex flex-col items-center text-center gap-4 list-none">
+                <li
+                  key={step}
+                  className="flex flex-col items-center text-center gap-4 list-none p-6 sm:p-8"
+                >
                   <span
                     className="w-11 h-11 rounded-full flex items-center justify-center text-lg font-extrabold"
                     style={{ background: bg, color }}
@@ -689,11 +666,97 @@ export default async function HomePage() {
               ))}
             </ol>
           </Reveal>
-          <div className="text-center mt-10">
-            <Link href="/inscription" className="ir-atlas-primary rsn-linkrow">
-              Créer mon profil — c&apos;est gratuit
-            </Link>
+          {/* Les deux niveaux du compte réseauteur (§4.1). Copie partagée avec le
+              tunnel d'inscription (`lib/offres-reseauteur`) : une seule promesse. */}
+          <Reveal>
+            <div className="text-center mt-16 mb-12">
+              <p className="rsn-eyebrow justify-center">
+                <Star size={13} aria-hidden />
+                Deux niveaux de compte
+              </p>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#012A4A] mt-3">
+                Ce que vous obtenez en devenant réseauteur
+              </h3>
+            </div>
+          </Reveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            {/* ── Réseauteur (gratuit) ── */}
+            <Reveal>
+              <section
+                aria-labelledby="offre-gratuit-titre"
+                className="bg-white border border-[#DFE0E1] p-6 sm:p-8 flex flex-col gap-4 h-full"
+              >
+                <div>
+                  <h4 id="offre-gratuit-titre" className="text-lg font-bold text-[#012A4A]">
+                    Réseauteur
+                  </h4>
+                  <p className="text-2xl font-extrabold text-[#012A4A] mt-1">Gratuit</p>
+                </div>
+                <p className="text-sm text-[#4E5155] leading-relaxed">
+                  Pour développer votre réseau professionnel et vous rendre visible partout en
+                  France.
+                </p>
+                <ul className="flex flex-col gap-2.5 text-sm text-[#4E5155] flex-1">
+                  {AVANTAGES_GRATUIT.map((a) => (
+                    <li key={a} className="flex items-start gap-2.5">
+                      <Check size={15} className="text-[#035AA6] shrink-0 mt-0.5" aria-hidden />
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto pt-2">
+                  <Link href="/inscription?type=reseauteur" className="ir-atlas-secondary rsn-linkrow">
+                    Créer mon profil — c&apos;est gratuit
+                  </Link>
+                </div>
+              </section>
+            </Reveal>
+
+            {/* ── Réseauteur+ (abonnement) ── */}
+            <Reveal delay={90}>
+              <section
+                aria-labelledby="offre-plus-titre"
+                className="relative bg-white border-2 border-[#F5E050] p-6 sm:p-8 flex flex-col gap-4 h-full"
+              >
+                <span className="absolute -top-3 left-6 sm:left-8 bg-[#F5E050] text-[#012A4A] text-xs font-bold uppercase tracking-wide px-3 py-1">
+                  Recommandé
+                </span>
+                <div>
+                  <h4 id="offre-plus-titre" className="text-lg font-bold text-[#012A4A]">
+                    Réseauteur+
+                  </h4>
+                  <p className="text-2xl font-extrabold text-[#8A6D0B] mt-1">
+                    {PRIX_PLUS_HT} € <span className="text-base font-semibold">HT / an</span>
+                  </p>
+                </div>
+                <p className="text-sm text-[#4E5155] leading-relaxed">
+                  Tout le compte gratuit, <strong className="text-[#012A4A]">plus :</strong>
+                </p>
+                <ul className="flex flex-col gap-2.5 text-sm text-[#4E5155] flex-1">
+                  {AVANTAGES_PLUS.map((a) => (
+                    <li key={a} className="flex items-start gap-2.5">
+                      <Check size={15} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto pt-2">
+                  <Link href="/inscription?type=reseauteur" className="ir-atlas-primary rsn-linkrow">
+                    Devenir Réseauteur+
+                  </Link>
+                </div>
+              </section>
+            </Reveal>
           </div>
+
+          <p className="ir-atlas-microcopy text-center mt-10">
+            Vous gérez un réseau d&apos;affaires ?{' '}
+            <Link href="/inscription?type=organisateur" className="font-semibold text-[#035AA6]">
+              Inscrivez votre réseau national
+            </Link>
+            .
+          </p>
         </div>
       </section>
 
@@ -735,180 +798,99 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── COUVERTURE NATIONALE (carte animée) ──────────────── */}
-      <section className="py-16" aria-labelledby="couverture-titre">
-        <div className="px-6">
-          <Reveal>
-            <div className="rsn-split">
-              <div>
-                <p className="rsn-eyebrow">
-                  <MapPin size={13} aria-hidden />
-                  Couverture nationale
-                </p>
-                <h2 id="couverture-titre" className="rsn-h2">
-                  Partout où l&apos;on réseaute <span>en France</span>
-                </h2>
-                <p className="rsn-sub">
-                  De Paris à Marseille, de Lyon à Lille : les réseauteurs, les événements et les
-                  réseaux se rejoignent sur deux cartes nationales. Cherchez par ville, département
-                  ou région — ou explorez autour de vous.
-                </p>
-                <div className="ir-atlas-actions mt-8">
-                  <Link href="/carte/reseauteurs" className="ir-atlas-primary rsn-linkrow">
-                    Ouvrir la carte
-                  </Link>
-                  <Link href="/reseaux" className="ir-atlas-secondary rsn-linkrow">
-                    Parcourir les réseaux
-                  </Link>
-                </div>
-              </div>
-              <div className="ir-atlas-map-panel" aria-hidden="true">
-                <div className="ir-atlas-map-toolbar">
-                  <span>Carte nationale</span>
-                  <span>Live</span>
-                </div>
-                <div className="ir-atlas-map-canvas">
-                  <span className="ir-atlas-map-node ir-atlas-map-node-a" />
-                  <span className="ir-atlas-map-node ir-atlas-map-node-b" />
-                  <span className="ir-atlas-map-node ir-atlas-map-node-c" />
-                  <span className="ir-atlas-map-node ir-atlas-map-node-d" />
-                  <span className="ir-atlas-route ir-atlas-route-a" />
-                  <span className="ir-atlas-route ir-atlas-route-b" />
-                  <span className="ir-atlas-route ir-atlas-route-c" />
-                </div>
-                <div className="ir-atlas-map-dock">
-                  <div>
-                    <span>{reseauteurCount || 0}+</span>
-                    <small>réseauteurs</small>
-                  </div>
-                  <div>
-                    <span>{evenementCount || 0}+</span>
-                    <small>événements</small>
-                  </div>
-                  <div>
-                    <span>{reseauCount || 0}+</span>
-                    <small>réseaux</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ─── BANDEAU PARTENAIRES (orange — B2B) ───────────────── */}
+      {/* ─── NEWSLETTER (bande accent — dernière bande avant le pied) ─ */}
+      {/* Aplat #012A4A (navy — le bleu sombre des bandeaux dans la palette) +
+          texte blanc : ≈ 14:1 de contraste. Le jaune #F5E050 puis le bleu vif
+          #035AA6 ont été écartés (trop agressifs sur une pleine largeur).
+          La bande « Chiffres clés » juste au-dessus étant elle aussi sombre
+          (#0C1219), un filet `border-t` blanc à 12 % marque la séparation.
+          Couleurs FIGÉES (pas de token `--ir-*`) : la bande doit rester
+          identique en thème sombre.
+          NB : `.ir-atlas-page` neutralise `max-w-lg/xl/4xl…` et `mx-auto` — d'où
+          les largeurs en valeurs arbitraires et le centrage par `items-center`. */}
       <section
-        className="py-16 bg-[#FEFBE6] border-y border-[#EFE08F]"
-        aria-labelledby="partenaires-titre"
-      >
-        <div className="px-6">
-          <Reveal>
-            <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#8A6D0B] mb-2">
-                Nos entreprises partenaires
-              </p>
-              <h2 id="partenaires-titre" className="text-2xl font-bold text-[#012A4A]">
-                Elles soutiennent le networking français
-              </h2>
-            </div>
-          </Reveal>
-
-          {partenairesActifs.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-4 mb-8">
-              {partenairesActifs.map((p) => {
-                const logoMedia = p.logo as Media | null | undefined
-                const logoUrl = logoMedia?.sizes?.thumbnail?.url ?? logoMedia?.url
-                const inner = logoUrl ? (
-                  <Image
-                    src={logoUrl}
-                    alt={p.nom}
-                    width={80}
-                    height={40}
-                    className="h-8 w-auto object-contain"
-                  />
-                ) : (
-                  <span className="text-sm font-semibold text-[#8A6D0B]">{p.nom}</span>
-                )
-                return p.lien ? (
-                  <a
-                    key={p.id}
-                    href={p.lien}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-3 border border-[#EFE08F] bg-white rsn-lift no-underline"
-                    title={p.nom}
-                  >
-                    {inner}
-                  </a>
-                ) : (
-                  <span
-                    key={p.id}
-                    className="flex items-center gap-2 px-4 py-3 border border-[#EFE08F] bg-white"
-                  >
-                    {inner}
-                  </span>
-                )
-              })}
-            </div>
-          )}
-
-          <div className="text-center">
-            <p className="text-sm text-[#6E7175] mb-3">
-              Vous représentez un réseau d&apos;affaires ou une entreprise ?
-            </p>
-            <Link
-              href="/partenaires"
-              className="ir-atlas-secondary rsn-linkrow"
-              style={{ margin: '0 auto' }}
-            >
-              Référencer mon entreprise
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── NEWSLETTER ───────────────────────────────────────── */}
-      <section
-        className="py-16 bg-white border-b border-[#DFE0E1]"
+        className="py-16 md:py-20 bg-[#012A4A] border-t border-white/12"
         aria-labelledby="newsletter-titre"
       >
-        <div className="flex flex-col items-center max-w-lg mx-auto px-6 text-center gap-4">
-          <h2 id="newsletter-titre" className="text-xl font-bold text-[#012A4A] mb-2">
-            Restez informé
-          </h2>
-          <p className="text-sm text-[#4E5155] mb-6">
-            Nouveaux réseauteurs, événements à venir, actualités du networking près de chez vous.
-          </p>
-          {/* Newsletter à venir (décision produit 2026-06-29) — collecte non branchée,
-              champ et bouton désactivés ; pas de <form> pour éviter toute soumission. */}
-          <div
-            className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto"
-            aria-label="Inscription à la newsletter (bientôt disponible)"
-          >
-            <label htmlFor="newsletter-email" className="sr-only">
-              Votre adresse email
-            </label>
-            <input
-              id="newsletter-email"
-              type="email"
-              name="email"
-              placeholder="votre@email.fr"
-              disabled
-              autoComplete="email"
-              className="w-full sm:w-flex-1 px-4 py-2.5 border border-[#DFE0E1] text-sm bg-[#E9E9EA] text-[#999A9D] placeholder:text-[#999A9D] cursor-not-allowed"
-            />
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              className="p-2.5 bg-[#999A9D] text-white font-semibold text-sm cursor-not-allowed"
-            >
-              Bientôt disponible
-            </button>
-          </div>
-          <p className="text-xs text-[#999A9D] mt-3">
-            Inscription à la newsletter bientôt disponible.
-          </p>
+        <div className="px-6">
+          <Reveal>
+            <div className="flex flex-col items-center text-center">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 border border-white/25 text-white text-xs font-bold uppercase tracking-widest">
+                <Mail size={13} aria-hidden />
+                La lettre des réseauteurs
+              </span>
+
+              <h2
+                id="newsletter-titre"
+                className="text-3xl sm:text-4xl font-extrabold text-white leading-tight mt-5 max-w-[36rem]"
+              >
+                Ne ratez plus un rendez-vous business près de chez vous
+              </h2>
+
+              <p className="text-base sm:text-lg text-white/85 leading-relaxed mt-4 max-w-[40rem]">
+                Chaque mois : les événements à venir dans votre département, les nouveaux
+                réseauteurs de votre ville et l&apos;actualité des réseaux d&apos;affaires.
+              </p>
+
+              <ul className="flex flex-col sm:flex-row items-center gap-x-7 gap-y-2 mt-7 text-sm font-semibold text-white">
+                {['Un seul email par mois', '100 % networking, zéro spam', 'Désinscription en un clic'].map(
+                  (arg) => (
+                    <li key={arg} className="flex items-center gap-2">
+                      <Check size={16} className="text-[#8BB4D9]" aria-hidden />
+                      {arg}
+                    </li>
+                  ),
+                )}
+              </ul>
+
+              {/* Newsletter à venir (décision produit 2026-06-29) — collecte non branchée,
+                  champ et bouton désactivés ; pas de <form> pour éviter toute soumission.
+                  L'état désactivé reste VISIBLE : rendre la bande plus engageante ne doit
+                  pas faire passer un formulaire mort pour un formulaire actif. */}
+              <div
+                className="flex flex-col sm:flex-row gap-2 w-full max-w-[34rem] mt-8"
+                aria-label="Inscription à la newsletter (bientôt disponible)"
+              >
+                <label htmlFor="newsletter-email" className="sr-only">
+                  Votre adresse email
+                </label>
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  name="email"
+                  placeholder="votre@email.fr"
+                  disabled
+                  autoComplete="email"
+                  className="flex-1 min-w-0 px-4 py-3 text-sm bg-white/10 border border-white/25 text-white placeholder:text-white/50 cursor-not-allowed"
+                />
+                <button
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  className="px-5 py-3 text-sm font-bold bg-white/15 text-white/75 border border-white/25 cursor-not-allowed whitespace-nowrap"
+                >
+                  Bientôt disponible
+                </button>
+              </div>
+
+              <p className="text-xs text-white/70 mt-3">
+                Le formulaire s&apos;activera à l&apos;ouverture de la lettre.
+              </p>
+
+              {/* La bande gagne en visibilité : autant qu'elle propose une action
+                  qui, elle, fonctionne dès aujourd'hui. */}
+              <p className="text-sm text-white/90 mt-8">
+                En attendant,{' '}
+                <Link
+                  href="/inscription?type=reseauteur"
+                  className="font-bold text-white underline underline-offset-2"
+                >
+                  créez votre profil gratuit
+                </Link>{' '}
+                et explorez les événements dès maintenant.
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
     </div>

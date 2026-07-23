@@ -344,7 +344,7 @@ export default function MapReseauteurs({
   }, [])
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem-1px)]" aria-label="Carte des réseauteurs">
+    <div className="flex flex-col h-[calc(100dvh-4rem-1px-var(--ir-bottomnav-h))]" aria-label="Carte des réseauteurs">
       {/* Barre de navigation supérieure : bascule vue + affichage du panneau */}
       <div className="rsn-map-topbar">
         <div className="rsn-map-topbar-start">{toolbar}</div>

@@ -19,6 +19,7 @@
  */
 import { useActionState, useRef, useState } from 'react'
 import { Loader2, Pencil, Trash2, X } from 'lucide-react'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 import {
   deleteLocalReseau,
   updateLocalReseau,
@@ -130,10 +131,10 @@ export function LocalActions({ local, delegue }: LocalActionsProps) {
             >
               Ville <span className="text-red-500" aria-hidden>*</span>
             </label>
-            <input
+            <ChampLieuAutocomplete
+              mode="ville"
               id={`local-ville-${local.id}`}
               name="ville"
-              type="text"
               required
               maxLength={100}
               defaultValue={local.ville ?? ''}

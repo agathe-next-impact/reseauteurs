@@ -9,8 +9,10 @@
 
 import { useCallback, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { DebouncedFilterInput } from './DebouncedFilterInput'
+import PanneauFiltresPliable from './PanneauFiltresPliable'
+import ChampLieuFiltre from './ChampLieuFiltre'
 
 interface ReseauteursFiltersProps {
   categories: Array<{ id: string | number; label: string }>
@@ -41,7 +43,9 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
     reseau: searchParams.get('reseau') ?? '',
   }
 
-  const hasFilters = Object.values(current).some(Boolean)
+  // Compté, pas booléen : replié, l'accordéon doit annoncer COMBIEN de critères
+  // s'appliquent, sinon la liste paraît complète alors qu'elle est filtrée.
+  const nbActifs = Object.values(current).filter(Boolean).length
 
   const update = useCallback(
     (key: string, value: string) => {
@@ -73,23 +77,7 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
   }, [router, pathname, searchParams])
 
   return (
-    <div className="bg-white rounded-2xl border border-[#DFE0E1] p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[#1D1E21] flex items-center gap-1.5">
-          <SlidersHorizontal size={14} aria-hidden />
-          Filtrer
-        </h2>
-        {hasFilters && (
-          <button
-            onClick={reset}
-            className="text-xs text-[#6E7175] hover:text-[#035AA6] flex items-center gap-1 cursor-pointer transition-colors"
-            aria-label="Effacer tous les filtres"
-          >
-            Effacer
-          </button>
-        )}
-      </div>
-
+    <PanneauFiltresPliable nbActifs={nbActifs} onReset={reset}>
       {/* Recherche nom/entreprise */}
       <div>
         <label htmlFor="filter-q" className="block text-xs font-medium text-[#4E5155] mb-1">
@@ -114,14 +102,13 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
         <label htmlFor="filter-ville" className="block text-xs font-medium text-[#4E5155] mb-1">
           Ville
         </label>
-        <DebouncedFilterInput
+        <ChampLieuFiltre
+          mode="ville"
           id="filter-ville"
-          type="text"
           urlValue={current.ville}
           onCommit={(v) => update('ville', v)}
           placeholder="Paris, Lyon, Bordeaux…"
           className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent"
-          autoComplete="address-level2"
         />
       </div>
 
@@ -130,12 +117,12 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
         <label htmlFor="filter-dept" className="block text-xs font-medium text-[#4E5155] mb-1">
           Département
         </label>
-        <DebouncedFilterInput
+        <ChampLieuFiltre
+          mode="departement"
           id="filter-dept"
-          type="text"
           urlValue={current.departement}
           onCommit={(v) => update('departement', v)}
-          placeholder="Rhône, Puy-de-Dôme…"
+          placeholder="Rhône, 69, Puy-de-Dôme…"
           className="w-full px-3 py-2 text-sm rounded-xl border border-[#DFE0E1] bg-[#F2F2F2] text-[#1D1E21] placeholder:text-[#999A9D] focus:outline-none focus:ring-2 focus:ring-[#035AA6] focus:border-transparent"
         />
       </div>
@@ -145,9 +132,9 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
         <label htmlFor="filter-region" className="block text-xs font-medium text-[#4E5155] mb-1">
           Région
         </label>
-        <DebouncedFilterInput
+        <ChampLieuFiltre
+          mode="region"
           id="filter-region"
-          type="text"
           urlValue={current.region}
           onCommit={(v) => update('region', v)}
           placeholder="Auvergne-Rhône-Alpes…"
@@ -217,6 +204,6 @@ export function ReseauteursFilters({ categories, reseaux = [] }: ReseauteursFilt
           Mise à jour…
         </p>
       )}
-    </div>
+    </PanneauFiltresPliable>
   )
 }

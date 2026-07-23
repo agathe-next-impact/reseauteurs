@@ -12,6 +12,7 @@
  */
 import { useState, useRef, useActionState } from 'react'
 import { X, Loader2, Network } from 'lucide-react'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 import { createLocalReseau } from '@/app/(frontend)/dashboard/locaux/actions'
 
 interface CreerLocalButtonProps {
@@ -110,10 +111,10 @@ export function CreerLocalButton({ reseauNationalId, onSuccess }: CreerLocalButt
           <label htmlFor="local-ville" className="block text-xs font-medium text-[#4E5155] mb-1">
             Ville <span className="text-red-500" aria-hidden>*</span>
           </label>
-          <input
+          <ChampLieuAutocomplete
+            mode="ville"
             id="local-ville"
             name="ville"
-            type="text"
             required
             maxLength={100}
             placeholder="ex. Clermont-Ferrand"

@@ -4,10 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Check, Sparkles, CalendarPlus, AlertTriangle } from 'lucide-react'
+import { Check, Sparkles, CalendarPlus, AlertTriangle, Network } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell, { AUTH_TITLE_ID } from '@/components/layout/AuthShell'
 import { CONTACT_EMAIL } from '@/lib/site'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
+import { PRIX_PLUS_HT } from '@/lib/tarifs'
+import {
+  AVANTAGES_GRATUIT,
+  AVANTAGE_PLUS_RESEAUX_LOCAUX,
+  EXEMPLES_EVENEMENTS,
+  CHAMPS_EVENEMENT,
+} from '@/lib/offres-reseauteur'
 
 // Toutes les inscriptions créent un compte gratuit — y compris le choix « Réseauteur+ » :
 // l'abonnement Plus (39 € HT/an) se souscrit depuis /dashboard/plus après vérification de
@@ -44,6 +52,9 @@ export default function InscriptionPage() {
   const [claimNom, setClaimNom] = useState<string | null>(null)
   const [claimInvalide, setClaimInvalide] = useState<string | null>(null)
 
+  // `type` court-circuite l'écran de choix — utilisé par les CTA du site
+  // (« Devenir partenaire », « Inscrire mon réseau national », « Inscrire mon
+  // réseau local » qui passe par le compte réseauteur, le local exigeant le Plus).
   const typeParam = searchParams.get('type')
   const [accountType, setAccountType] = useState<'reseauteur' | 'organisateur' | 'partenaire' | null>(
     claimReseauId
@@ -52,7 +63,9 @@ export default function InscriptionPage() {
         ? 'partenaire'
         : typeParam === 'organisateur'
           ? 'organisateur'
-          : null,
+          : typeParam === 'reseauteur'
+            ? 'reseauteur'
+            : null,
   )
 
   useEffect(() => {
@@ -348,34 +361,6 @@ export default function InscriptionPage() {
 
   // Étape immédiatement après le choix « Réseauteur » : Gratuit ou Réseauteur+.
   if (accountType === 'reseauteur' && offreReseauteur === null) {
-    const AVANTAGES_GRATUIT = [
-      'Création d\'une fiche professionnelle',
-      'Être visible sur la carte des Réseauteurs',
-      'Être contacté par les autres membres',
-      'Rechercher et contacter les Réseauteurs',
-      'Consulter tous les événements',
-      'S\'inscrire aux événements',
-      'Découvrir les réseaux partenaires',
-      'Accéder aux partenaires de la plateforme',
-    ]
-    const EXEMPLES_EVENEMENTS = [
-      'Petit-déjeuner networking',
-      'Déjeuner entre entrepreneurs',
-      'Afterwork',
-      'Visite de votre entreprise',
-      'Rencontre informelle',
-      'Atelier ou conférence',
-    ]
-    const CHAMPS_EVENEMENT = [
-      'le titre',
-      'la description',
-      'la date',
-      'les horaires',
-      'le lieu',
-      'le nombre de places',
-      'les modalités d\'inscription',
-      'les éventuelles conditions de participation',
-    ]
     return (
       <AuthShell
         wide
@@ -428,7 +413,7 @@ export default function InscriptionPage() {
             </span>
             <h2 className="text-lg font-bold text-[#012A4A]">⭐ Réseauteur+</h2>
             <p className="text-2xl font-extrabold text-[#8A6D0B] mt-1">
-              39 € <span className="text-base font-semibold">HT / an</span>
+              {PRIX_PLUS_HT} € <span className="text-base font-semibold">HT / an</span>
             </p>
             <p className="text-sm font-semibold text-[#012A4A] mt-3">
               Tout ce qui est inclus dans le compte Réseauteur, <strong>PLUS :</strong>
@@ -467,6 +452,13 @@ export default function InscriptionPage() {
               <p className="text-sm text-[#4E5155] mt-3">
                 Les autres Réseauteurs peuvent ensuite s&apos;inscrire directement à cet événement.
               </p>
+              {/* ADR-0014 : le Plus ouvre aussi les fiches de réseaux locaux — c'est la
+                  destination du CTA « Inscrire mon réseau local » (accueil et /reseaux). */}
+              <p className="text-sm font-bold text-[#012A4A] mt-4 flex items-center gap-1.5">
+                <Network size={15} className="text-[#8A6D0B]" aria-hidden />
+                Inscrivez votre réseau local
+              </p>
+              <p className="text-sm text-[#4E5155] mt-1">{AVANTAGE_PLUS_RESEAUX_LOCAUX}.</p>
             </div>
             <button
               type="button"
@@ -821,11 +813,13 @@ export default function InscriptionPage() {
             <label htmlFor="ville" className="block text-sm font-medium text-text-medium mb-1.5">
               Ville
             </label>
-            <input
+            {/* Formulaire à état contrôlé (soumission JSON, pas FormData) : la
+                valeur remonte par `onValueChange`, saisie libre comprise. */}
+            <ChampLieuAutocomplete
+              mode="ville"
               id="ville"
-              type="text"
-              value={ville}
-              onChange={(e) => setVille(e.target.value)}
+              defaultValue={ville}
+              onValueChange={setVille}
               required
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-primary transition-colors"
               placeholder="Ville du siège"

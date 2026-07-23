@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { CalendarDays, MapPin, Pencil, Trash2, Loader2, ExternalLink } from 'lucide-react'
 import { createMonEvenement, updateMonEvenement, deleteMonEvenement, type EvenementFormData } from './actions'
 import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 
 export interface TypeEvLite {
   id: number
@@ -305,7 +306,21 @@ export function MesEvenementsClient({
               </div>
               <div>
                 <label htmlFor="lieuAdresse" className={labelClass}>Adresse</label>
-                <input id="lieuAdresse" name="lieuAdresse" type="text" maxLength={300} defaultValue={current?.lieuAdresse ?? ''} className={inputClass} />
+                {/* Saisir l'adresse remplit code postal, ville et département. */}
+                <ChampLieuAutocomplete
+                  mode="adresse"
+                  id="lieuAdresse"
+                  name="lieuAdresse"
+                  maxLength={300}
+                  placeholder="12 rue de la République…"
+                  defaultValue={current?.lieuAdresse ?? ''}
+                  className={inputClass}
+                  champsLies={{
+                    codePostal: 'lieuCodePostal',
+                    ville: 'lieuVille',
+                    departement: 'lieuDepartement',
+                  }}
+                />
               </div>
               <div>
                 <label htmlFor="lieuCodePostal" className={labelClass}>Code postal</label>
@@ -313,14 +328,36 @@ export function MesEvenementsClient({
               </div>
               <div>
                 <label htmlFor="lieuVille" className={labelClass}>Ville *</label>
-                <input id="lieuVille" name="lieuVille" type="text" required maxLength={100} defaultValue={current?.lieuVille ?? ''} className={inputClass} />
+                {/* Second point d'entrée : sans adresse précise, la commune seule
+                    suffit et normalise département + code postal. */}
+                <ChampLieuAutocomplete
+                  mode="ville"
+                  id="lieuVille"
+                  name="lieuVille"
+                  required
+                  maxLength={100}
+                  defaultValue={current?.lieuVille ?? ''}
+                  className={inputClass}
+                  champsLies={{ departement: 'lieuDepartement' }}
+                />
               </div>
               <div>
                 <label htmlFor="lieuDepartement" className={labelClass}>Département</label>
-                <input id="lieuDepartement" name="lieuDepartement" type="text" maxLength={100} placeholder="Rhône, Paris…" defaultValue={current?.lieuDepartement ?? ''} className={inputClass} />
+                <ChampLieuAutocomplete
+                  mode="departement"
+                  id="lieuDepartement"
+                  name="lieuDepartement"
+                  maxLength={100}
+                  placeholder="Rhône, 69, Paris…"
+                  defaultValue={current?.lieuDepartement ?? ''}
+                  className={inputClass}
+                />
               </div>
             </div>
-            <p className="text-xs text-[#999A9D]">L&apos;adresse est géocodée automatiquement pour la carte.</p>
+            <p className="text-xs text-[#999A9D]">
+              Choisissez une suggestion : code postal, ville et département sont remplis
+              automatiquement, et l&apos;adresse est géocodée pour la carte.
+            </p>
           </fieldset>
 
           {/* Participation */}

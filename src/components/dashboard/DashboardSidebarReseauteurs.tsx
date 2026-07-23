@@ -3,109 +3,19 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Loader2, LayoutDashboard, User, Network, CreditCard, Receipt, Settings, Building2, Calendar, CalendarCheck, CalendarDays } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import {
+  DASHBOARD_ROLE_LABELS,
+  isDashboardNavActive,
+  visibleDashboardNav,
+  type DashboardRole,
+} from '@/lib/dashboard-nav'
 
 interface DashboardSidebarReseauteursProps {
-  role: 'reseauteur' | 'organisateur' | 'partenaire' | 'admin'
+  role: DashboardRole
   displayName: string
   /** ADR-0012 : vrai si l'utilisateur possède un réseau national (dérivé côté serveur, jamais côté client) */
   isNational?: boolean
-}
-
-type NavItem = {
-  href: string
-  label: string
-  icon: React.ElementType
-  roles: Array<'reseauteur' | 'organisateur' | 'partenaire' | 'admin'>
-  /** Affiché uniquement si isNational est vrai (pour les organisateurs nationaux) */
-  nationalOnly?: boolean
-}
-
-const NAV_ITEMS: NavItem[] = [
-  {
-    href: '/dashboard',
-    label: 'Tableau de bord',
-    icon: LayoutDashboard,
-    roles: ['reseauteur', 'organisateur', 'partenaire', 'admin'],
-  },
-  {
-    href: '/dashboard/profil',
-    label: 'Mon profil',
-    icon: User,
-    roles: ['reseauteur'],
-  },
-  {
-    href: '/dashboard/participations',
-    label: 'Participations',
-    icon: CalendarCheck,
-    roles: ['reseauteur'],
-  },
-  {
-    // Réseaux locaux possédés (ADR-0014) — la page gère le gate Plus
-    href: '/dashboard/mes-reseaux',
-    label: 'Mes réseaux',
-    icon: Network,
-    roles: ['reseauteur'],
-  },
-  {
-    // Création/gestion d'événements (Réseauteur Plus) — la page gère le gate :
-    // un réseauteur gratuit atterrit sur /dashboard/plus (présentation de l'offre).
-    href: '/dashboard/mes-evenements',
-    label: 'Mes événements',
-    icon: CalendarDays,
-    roles: ['reseauteur'],
-  },
-  {
-    href: '/dashboard/partenaire',
-    label: 'Ma fiche partenaire',
-    icon: Building2,
-    roles: ['partenaire'],
-  },
-  {
-    href: '/dashboard/reseau',
-    label: 'Mon réseau',
-    icon: Building2,
-    roles: ['organisateur'],
-  },
-  {
-    href: '/dashboard/locaux',
-    label: 'Mes groupes',
-    icon: Network,
-    roles: ['organisateur'],
-    nationalOnly: true,
-  },
-  {
-    href: '/dashboard/evenements',
-    label: 'Événements',
-    icon: Calendar,
-    roles: ['organisateur'],
-  },
-  {
-    // Hub de gestion d'abonnement — commun à tous les rôles souscripteurs (ADR-0016).
-    href: '/dashboard/abonnement',
-    label: 'Abonnement',
-    icon: CreditCard,
-    roles: ['reseauteur', 'organisateur', 'partenaire', 'admin'],
-  },
-  {
-    href: '/dashboard/factures',
-    label: 'Factures',
-    icon: Receipt,
-    roles: ['reseauteur', 'organisateur', 'partenaire'],
-  },
-  {
-    href: '/dashboard/compte',
-    label: 'Mon compte',
-    icon: Settings,
-    roles: ['reseauteur', 'organisateur', 'partenaire', 'admin'],
-  },
-]
-
-const roleLabels: Record<DashboardSidebarReseauteursProps['role'], string> = {
-  reseauteur: 'Réseauteur',
-  organisateur: 'Organisateur',
-  partenaire: 'Partenaire',
-  admin: 'Administrateur',
 }
 
 export default function DashboardSidebarReseauteurs({ role, displayName, isNational = false }: DashboardSidebarReseauteursProps) {
@@ -121,15 +31,13 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
     })
   }
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) =>
-      item.roles.includes(role) &&
-      (!item.nationalOnly || isNational),
-  )
+  const visibleItems = visibleDashboardNav(role, isNational)
 
   return (
     <aside
-      className="hidden md:flex flex-col w-[240px] shrink-0 bg-white border-r border-[#DFE0E1] h-[calc(100vh-64px)] sticky top-16"
+      // Entre md et lg la barre de navigation basse est encore affichée : sans
+      // retrancher sa hauteur, elle recouvrirait le bouton de déconnexion.
+      className="hidden md:flex flex-col w-[240px] shrink-0 bg-white border-r border-[#DFE0E1] h-[calc(100vh-64px-var(--ir-bottomnav-h))] sticky top-16"
       aria-label="Navigation tableau de bord"
     >
       {/* Brand */}
@@ -147,16 +55,14 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
           {displayName.charAt(0).toUpperCase()}
         </div>
         <p className="text-sm font-medium text-[#1D1E21] truncate">{displayName}</p>
-        <p className="text-xs text-[#6E7175]">{roleLabels[role]}</p>
+        <p className="text-xs text-[#6E7175]">{DASHBOARD_ROLE_LABELS[role]}</p>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 py-2" aria-label="Menu dashboard">
         {visibleItems.map((item) => {
           const Icon = item.icon
-          const isActive = item.href === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname?.startsWith(item.href) ?? false
+          const isActive = isDashboardNavActive(item.href, pathname)
           return (
             <Link
               key={item.href}

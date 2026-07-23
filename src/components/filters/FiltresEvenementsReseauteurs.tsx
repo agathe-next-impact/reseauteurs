@@ -17,6 +17,7 @@
 import { useCallback } from 'react'
 import { X, MapPin, Calendar } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 
 export interface EvenementFiltersNew {
   reseau: string    // slug(s) séparés par virgule
@@ -106,12 +107,12 @@ export default function FiltresEvenementsReseauteurs({
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
           />
-          <input
+          <ChampLieuAutocomplete
+            mode="ville"
             id="filtre-ville-ev"
-            type="text"
             placeholder="Paris, Lyon, Bordeaux..."
-            value={filters.ville}
-            onChange={(e) => onFilterChange({ ...filters, ville: e.target.value })}
+            valeurExterne={filters.ville}
+            onValueChange={(ville) => onFilterChange({ ...filters, ville })}
             className="w-full pl-8 pr-3 py-2 text-sm border border-[#DFE0E1] rounded-xl focus:outline-none focus:border-[#035AA6] transition-colors bg-white"
           />
         </div>

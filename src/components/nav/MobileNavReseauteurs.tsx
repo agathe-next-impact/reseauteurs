@@ -6,29 +6,59 @@
  * Le menu ouvert est un **panneau plein écran** (et non un tiroir latéral) :
  * cibles tactiles larges, typographie généreuse, lecture immédiate.
  *
+ * Le menu ne porte plus la navigation publique : les 4 destinations principales
+ * sont dans la barre basse permanente (`BottomNavReseauteurs`). Il ne reste ici
+ * que **l'espace membre**, aux mêmes entrées que la barre latérale desktop
+ * (source commune : `@/lib/dashboard-nav`) — cette sidebar étant `hidden md:flex`,
+ * c'était le seul accès manquant sur mobile.
+ *
  * Couleurs : variables de thème `--ir-*` (et non des hex figés) — le menu
  * couvrant tout l'écran, il doit suivre la bascule clair ⇄ sombre du site.
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type ElementType } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Users, Calendar, Network, Handshake, LayoutDashboard, Loader2 } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Loader2 } from 'lucide-react'
 import { useAuth } from './AuthProvider'
 import ThemeToggle from './ThemeToggle'
 import { SITE_NAME } from '@/lib/site'
-
-const NAV_LINKS = [
-  { href: '/reseauteurs', label: 'Réseauteurs', icon: Users },
-  { href: '/evenements', label: 'Événements', icon: Calendar },
-  { href: '/reseaux', label: 'Réseaux', icon: Network },
-  { href: '/partenaires', label: 'Entreprises', icon: Handshake },
-]
+import { isDashboardNavActive, visibleDashboardNav } from '@/lib/dashboard-nav'
 
 /** Bordure douce commune (même valeur que l'en-tête du site). */
 const LINE = 'border-[rgba(var(--ir-line-rgb),0.08)]'
+
+/** Entrée de menu — cible tactile large, typo généreuse. */
+function MenuLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+}: {
+  href: string
+  label: string
+  icon: ElementType
+  active: boolean
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        aria-current={active ? 'page' : undefined}
+        className={`flex items-center gap-4 rounded-xl px-4 py-3.5 text-base font-semibold no-underline transition-colors ${
+          active
+            ? 'bg-[rgba(var(--ir-accent-rgb),0.10)] text-[var(--ir-accent-text)]'
+            : 'text-[var(--ir-text-2)] hover:bg-[var(--ir-surface-inset)]'
+        }`}
+      >
+        <Icon size={21} aria-hidden className={active ? '' : 'text-[var(--ir-text-4)]'} />
+        {label}
+      </Link>
+    </li>
+  )
+}
 
 export default function MobileNavReseauteurs() {
   const { user } = useAuth()
@@ -67,7 +97,10 @@ export default function MobileNavReseauteurs() {
     window.location.assign('/')
   }
 
-  const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/')
+  // Entrées de l'espace membre — même source que la barre latérale desktop.
+  // `role`/`isNational` viennent de /api/auth/me (dérivés côté serveur) : le menu
+  // ne fait qu'afficher, chaque page repose son propre gate d'autorisation.
+  const dashboardItems = user ? visibleDashboardNav(user.role, user.isNational) : []
 
   return (
     <>
@@ -136,34 +169,33 @@ export default function MobileNavReseauteurs() {
             </div>
           </div>
 
-          {/* Liens principaux — cibles larges, typo généreuse */}
-          <nav className="flex-1 overflow-y-auto px-4 sm:px-6 py-4" aria-label="Navigation principale">
-            <ul className="flex flex-col gap-1">
-              {NAV_LINKS.map(({ href, label, icon: Icon }) => {
-                const active = isActive(href)
-                return (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      aria-current={active ? 'page' : undefined}
-                      className={`flex items-center gap-4 rounded-xl px-4 py-4 text-lg font-semibold no-underline transition-colors ${
-                        active
-                          ? 'bg-[rgba(var(--ir-accent-rgb),0.10)] text-[var(--ir-accent-text)]'
-                          : 'text-[var(--ir-text-2)] hover:bg-[var(--ir-surface-inset)]'
-                      }`}
-                    >
-                      <Icon
-                        size={22}
-                        aria-hidden
-                        className={active ? '' : 'text-[var(--ir-text-4)]'}
-                      />
-                      {label}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
+          {/* Espace membre — mêmes entrées que la barre latérale desktop.
+              La navigation publique n'est plus ici : elle est dans la barre basse. */}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+            {user && dashboardItems.length > 0 ? (
+              <nav aria-labelledby="menu-mobile-espace">
+                <p
+                  id="menu-mobile-espace"
+                  className="px-4 pb-2 text-xs font-bold uppercase tracking-wider text-[var(--ir-text-4)]"
+                >
+                  Mon espace
+                </p>
+                <ul className="flex flex-col gap-0.5">
+                  {dashboardItems.map((item) => (
+                    <MenuLink
+                      key={item.href}
+                      {...item}
+                      active={isDashboardNavActive(item.href, pathname)}
+                    />
+                  ))}
+                </ul>
+              </nav>
+            ) : (
+              <p className="px-4 py-6 text-base text-[var(--ir-text-4)]">
+                Connectez-vous pour retrouver votre profil, vos événements et votre abonnement.
+              </p>
+            )}
+          </div>
 
           {/* Compte — pied de menu (marge sûre iOS) */}
           <div
@@ -171,22 +203,16 @@ export default function MobileNavReseauteurs() {
             style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
           >
             {user ? (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Link
-                  href="/dashboard"
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(var(--ir-line-rgb),0.12)] px-4 py-3 text-sm font-semibold text-[var(--ir-text-2)] no-underline hover:bg-[var(--ir-surface-inset)] transition-colors"
-                >
-                  Mon espace
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  disabled={isPending}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-[var(--ir-text-4)] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {isPending ? <Loader2 size={18} className="animate-spin" /> : null}
-                  Déconnexion
-                </button>
-              </div>
+              // « Mon espace » n'est plus ici : la section ci-dessus ouvre le
+              // tableau de bord et toutes ses pages. Ne reste que la déconnexion.
+              <button
+                onClick={handleLogout}
+                disabled={isPending}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(var(--ir-line-rgb),0.12)] px-4 py-3 text-sm font-semibold text-[var(--ir-text-4)] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {isPending ? <Loader2 size={18} className="animate-spin" /> : null}
+                Déconnexion
+              </button>
             ) : (
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateFicheReseau } from './actions'
 import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 import type { Media } from '@/types/reseauteurs-domain'
 
 interface FicheReseauFormProps {
@@ -170,33 +171,39 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label htmlFor="ville" className={labelClass}>Ville principale</label>
-          <input
+          {/* Choisir une commune remplit département et région. */}
+          <ChampLieuAutocomplete
+            mode="ville"
             id="ville"
             name="ville"
-            type="text"
             maxLength={100}
             defaultValue={reseau.ville as string ?? ''}
             className={inputClass}
+            champsLies={{ departement: 'departement', region: 'region' }}
           />
         </div>
         <div>
           <label htmlFor="departement" className={labelClass}>Département</label>
-          <input
+          {/* Le département détermine la région : la choisir remplit les deux. */}
+          <ChampLieuAutocomplete
+            mode="departement"
             id="departement"
             name="departement"
-            type="text"
             maxLength={100}
+            placeholder="Rhône, 69…"
             defaultValue={reseau.departement as string ?? ''}
             className={inputClass}
+            champsLies={{ region: 'region' }}
           />
         </div>
         <div>
           <label htmlFor="region" className={labelClass}>Région</label>
-          <input
+          <ChampLieuAutocomplete
+            mode="region"
             id="region"
             name="region"
-            type="text"
             maxLength={100}
+            placeholder="Auvergne-Rhône-Alpes…"
             defaultValue={reseau.region as string ?? ''}
             className={inputClass}
           />
@@ -207,14 +214,21 @@ export function FicheReseauForm({ reseau }: FicheReseauFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="sm:col-span-2">
           <label htmlFor="adresse" className={labelClass}>Adresse du siège</label>
-          <input
+          {/* Saisir l'adresse remplit code postal, ville, département et région. */}
+          <ChampLieuAutocomplete
+            mode="adresse"
             id="adresse"
             name="adresse"
-            type="text"
             maxLength={300}
             placeholder="12 rue de la République"
             defaultValue={reseau.adresse as string ?? ''}
             className={inputClass}
+            champsLies={{
+              codePostal: 'codePostal',
+              ville: 'ville',
+              departement: 'departement',
+              region: 'region',
+            }}
           />
         </div>
         <div>

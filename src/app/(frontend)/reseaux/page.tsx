@@ -32,6 +32,7 @@ import type { NationalLite } from '@/components/filters/FiltresReseaux'
 import EntiteVueToggle from '@/components/explore/EntiteVueToggle'
 import MapReseauxLoader from '@/components/maps/MapReseauxLoader'
 import ReseauxSearch from '@/components/search/ReseauxSearch'
+import CTAInscrireReseau from '@/components/cta/CTAInscrireReseau'
 
 export const revalidate = 120
 
@@ -358,6 +359,14 @@ export default async function ReseauxPage({
             )}
           </>
         )}
+
+        {/* Référencer un réseau absent de l'annuaire — affiché aussi quand la
+            recherche ne renvoie rien : c'est précisément là qu'on le cherche. */}
+        <Reveal>
+          <div className="mt-12 border-t border-[#DFE0E1] pt-8">
+            <CTAInscrireReseau />
+          </div>
+        </Reveal>
       </div>
     </div>
   )

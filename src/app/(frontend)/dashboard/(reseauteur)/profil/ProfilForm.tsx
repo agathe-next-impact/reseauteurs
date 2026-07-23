@@ -14,6 +14,7 @@ import type { ProfilFormData } from './actions'
 import type { Reseauteur, Reseau, Media } from '@/types/reseauteurs-domain'
 import { Network } from 'lucide-react'
 import { ImageUploadField } from '@/components/dashboard/ImageUploadField'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 
 const BADGE_OPTIONS = [
   { value: 0, label: '0–1 événement/mois (Bronze)' },
@@ -246,35 +247,41 @@ export function ProfilForm({ reseauteur, reseauxLocaux = [], secteurs = [] }: Pr
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label htmlFor="ville" className={labelClass}>Ville *</label>
-            <input
+            {/* Choisir une commune remplit département et région : c'est la ville
+                du profil qui positionne le marqueur sur la carte des réseauteurs. */}
+            <ChampLieuAutocomplete
+              mode="ville"
               id="ville"
               name="ville"
-              type="text"
               required
               maxLength={100}
               defaultValue={reseauteur.ville ?? ''}
               className={inputClass}
-              autoComplete="address-level2"
+              champsLies={{ departement: 'departement', region: 'region' }}
             />
           </div>
           <div>
             <label htmlFor="departement" className={labelClass}>Département</label>
-            <input
+            {/* Le département détermine la région : la choisir remplit les deux. */}
+            <ChampLieuAutocomplete
+              mode="departement"
               id="departement"
               name="departement"
-              type="text"
               maxLength={100}
+              placeholder="Rhône, 69…"
               defaultValue={reseauteur.departement ?? ''}
               className={inputClass}
+              champsLies={{ region: 'region' }}
             />
           </div>
           <div>
             <label htmlFor="region" className={labelClass}>Région</label>
-            <input
+            <ChampLieuAutocomplete
+              mode="region"
               id="region"
               name="region"
-              type="text"
               maxLength={100}
+              placeholder="Auvergne-Rhône-Alpes…"
               defaultValue={reseauteur.region ?? ''}
               className={inputClass}
             />

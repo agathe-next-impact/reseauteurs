@@ -33,6 +33,9 @@ const securityHeaders = [
       "font-src 'self' https://tiles.openfreemap.org https://*.openfreemap.org",
       // Web workers MapLibre (bundlés en blob: via Next.js)
       "worker-src 'self' blob:",
+      // Manifeste PWA (/manifest.webmanifest) — même origine. Couvert par default-src,
+      // mais explicite : certains navigateurs remontent un blocage peu lisible sinon.
+      "manifest-src 'self'",
       // connect-src : styles + tuiles OpenFreeMap, géocodage data.gouv, Stripe, Analytics
       "connect-src 'self' https://api.stripe.com https://api-adresse.data.gouv.fr https://*.tile.openstreetmap.org https://*.openstreetmap.org https://tiles.openfreemap.org https://*.openfreemap.org https://*.basemaps.cartocdn.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
       "frame-src https://js.stripe.com https://hooks.stripe.com https://www.youtube-nocookie.com",

@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { Network, Pencil, Trash2, ExternalLink, MapPin, Loader2, Mail, X } from 'lucide-react'
+import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 import {
   createMonReseauLocal,
   updateMonReseauLocal,
@@ -135,7 +136,15 @@ export function MesReseauxClient({
             </div>
             <div>
               <label htmlFor="ville" className={labelClass}>Ville *</label>
-              <input id="ville" name="ville" type="text" required maxLength={100} defaultValue={current?.ville ?? ''} className={inputClass} />
+              <ChampLieuAutocomplete
+                mode="ville"
+                id="ville"
+                name="ville"
+                required
+                maxLength={100}
+                defaultValue={current?.ville ?? ''}
+                className={inputClass}
+              />
             </div>
           </div>
 

@@ -322,7 +322,9 @@ export default async function EvenementsPage({
           <aside className="lg:w-64 shrink-0" aria-label="Filtres événements">
             <Suspense
               fallback={
-                <div className="h-48 rounded-2xl bg-white border border-[#DFE0E1] animate-pulse" />
+                // Hauteur alignée sur l'état réel : replié sous lg (accordéon),
+                // déployé au-delà — sinon le squelette provoque un saut de mise en page.
+                <div className="h-14 lg:h-48 rounded-2xl bg-white border border-[#DFE0E1] animate-pulse" />
               }
             >
               <EvenementsClientFilters reseaux={reseauxListe} types={typesListe} />

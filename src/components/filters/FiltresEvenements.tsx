@@ -237,9 +237,10 @@ export default function FiltresEvenements({
 
   return (
     <>
-      {/* Mobile trigger */}
+      {/* Mobile trigger — remonté au-dessus de la barre de navigation basse
+          (--ir-bottomnav-h, 0 au-delà de lg) qui occupe désormais le bas d'écran. */}
       <button
-        className="md:hidden fixed bottom-4 left-4 z-[800] bg-primary text-white p-2.5 rounded-full flex items-center gap-2 text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
+        className="md:hidden fixed bottom-[calc(1rem+var(--ir-bottomnav-h))] left-4 z-[800] bg-primary text-white p-2.5 rounded-full flex items-center gap-2 text-sm font-medium hover:bg-primary-hover transition-colors cursor-pointer"
         onClick={() => setMobileOpen(true)}
         aria-label="Ouvrir les filtres"
       >
