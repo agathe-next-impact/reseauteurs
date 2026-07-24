@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 import { SITE_NAME, SITE_TAGLINE, SITE_URL } from '@/lib/site'
 
 export const runtime = 'edge'
-export const alt = `${SITE_NAME} — Annuaire B2B national`
+export const alt = `${SITE_NAME} — ${SITE_TAGLINE}`
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -23,6 +23,8 @@ export default async function Image() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          {/* next/og : <img> est le seul élément image supporté (pas next/image). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`${SITE_URL}/img/logo.png`}
             width={80}
@@ -33,10 +35,12 @@ export default async function Image() {
           <div style={{ fontSize: 40, fontWeight: 600, letterSpacing: -0.5 }}>{SITE_NAME}</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ fontSize: 72, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, maxWidth: 900 }}>
-            Annuaire B2B des revendeurs d&apos;objets publicitaires
+          <div style={{ fontSize: 72, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, maxWidth: 980 }}>
+            {SITE_TAGLINE}
           </div>
-          <div style={{ fontSize: 32, opacity: 0.9, maxWidth: 900 }}>{SITE_TAGLINE}</div>
+          <div style={{ fontSize: 32, opacity: 0.9, maxWidth: 900 }}>
+            Réseauteurs, événements business et réseaux d&apos;affaires, réunis.
+          </div>
         </div>
         <div
           style={{

@@ -7,7 +7,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, ArrowRight } from 'lucide-react'
+import { Building2, ArrowRight, Tag } from 'lucide-react'
 import { buildMetadata } from '@/lib/seo'
 import { ContactChips } from '@/components/fiche/ContactChips'
 import { withDbRetry } from '@/lib/db-retry'
@@ -91,6 +91,13 @@ export default async function PartenairesPage() {
                 const logoMedia = p.logo as Media | null | undefined
                 const logoUrl = logoMedia?.sizes?.card?.url ?? logoMedia?.url
 
+                // Le teaser de l'offre (titre) est public — on affiche « Voir l'offre
+                // partenaire » (lien vers l'ancre #offre de la fiche) dès qu'une offre existe.
+                const hasOffre = !!(p.offre?.titre && p.offre.titre.trim())
+                const ficheHref = hasOffre
+                  ? `/partenaire/${p.slug}#offre`
+                  : `/partenaire/${p.slug}`
+
                 const inner = (
                   <div className="flex flex-col items-center gap-3 p-5 pb-3 h-full">
                     {logoUrl ? (
@@ -114,9 +121,18 @@ export default async function PartenairesPage() {
                         {p.description}
                       </p>
                     )}
-                    <span className="text-xs text-[#8A6D0B] flex items-center gap-0.5 mt-auto group-hover:underline">
-                      Voir la fiche
-                      <ArrowRight size={11} aria-hidden />
+                    <span className="text-xs text-[#8A6D0B] flex items-center gap-1 mt-auto group-hover:underline font-medium">
+                      {hasOffre ? (
+                        <>
+                          <Tag size={11} aria-hidden />
+                          Voir l&apos;offre partenaire
+                        </>
+                      ) : (
+                        <>
+                          Voir la fiche
+                          <ArrowRight size={11} aria-hidden />
+                        </>
+                      )}
                     </span>
                   </div>
                 )
@@ -131,9 +147,9 @@ export default async function PartenairesPage() {
                   >
                     {p.slug ? (
                       <Link
-                        href={`/partenaire/${p.slug}`}
+                        href={ficheHref}
                         className="block no-underline flex-1"
-                        aria-label={`Voir la fiche de ${p.nom}`}
+                        aria-label={hasOffre ? `Voir l'offre de ${p.nom}` : `Voir la fiche de ${p.nom}`}
                       >
                         {inner}
                       </Link>

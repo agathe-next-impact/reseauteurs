@@ -304,7 +304,8 @@ export default async function ReseauteursPage({
         depth: 1,
         limit: PAGE_SIZE,
         page,
-        sort: '-createdAt',
+        // Annuaire = ordre alphabétique par nom de famille (puis prénom en cas d'homonymie).
+        sort: 'nom,prenom',
         overrideAccess: true,
       }),
     { label: 'reseauteurs:find annuaire' },

@@ -10,6 +10,7 @@ import BottomNavReseauteurs from '@/components/nav/BottomNavReseauteurs'
 import RouteProgressBar from '@/components/nav/RouteProgressBar'
 import ScrollToTop from '@/components/nav/ScrollToTop'
 import FooterReseauteurs from '@/components/nav/FooterReseauteurs'
+import AgencyCreditBanner from '@/components/nav/AgencyCreditBanner'
 import ThemeToggle from '@/components/nav/ThemeToggle'
 import CookieInfoBanner from '@/components/legal/CookieInfoBanner'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
@@ -126,6 +127,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
 
         <main>{children}</main>
 
+        <AgencyCreditBanner />
         <FooterReseauteurs />
         <BottomNavReseauteurs />
         <CookieInfoBanner />

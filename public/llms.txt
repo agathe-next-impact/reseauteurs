@@ -13,7 +13,7 @@ RÉSEAUTEURS regroupe en un seul endroit trois entités complémentaires :
   Rotary, Cafés Business, Dynabuy, Réseau Entreprendre, CPME, Medef…). Inscription gratuite.
 - **Événements business** : afterworks, petits-déjeuners, conférences, réunions de réseau —
   géolocalisés, datés, rattachés à un réseau organisateur. Lien d'inscription externe.
-- **Réseaux d'affaires** : marques nationales et chapitres locaux organisés en deux niveaux.
+- **Réseaux d'affaires** : marques nationales et groupes locaux organisés en deux niveaux.
 
 Le site est une **couche de visibilité neutre** superposée à l'écosystème du networking.
 Il ne remplace aucun réseau ; il les rassemble.
@@ -24,23 +24,23 @@ Les réseaux sont organisés en **deux niveaux** :
 
 1. **Réseau national** — la marque (ex. BNI France, DCF National, CJD France).
    Fiche publique : /reseau/<slug-national>
-   Un réseau national peut créer des chapitres locaux et publier des événements
+   Un réseau national peut créer des groupes locaux et publier des événements
    via un abonnement annuel (partenaire).
 
-2. **Réseau local** (chapitre / section) — une implantation géographique rattachée
+2. **Réseau local** (groupe local) — une implantation géographique rattachée
    à une marque nationale (ex. BNI Clermont-Ferrand, DCF Bordeaux, CJD Lyon).
    Fiche publique : /reseau/<slug-local>
    Contient sa propre géolocalisation (centroïde ville), ses réseauteurs membres
    et ses événements.
 
-Un réseauteur s'affilie à des **chapitres locaux** spécifiques (pas à la marque abstraite).
-Son appartenance nationale est dérivée automatiquement (parent du/des chapitres fréquentés).
+Un réseauteur s'affilie à des **groupes locaux** spécifiques (pas à la marque abstraite).
+Son appartenance nationale est dérivée automatiquement (parent du/des groupes fréquentés).
 
 ## URLs importantes
 
 - `/` : page d'accueil (3 piliers : réseauteurs, événements, réseaux)
 - `/reseauteurs` : annuaire et carte des réseauteurs (filtres : ville, secteur, réseau, badge)
-- `/reseaux` : annuaire des réseaux d'affaires (nationaux et chapitres locaux)
+- `/reseaux` : annuaire des réseaux d'affaires (nationaux et groupes locaux)
 - `/evenements` : agenda et carte des prochains événements networking
 - `/reseau/<slug>` : fiche publique d'un réseau (national ou local)
 - `/reseauteur/<prenom-nom>` : fiche publique d'un réseauteur (SSR, opt-out RGPD respecté)
@@ -51,7 +51,7 @@ Son appartenance nationale est dérivée automatiquement (parent du/des chapitre
 
 - Visiteur (sans compte) : accès libre à toutes les fiches et cartes.
 - Réseauteur (compte gratuit) : fiche publique et marqueur sur la carte.
-- Réseau partenaire (abonnement annuel) : fiche nationale enrichie, chapitres locaux,
+- Réseau partenaire (abonnement annuel) : fiche nationale enrichie, groupes locaux,
   droit de publier des événements.
 - Annonceur partenaire (abonnement) : logo en page d'accueil et page Partenaires.
 

@@ -8,6 +8,7 @@ import { sendEmail } from '../lib/email-sender'
 import { stripEmojis } from '../lib/sanitize'
 import { seoField } from './fields/seoField'
 import { peutCreerLocalAsync, PALIERS_OPTIONS } from '../lib/reseau-hierarchie'
+import { compteRattachableParEmail, rattacherFicheACompte } from '../lib/revendication-reseau'
 
 // Champs texte sur lesquels les emojis sont interdits.
 // Mirror côté client : ReseauEditForm.stripEmojiOnInput.
@@ -298,6 +299,24 @@ export const Reseaux: CollectionConfig = {
     ],
     afterChange: [
       cleanupOrphanedMediaOnChange,
+      // ── Rattachement automatique par email de contact ────────────────────────
+      // Une tête ORPHELINE publiée dont l'`emailContact` correspond à un compte
+      // organisateur/admin lui est liée SANS geste admin. La garde `doc.user != null`
+      // coupe la récursion (après le lien, la fiche a un propriétaire). `req` est
+      // transmis pour que le lien rejoigne la transaction en cours (visibilité de la
+      // ligne à peine créée). Best-effort : ne bloque jamais l'enregistrement.
+      async ({ doc, req }) => {
+        if (doc?.niveau === 'local' || doc?.statut !== 'publiee') return doc
+        if (doc?.user != null) return doc
+        if (typeof doc?.emailContact !== 'string' || !doc.emailContact.trim()) return doc
+        try {
+          const compte = await compteRattachableParEmail(req.payload, doc.emailContact)
+          if (compte) await rattacherFicheACompte(req.payload, doc.id, compte, req)
+        } catch (err) {
+          console.error('[Reseaux afterChange] rattachement automatique échoué:', err)
+        }
+        return doc
+      },
       // Revalidation ISR des pages dépendantes.
       ({ doc }) => {
         try {

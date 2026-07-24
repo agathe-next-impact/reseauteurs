@@ -28,6 +28,14 @@ export type BuildMetadataInput = {
   publishedTime?: string
   modifiedTime?: string
   keywords?: string[]
+  /**
+   * La route fournit sa propre image OG via la convention Next `opengraph-image.tsx`
+   * (fiches réseauteur/événement/réseau). Dans ce cas on N'ÉMET PAS d'`og:image` par
+   * défaut : Next injecte déjà celle du fichier, en émettre une seconde créerait deux
+   * balises concurrentes. Une image explicite (`images`, ex. override SEO) reste
+   * prioritaire si elle est fournie.
+   */
+  ogImageFromRoute?: boolean
 }
 
 function absoluteUrl(pathOrUrl: string): string {
@@ -41,14 +49,23 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
   const description = truncateDescription(input.description)
   const canonical = absoluteUrl(input.path)
 
-  const images: OgImageInput[] = input.images && input.images.length > 0
-    ? input.images.map((img) => ({
-        url: absoluteUrl(img.url),
-        width: img.width,
-        height: img.height,
-        alt: img.alt ?? title,
-      }))
-    : [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }]
+  // Image explicite (override SEO) → prioritaire. Sinon : image par défaut du site,
+  // SAUF si la route fournit la sienne (opengraph-image.tsx) — alors `null`, on
+  // laisse Next injecter cette unique image plutôt que d'en émettre une concurrente.
+  const explicitImages: OgImageInput[] | null =
+    input.images && input.images.length > 0
+      ? input.images.map((img) => ({
+          url: absoluteUrl(img.url),
+          width: img.width,
+          height: img.height,
+          alt: img.alt ?? title,
+        }))
+      : null
+  const images: OgImageInput[] | null =
+    explicitImages ??
+    (input.ogImageFromRoute
+      ? null
+      : [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }])
 
   const robots = input.noindex
     ? { index: false, follow: false, googleBot: { index: false, follow: false } }
@@ -66,7 +83,8 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
       siteName: SITE_NAME,
       locale: SITE_LOCALE,
       type: input.ogType === 'article' ? 'article' : input.ogType === 'profile' ? 'profile' : 'website',
-      images,
+      // images omis quand la route fournit son image (Next l'injecte via le fichier).
+      ...(images && { images }),
       ...(input.publishedTime && { publishedTime: input.publishedTime }),
       ...(input.modifiedTime && { modifiedTime: input.modifiedTime }),
     },
@@ -74,7 +92,8 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
       card: 'summary_large_image',
       title,
       description,
-      images: images.map((img) => img.url),
+      // Absente ici → Twitter retombe sur og:image (celle de la route). summary_large_image conservé.
+      ...(images && { images: images.map((img) => img.url) }),
     },
     ...(input.keywords && input.keywords.length > 0 && { keywords: input.keywords }),
   }

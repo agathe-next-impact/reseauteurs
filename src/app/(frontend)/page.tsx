@@ -4,9 +4,9 @@
  *
  * Structure « bento » inspirée d'un tableau de bord SaaS (grille de cellules
  * bordées, charts, micro-interactions) portée sur les tokens RÉSEAUTEURS :
- *   Hero + tableau de bord → Bandeau réseaux (marquee) → Bande d'accès →
- *   Avantages Réseauteur+ → Vue d'ensemble (donut badges) →
- *   Comment ça fonctionne → Chiffres clés (compteurs + courbe) → Newsletter.
+ *   Hero + tableau de bord → Partenaires (logos annonceurs) → Bandeau réseaux
+ *   (marquee) → Bande d'accès → Avantages Réseauteur+ → Vue d'ensemble (donut
+ *   badges) → Comment ça fonctionne → Chiffres clés (compteurs + courbe) → Newsletter.
  *
  * Retirées le 2026-07-23 (décision produit) : « Classement des réseaux » (bars),
  * « Couverture nationale » (carte animée), « Bandeau partenaires », puis
@@ -31,7 +31,7 @@ import DonutChart, { type DonutSegment } from '@/components/home/DonutChart'
 import DonutWithLegend from '@/components/home/DonutWithLegend'
 import TrendArea from '@/components/home/TrendArea'
 import type { Metadata } from 'next'
-import type { Media, Reseau } from '@/types/reseauteurs-domain'
+import type { Media, Reseau, Partenaire } from '@/types/reseauteurs-domain'
 
 export const revalidate = 300 // ISR 5 min
 
@@ -98,6 +98,7 @@ export default async function HomePage() {
     { totalDocs: reseauCount },
     { docs: reseauxPartenaires },
     { docs: topReseauxDocs },
+    { docs: partenairesDocs },
     { totalDocs: bronzeCount },
     { totalDocs: argentCount },
     { totalDocs: goldCount },
@@ -158,6 +159,20 @@ export default async function HomePage() {
         }),
       { label: 'home:find top reseaux' },
     ),
+    // Partenaires annonceurs actifs — alimentent le bandeau sous le hero.
+    withDbRetry(
+      () =>
+        payload.find({
+          collection: 'partenaires',
+          where: { statut: { equals: 'actif' } },
+          select: { nom: true, logo: true, slug: true, lien: true } as Record<string, boolean>,
+          depth: 1,
+          limit: 12,
+          sort: 'nom',
+          overrideAccess: true,
+        }),
+      { label: 'home:find partenaires' },
+    ),
     withDbRetry(
       () =>
         payload.count({
@@ -197,6 +212,7 @@ export default async function HomePage() {
   ])
 
   const reseauxBandeau = reseauxPartenaires as Reseau[]
+  const partenairesActifs = partenairesDocs as Partenaire[]
   const topReseaux = (topReseauxDocs as Reseau[]).map((r) => ({
     nom: r.nom,
     slug: r.slug,
@@ -345,6 +361,84 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ─── PARTENAIRES (sous le hero — alimenté par les comptes annonceurs) ─── */}
+      {/* Rendu uniquement s'il y a des partenaires actifs : un bandeau de logos
+          vide juste sous le hero ferait « cassé ». Espacement des logos via
+          `style={{ gap }}` : `.ir-atlas-page :where(.flex-wrap){gap:0}` neutralise
+          les `gap-*` de Tailwind, mais un style inline l'emporte. */}
+      {partenairesActifs.length > 0 && (
+        <section
+          className="bg-white border-b border-[#DFE0E1] py-10"
+          aria-labelledby="home-partenaires-titre"
+        >
+          <div className="px-6">
+            <Reveal>
+              <p
+                id="home-partenaires-titre"
+                className="text-center text-xs font-semibold uppercase tracking-widest text-[#8A6D0B] mb-6"
+              >
+                Ils soutiennent le networking français
+              </p>
+              <div className="flex flex-wrap items-center justify-center" style={{ gap: 12 }}>
+                {partenairesActifs.map((p) => {
+                  const logoMedia = p.logo as Media | null | undefined
+                  const logoUrl =
+                    logoMedia?.sizes?.thumbnail?.url ?? logoMedia?.sizes?.card?.url ?? logoMedia?.url
+                  const inner = logoUrl ? (
+                    <Image
+                      src={logoUrl}
+                      alt={p.nom}
+                      width={120}
+                      height={48}
+                      className="h-9 w-auto object-contain"
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold text-[#8A6D0B]">{p.nom}</span>
+                  )
+                  const box =
+                    'flex items-center justify-center px-5 py-3 border border-[#EFE08F] bg-white'
+                  // Lien interne vers la fiche partenaire (maillage) ; repli sur le
+                  // site externe, sinon simple libellé.
+                  return p.slug ? (
+                    <Link
+                      key={p.id}
+                      href={`/partenaire/${p.slug}`}
+                      className={`${box} rsn-lift no-underline`}
+                      title={p.nom}
+                    >
+                      {inner}
+                    </Link>
+                  ) : p.lien ? (
+                    <a
+                      key={p.id}
+                      href={p.lien}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${box} rsn-lift no-underline`}
+                      title={p.nom}
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    <span key={p.id} className={box}>
+                      {inner}
+                    </span>
+                  )
+                })}
+              </div>
+              <div className="text-center mt-6">
+                <Link
+                  href="/partenaires"
+                  className="text-sm font-semibold text-[#035AA6] no-underline hover:underline"
+                >
+                  Voir tous les partenaires →
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* ─── BANDEAU RÉSEAUX (marquee — « on les rassemble ») ─── */}
       {/* Même gabarit de section que ses voisines : py-16 md:py-20, en-tête

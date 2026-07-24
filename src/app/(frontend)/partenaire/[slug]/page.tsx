@@ -1,7 +1,9 @@
 /**
  * Fiche partenaire publique — /partenaire/<slug>
  * Visible uniquement si l'abonnement est actif (statut='actif').
- * L'offre promotionnelle est réservée aux réseauteurs connectés (RGPD/ciblage B2B).
+ * L'offre promotionnelle est affichée en teaser à tous (titre + description) ; seul le
+ * lien « En profiter » est réservé aux réseauteurs connectés (les autres sont invités à
+ * s'inscrire). Section ancrée #offre (lien « Voir l'offre partenaire » depuis la grille).
  */
 import { cache } from 'react'
 import { notFound } from 'next/navigation'

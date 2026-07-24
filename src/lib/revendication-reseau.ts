@@ -58,7 +58,11 @@ function relationId(rel: unknown): number | string | null {
  *   - c'est une TÊTE de réseau (`niveau !== 'local'`) — les groupes locaux se gèrent
  *     par affiliation, pas par revendication ;
  *   - elle est publiée (une fiche suspendue n'est pas exposée au public) ;
- *   - elle n'a pas déjà de compte propriétaire.
+ *   - elle n'a pas déjà de compte propriétaire (`reseau.user`) ;
+ *   - AUCUN compte n'existe déjà avec l'email de contact de la fiche. Un tel compte
+ *     est le représentant légitime du réseau : la fiche ne s'ouvre donc PAS à une
+ *     revendication publique (qui permettrait à un tiers de la détourner). Le
+ *     rattachement se fait alors côté admin (champ « Compte propriétaire »).
  */
 export async function chargerReseauRevendicable(
   payload: Payload,
@@ -91,6 +95,20 @@ export async function chargerReseauRevendicable(
     return { ok: false, error: 'Ce réseau est déjà géré par un compte.' }
   }
 
+  // Un compte organisateur/admin existe déjà avec l'email de contact → c'est le
+  // représentant du réseau. La fiche lui est rattachée AUTOMATIQUEMENT (voir
+  // rattacherFicheACompte, déclenché à la vérification d'email et à l'écriture de la
+  // fiche). En attendant que ce rattachement s'applique, on ferme la revendication
+  // publique pour empêcher un tiers de s'emparer de la fiche.
+  const compteAssocie = await compteRattachableParEmail(payload, doc.emailContact)
+  if (compteAssocie) {
+    return {
+      ok: false,
+      error:
+        'Ce réseau est rattaché à un compte (adresse de contact). Connectez-vous avec l\'adresse du réseau pour le gérer.',
+    }
+  }
+
   return {
     ok: true,
     reseau: {
@@ -99,6 +117,154 @@ export async function chargerReseauRevendicable(
       slug: (doc.slug as string | null) ?? null,
       ville: (doc.ville as string | null) ?? null,
     },
+  }
+}
+
+// ─────────────────────────────────────────────
+// RATTACHEMENT AUTOMATIQUE PAR EMAIL DE CONTACT
+// ─────────────────────────────────────────────
+//
+// Objectif : plus AUCUN geste admin pour associer une fiche à son représentant.
+// Dès qu'une fiche de tête orpheline et un compte partagent la même adresse
+// (`reseau.emailContact` == `users.email`), la fiche est liée au compte, tout seul.
+//
+// Deux déclencheurs (même helper `rattacherFicheACompte`) :
+//   - vérification d'email d'un compte  → `rattacherFichesParEmail` (verify route) ;
+//   - écriture d'une fiche (email posé)  → hook afterChange de Reseaux.
+//
+// Choix de sûreté (volontairement conservateurs) :
+//   - éligibles : `organisateur` et `admin` UNIQUEMENT. On ne rattache pas à un
+//     réseauteur/partenaire et on n'escalade JAMAIS un rôle automatiquement (ni
+//     profil orphelin, ni élévation de privilège silencieuse) ;
+//   - invariant « 1 tête par compte » respecté (skip si le compte en possède déjà) ;
+//   - `source` inchangé : une fiche importée reste publiée (pas de dépublication) ;
+//   - écriture race-safe (`user exists false`) ; contexte `autoRattachement` pour
+//     couper la récursion du hook afterChange.
+
+/** Rôles autorisés à se voir rattacher une tête de réseau. */
+function roleRattachable(role?: string | null): boolean {
+  return role === 'organisateur' || role === 'admin'
+}
+
+/** Compte ÉLIGIBLE (organisateur/admin) portant cet email de contact, s'il existe. */
+export async function compteRattachableParEmail(
+  payload: Payload,
+  emailContact: unknown,
+): Promise<CompteRevendiquant | null> {
+  const email = typeof emailContact === 'string' ? emailContact.trim().toLowerCase() : ''
+  if (!email) return null
+  // Emails d'auth normalisés en minuscules par Payload → comparaison directe.
+  const { docs } = await payload.find({
+    collection: 'users',
+    where: { email: { equals: email } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const u = docs[0] as { id?: number | string; role?: string | null } | undefined
+  if (!u || !roleRattachable(u.role)) return null
+  return { id: u.id as number | string, role: (u.role as string | null) ?? null }
+}
+
+/**
+ * Lie une fiche de tête ORPHELINE à un compte éligible, de façon atomique.
+ * Retourne `true` si le lien a été posé par CET appel. Ne jette jamais.
+ *
+ * `req` (facultatif) : quand l'appel vient d'un hook afterChange de Reseaux, on
+ * REJOINT la transaction en cours — sinon le `update` s'exécute dans une transaction
+ * séparée qui ne voit pas encore la ligne créée (fiche invisible → aucun lien posé).
+ * Depuis une route (verify), pas de transaction ouverte → on n'en passe pas.
+ *
+ * Récursion : la mise à jour re-déclenche l'afterChange, mais la fiche porte alors
+ * `user` → le hook de rattachement s'arrête à sa garde `doc.user != null`. Pas de
+ * drapeau de contexte (qui écraserait le `req.context` partagé de l'opération hôte).
+ */
+export async function rattacherFicheACompte(
+  payload: Payload,
+  reseauId: number | string,
+  user: CompteRevendiquant,
+  req?: unknown,
+): Promise<boolean> {
+  if (!roleRattachable(user.role)) return false
+  const reqOpt = req ? { req: req as never } : {}
+
+  // Invariant « 1 tête par compte » : ne rien lier si le compte en possède déjà une.
+  const { totalDocs } = await payload.count({
+    collection: 'reseaux',
+    where: { and: [{ user: { equals: user.id } }, { niveau: { not_equals: 'local' } }] },
+    overrideAccess: true,
+    ...reqOpt,
+  })
+  if (totalDocs > 0) return false
+
+  try {
+    const { docs } = await payload.update({
+      collection: 'reseaux',
+      where: {
+        and: [
+          { id: { equals: reseauId } },
+          { user: { exists: false } },
+          { niveau: { not_equals: 'local' } },
+          { statut: { equals: 'publiee' } },
+        ],
+      },
+      data: { user: user.id } as never,
+      overrideAccess: true,
+      ...reqOpt,
+    })
+    return docs.length > 0
+  } catch (err) {
+    console.error('[rattacherFicheACompte] échec:', err)
+    return false
+  }
+}
+
+/**
+ * Rattache au compte la (première) fiche de tête orpheline dont l'email de contact
+ * correspond à celui du compte. Best-effort, idempotent, ne jette jamais.
+ * Appelé à la vérification d'email d'un compte.
+ */
+export async function rattacherFichesParEmail(
+  payload: Payload,
+  user: { id: number | string; email?: string | null; role?: string | null },
+): Promise<number> {
+  if (!roleRattachable(user.role)) return 0
+  const email = (user.email ?? '').trim().toLowerCase()
+  if (!email) return 0
+
+  try {
+    // Comparaison en JS : robuste au casse même si `emailContact` n'est pas normalisé
+    // en base. Borné aux têtes orphelines publiées portant un email de contact.
+    const { docs } = await payload.find({
+      collection: 'reseaux',
+      where: {
+        and: [
+          { niveau: { not_equals: 'local' } },
+          { statut: { equals: 'publiee' } },
+          { user: { exists: false } },
+          { emailContact: { exists: true } },
+        ],
+      },
+      depth: 0,
+      limit: 200,
+      overrideAccess: true,
+      select: { emailContact: true } as Record<string, boolean>,
+    })
+    const matches = docs.filter(
+      (d) => String((d as { emailContact?: unknown }).emailContact ?? '').trim().toLowerCase() === email,
+    )
+    if (matches.length === 0) return 0
+
+    const ok = await rattacherFicheACompte(payload, matches[0].id, { id: user.id, role: user.role })
+    if (ok && matches.length > 1) {
+      console.warn(
+        `[rattacherFichesParEmail] ${email}: ${matches.length} fiches correspondent — une seule liée (#${matches[0].id}).`,
+      )
+    }
+    return ok ? 1 : 0
+  } catch (err) {
+    console.error('[rattacherFichesParEmail] échec:', err)
+    return 0
   }
 }
 

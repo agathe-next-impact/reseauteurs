@@ -18,7 +18,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { resoudreClaimEnAttente } from '@/lib/revendication-reseau'
+import { resoudreClaimEnAttente, rattacherFichesParEmail } from '@/lib/revendication-reseau'
 import { rateLimit } from '@/lib/rate-limit'
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const
@@ -54,8 +54,13 @@ export async function POST(request: Request) {
   const payload = await getPayload({ config })
 
   // Résolution du compte AVANT vérification : le jeton est effacé par l'opération.
-  let compte: { id: number | string; role?: string | null; nomSociete?: string | null; ville?: string | null } | null =
-    null
+  let compte: {
+    id: number | string
+    email?: string | null
+    role?: string | null
+    nomSociete?: string | null
+    ville?: string | null
+  } | null = null
   try {
     const { docs } = await payload.find({
       collection: 'users',
@@ -69,6 +74,7 @@ export async function POST(request: Request) {
     if (doc) {
       compte = {
         id: doc.id as number | string,
+        email: (doc.email as string | null) ?? null,
         role: (doc.role as string | null) ?? null,
         nomSociete: (doc.nomSociete as string | null) ?? null,
         ville: (doc.ville as string | null) ?? null,
@@ -92,6 +98,9 @@ export async function POST(request: Request) {
   // `resoudreClaimEnAttente` ne jette jamais et purge le marqueur dans tous les cas.
   if (compte) {
     await resoudreClaimEnAttente(payload, compte)
+    // Rattachement automatique par email de contact (organisateur/admin sans tête) :
+    // best-effort, APRÈS la revendication (qui a pu déjà donner une tête au compte).
+    await rattacherFichesParEmail(payload, compte)
   }
 
   return NextResponse.json({ ok: true }, { headers: NO_STORE })

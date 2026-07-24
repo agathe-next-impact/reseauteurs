@@ -75,6 +75,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: r.description?.slice(0, 155) || `Découvrez le réseau ${r.nom}${r.ville ? ` à ${r.ville}` : ''} sur ${SITE_NAME} : membres, événements et actualités.`,
     path: `/reseau/${slug}`,
     ogType: 'website' as const,
+    // Image OG générée par ./opengraph-image.tsx (logo + nom + échelle + ville).
+    ogImageFromRoute: true,
   }
   return buildMetadata(applySeoOverrides(defaults, r.seo ?? null))
 }

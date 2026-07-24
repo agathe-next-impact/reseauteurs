@@ -126,6 +126,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     ogType: 'article' as const,
     publishedTime: e.createdAt,
     modifiedTime: e.updatedAt,
+    // Image OG générée par ./opengraph-image.tsx (visuel + titre + date + lieu).
+    ogImageFromRoute: true,
   }
   return buildMetadata(applySeoOverrides(defaults, e.seo ?? null))
 }

@@ -76,6 +76,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     path: `/reseauteur/${slug}`,
     ogType: 'profile' as const,
     noindex: r.seo?.noindex ?? false,
+    // Image OG générée par ./opengraph-image.tsx (photo + nom + fonction).
+    ogImageFromRoute: true,
   }
   return buildMetadata(applySeoOverrides(defaults, r.seo ?? null))
 }

@@ -4,18 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Check, Sparkles, CalendarPlus, AlertTriangle, Network } from 'lucide-react'
+import { Check, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import AuthShell, { AUTH_TITLE_ID } from '@/components/layout/AuthShell'
 import { CONTACT_EMAIL } from '@/lib/site'
 import ChampLieuAutocomplete from '@/components/forms/ChampLieuAutocomplete'
 import { PRIX_PLUS_HT } from '@/lib/tarifs'
-import {
-  AVANTAGES_GRATUIT,
-  AVANTAGE_PLUS_RESEAUX_LOCAUX,
-  EXEMPLES_EVENEMENTS,
-  CHAMPS_EVENEMENT,
-} from '@/lib/offres-reseauteur'
+import { AVANTAGES_GRATUIT, AVANTAGES_PLUS } from '@/lib/offres-reseauteur'
 
 // Toutes les inscriptions créent un compte gratuit — y compris le choix « Réseauteur+ » :
 // l'abonnement Plus (39 € HT/an) se souscrit depuis /dashboard/plus après vérification de
@@ -379,140 +374,84 @@ export default function InscriptionPage() {
           </p>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-          {/* ── Offre gratuite ── */}
+        {/* Présentation partagée avec la page d'accueil (section « Deux niveaux de
+            compte ») : mêmes cartes, même copie (`lib/offres-reseauteur`). Seuls les
+            CTA diffèrent — ici des boutons qui font avancer le tunnel d'inscription
+            au lieu de liens. `pt-3` : la pastille « Recommandé » déborde en haut. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 pt-3">
+          {/* ── Réseauteur (gratuit) ── */}
           <section
-            aria-label="Offre Réseauteur gratuit"
-            className="flex flex-col rounded-2xl border border-[#DFE0E1] bg-white p-6"
+            aria-labelledby="offre-gratuit-titre"
+            className="bg-white border border-[#DFE0E1] p-6 sm:p-8 flex flex-col gap-4 h-full"
           >
-            <h2 className="text-lg font-bold text-[#012A4A]">Réseauteur</h2>
-            <p className="text-2xl font-extrabold text-[#012A4A] mt-1">Gratuit</p>
-            <p className="text-sm text-[#6E7175] mt-2 mb-4">
-              Pour les personnes qui souhaitent développer leur réseau professionnel.
+            <div>
+              <h2 id="offre-gratuit-titre" className="text-lg font-bold text-[#012A4A]">
+                Réseauteur
+              </h2>
+              <p className="text-2xl font-extrabold text-[#012A4A] mt-1">Gratuit</p>
+            </div>
+            <p className="text-sm text-[#4E5155] leading-relaxed">
+              Pour développer votre réseau professionnel et vous rendre visible partout en France.
             </p>
-            <ul className="space-y-2 text-sm text-[#4E5155] flex-1">
+            <ul className="flex flex-col gap-2.5 text-sm text-[#4E5155] flex-1">
               {AVANTAGES_GRATUIT.map((a) => (
-                <li key={a} className="flex items-start gap-2">
+                <li key={a} className="flex items-start gap-2.5">
                   <Check size={15} className="text-[#035AA6] shrink-0 mt-0.5" aria-hidden />
                   {a}
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              onClick={() => setOffreReseauteur('gratuit')}
-              className="mt-6 w-full p-2.5 rounded-xl border border-[#CFD0D2] text-sm font-semibold text-[#012A4A] bg-white hover:bg-[#E9E9EA] transition-colors cursor-pointer"
-            >
-              S&apos;inscrire gratuitement
-            </button>
+            <div className="mt-auto pt-2">
+              <button
+                type="button"
+                onClick={() => setOffreReseauteur('gratuit')}
+                className="ir-atlas-secondary w-full cursor-pointer"
+              >
+                Créer mon profil — c&apos;est gratuit
+              </button>
+            </div>
           </section>
 
-          {/* ── Offre Réseauteur+ (mise en avant) ── */}
+          {/* ── Réseauteur+ (abonnement, mise en avant) ── */}
           <section
-            aria-label="Offre Réseauteur+ recommandée"
-            className="relative flex flex-col rounded-2xl border-2 border-[#F5E050] bg-[#FEFDF3] p-6 shadow-lg shadow-[#F5E050]/15"
+            aria-labelledby="offre-plus-titre"
+            className="relative bg-white border-2 border-[#F5E050] p-6 sm:p-8 flex flex-col gap-4 h-full"
           >
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#F5E050] text-[#012A4A] text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+            <span className="absolute -top-3 left-6 sm:left-8 bg-[#F5E050] text-[#012A4A] text-xs font-bold uppercase tracking-wide px-3 py-1">
               Recommandé
             </span>
-            <h2 className="text-lg font-bold text-[#012A4A]">⭐ Réseauteur+</h2>
-            <p className="text-2xl font-extrabold text-[#8A6D0B] mt-1">
-              {PRIX_PLUS_HT} € <span className="text-base font-semibold">HT / an</span>
-            </p>
-            <p className="text-sm font-semibold text-[#012A4A] mt-3">
-              Tout ce qui est inclus dans le compte Réseauteur, <strong>PLUS :</strong>
-            </p>
-            <div className="mt-3 flex-1">
-              <p className="text-sm font-bold text-[#012A4A] flex items-center gap-1.5">
-                <CalendarPlus size={15} className="text-[#8A6D0B]" aria-hidden />
-                Créez vos propres événements
+            <div>
+              <h2 id="offre-plus-titre" className="text-lg font-bold text-[#012A4A]">
+                Réseauteur+
+              </h2>
+              <p className="text-2xl font-extrabold text-[#8A6D0B] mt-1">
+                {PRIX_PLUS_HT} € <span className="text-base font-semibold">HT / an</span>
               </p>
-              <p className="text-sm text-[#4E5155] mt-1">
-                Vous pouvez organiser librement vos propres rencontres, sans passer par un réseau
-                ou une association.
-              </p>
-              <p className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide mt-3 mb-1.5">
-                Par exemple
-              </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5 text-sm text-[#4E5155]">
-                {EXEMPLES_EVENEMENTS.map((e) => (
-                  <li key={e} className="flex items-start gap-2">
-                    <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
-                    {e}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs font-semibold text-[#6E7175] uppercase tracking-wide mt-4 mb-1.5">
-                Lors de la création d&apos;un événement, le membre peut définir
-              </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-sm text-[#4E5155]">
-                {CHAMPS_EVENEMENT.map((c) => (
-                  <li key={c} className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-[#F5E050] shrink-0 mt-2" aria-hidden />
-                    {c}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-sm text-[#4E5155] mt-3">
-                Les autres Réseauteurs peuvent ensuite s&apos;inscrire directement à cet événement.
-              </p>
-              {/* ADR-0014 : le Plus ouvre aussi les fiches de réseaux locaux — c'est la
-                  destination du CTA « Inscrire mon réseau local » (accueil et /reseaux). */}
-              <p className="text-sm font-bold text-[#012A4A] mt-4 flex items-center gap-1.5">
-                <Network size={15} className="text-[#8A6D0B]" aria-hidden />
-                Inscrivez votre réseau local
-              </p>
-              <p className="text-sm text-[#4E5155] mt-1">{AVANTAGE_PLUS_RESEAUX_LOCAUX}.</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setOffreReseauteur('plus')}
-              className="mt-6 w-full p-2.5 rounded-xl bg-[#F5E050] text-[#012A4A] text-base font-bold hover:bg-[#E3CB2E] transition-colors shadow-md shadow-[#F5E050]/30 cursor-pointer"
-            >
-              Devenir Réseauteur+
-            </button>
+            <p className="text-sm text-[#4E5155] leading-relaxed">
+              Tout le compte gratuit, <strong className="text-[#012A4A]">plus :</strong>
+            </p>
+            <ul className="flex flex-col gap-2.5 text-sm text-[#4E5155] flex-1">
+              {AVANTAGES_PLUS.map((a) => (
+                <li key={a} className="flex items-start gap-2.5">
+                  <Check size={15} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
+                  {a}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto pt-2">
+              <button
+                type="button"
+                onClick={() => setOffreReseauteur('plus')}
+                className="ir-atlas-primary w-full cursor-pointer"
+              >
+                Devenir Réseauteur+
+              </button>
+            </div>
           </section>
         </div>
 
-        {/* ── Encadré : devenez créateur de connexions ── */}
-        <aside
-          aria-label="Devenez créateur de connexions"
-          className="mt-5 rounded-2xl bg-[#012A4A] text-white p-6"
-        >
-          <h2 className="text-base font-bold">🚀 Devenez créateur de connexions</h2>
-          <p className="text-sm text-white/85 mt-2">
-            Avec Réseauteur+, vous ne vous contentez plus de participer aux événements…{' '}
-            <strong className="text-white">Vous les créez.</strong>
-          </p>
-          <p className="text-sm text-white/85 mt-3">Invitez les membres de Réseauteurs à venir :</p>
-          <ul className="mt-1.5 space-y-1 text-sm text-white/85">
-            <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
-              découvrir votre entreprise,
-            </li>
-            <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
-              partager un café,
-            </li>
-            <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
-              participer à un déjeuner,
-            </li>
-            <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
-              échanger lors d&apos;un afterwork,
-            </li>
-            <li className="flex items-start gap-2">
-              <Check size={14} className="text-[#8A6D0B] shrink-0 mt-0.5" aria-hidden />
-              ou organiser toute autre rencontre professionnelle.
-            </li>
-          </ul>
-          <p className="text-sm text-white/85 mt-3">
-            Vous développez ainsi votre réseau personnel tout au long de l&apos;année.
-          </p>
-        </aside>
-
-        <div className="mt-5 text-center">
+        <div className="mt-8 text-center">
           <button
             type="button"
             onClick={() => setAccountType(null)}

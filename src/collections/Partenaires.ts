@@ -17,6 +17,7 @@
  */
 
 import type { CollectionConfig, Where } from 'payload'
+import { revalidatePath } from 'next/cache'
 import { cleanupOrphanedMediaOnChange, cleanupMediaOnDelete } from '../lib/media-cleanup'
 
 /** Validation d'URL http(s) partagée (lien site + lien offre). */
@@ -97,8 +98,34 @@ export const Partenaires: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [cleanupOrphanedMediaOnChange],
-    afterDelete: [cleanupMediaOnDelete],
+    afterChange: [
+      cleanupOrphanedMediaOnChange,
+      // Revalidation ISR — la page /partenaires et la fiche perso sont en cache (revalidate=300).
+      // Sans ça, l'activation d'un partenaire (admin, webhook Stripe ou cron d'expiration) ne
+      // remonte dans la LISTE qu'après expiration du cache : la fiche /partenaire/<slug> apparaît
+      // tout de suite (chemin neuf rendu à la demande) mais /partenaires reste figée. Mirror de
+      // Reseaux.afterChange. Try/catch : revalidatePath échoue hors contexte requête (seed/scripts).
+      ({ doc }) => {
+        try {
+          if (doc?.slug) revalidatePath(`/partenaire/${doc.slug}`, 'page')
+          revalidatePath('/partenaires', 'page')
+        } catch {
+          // Peut échouer hors contexte request (cron, scripts)
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      cleanupMediaOnDelete,
+      ({ doc }) => {
+        try {
+          if (doc?.slug) revalidatePath(`/partenaire/${doc.slug}`, 'page')
+          revalidatePath('/partenaires', 'page')
+        } catch {
+          // Peut échouer hors contexte request
+        }
+      },
+    ],
   },
   fields: [
     // ── Propriété (1 user 'partenaire' = 1 fiche partenaire)
