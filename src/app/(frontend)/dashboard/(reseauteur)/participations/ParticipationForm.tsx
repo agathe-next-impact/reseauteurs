@@ -39,7 +39,7 @@ export function ParticipationForm({
         toast.success(
           res.count > 0
             ? `Présence enregistrée pour ${res.count} événement${res.count > 1 ? 's' : ''}.`
-            : 'Vos participations ont été mises à jour.',
+            : 'Vos adhésions ont été mises à jour.',
         )
       } else {
         toast.error(res.error ?? 'Erreur lors de l\'enregistrement.')

@@ -340,8 +340,12 @@ export default function InscriptionPage() {
               Réseau d&apos;affaires (organisateur)
             </h3>
             <p className="text-sm text-text-light">
-              Vous gérez un réseau (BNI, DCF, CJD…) et souhaitez publier votre fiche
-              et vos événements.
+              Vous dirigez une tête de réseau — nationale, régionale ou internationale
+              (BNI, DCF, CJD…) — qui fédère des groupes locaux. Publiez la fiche de votre
+              réseau, gérez vos groupes locaux et leurs événements.
+            </p>
+            <p className="text-xs text-text-light/80 mt-1.5">
+              Vous animez un seul groupe local ? Créez-le avec un compte Réseauteur+.
             </p>
           </button>
           <button

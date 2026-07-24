@@ -8,8 +8,12 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import Link from 'next/link'
-import { User, Network } from 'lucide-react'
+import { User, Network, CalendarPlus } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
+import { estPlus } from '@/lib/acces-plus'
+import { AVANTAGES_PLUS } from '@/lib/offres-reseauteur'
+import ReseauteurOnboarding, { type OnboardingStep } from '@/components/dashboard/ReseauteurOnboarding'
+import PlusFeatureCard from '@/components/dashboard/PlusFeatureCard'
 import type { Reseauteur, Reseau } from '@/types/reseauteurs-domain'
 
 export const metadata = {
@@ -42,6 +46,12 @@ export default async function DashboardPage() {
   let reseauteur: Reseauteur | null = null
   let reseau: Reseau | null = null
 
+  // Statut Plus (réseauteur) — lu FRAIS côté serveur (jamais le JWT), source unique estPlus.
+  const uPlus = freshUser as unknown as { plusActif?: boolean; plusExpireAt?: string | null }
+  const plusActif =
+    role === 'reseauteur' &&
+    estPlus({ id: freshUser.id, plusActif: uPlus.plusActif, plusExpireAt: uPlus.plusExpireAt })
+
   if (role === 'reseauteur') {
     const { docs } = await payload.find({
       collection: 'reseauteurs',
@@ -62,6 +72,55 @@ export default async function DashboardPage() {
     reseau = (docs[0] as Reseau | undefined) ?? null
   }
 
+  // ── Guide de démarrage (réseauteur) ────────────────────────────────────────
+  // Étapes calculées sur des données réelles (profil chargé à depth 0 → les
+  // relations sont des tableaux d'ID, `.length` suffit). Le bloc est masqué une
+  // fois toutes les étapes faites — ce qui, pour un compte gratuit, n'arrive
+  // qu'après le passage à Plus (l'ultime étape reste alors ouverte = incitation).
+  let onboardingSteps: OnboardingStep[] = []
+  if (role === 'reseauteur' && reseauteur) {
+    const profilComplet = Boolean(reseauteur.description && reseauteur.fonction)
+    const aDesReseaux = (reseauteur.reseauxFrequentes?.length ?? 0) > 0
+    const aParticipe = (reseauteur.evenementsParticipes?.length ?? 0) > 0
+
+    onboardingSteps = [
+      { label: 'Créer votre compte', done: true },
+      {
+        label: 'Compléter votre profil',
+        done: profilComplet,
+        href: '/dashboard/profil',
+        hint: 'Fonction, entreprise et description — pour une fiche qui inspire confiance.',
+      },
+      {
+        label: 'Indiquer les réseaux que vous fréquentez',
+        done: aDesReseaux,
+        href: '/dashboard/profil',
+        hint: 'BNI, DCF, CJD… vous apparaissez auprès des membres de ces réseaux.',
+      },
+      {
+        label: 'Repérer un premier événement',
+        done: aParticipe,
+        href: '/evenements',
+        hint: 'Parcourez les rendez-vous business et signalez votre présence.',
+      },
+      plusActif
+        ? {
+            label: 'Réseauteur Plus actif — créez vos événements',
+            done: true,
+            href: '/dashboard/mes-evenements',
+          }
+        : {
+            label: 'Passer Réseauteur Plus',
+            done: false,
+            href: '/dashboard/plus',
+            hint: 'Organisez vos propres événements et créez vos réseaux locaux.',
+            accent: true,
+          },
+    ]
+  }
+  const onboardingTermine =
+    onboardingSteps.length > 0 && onboardingSteps.every((s) => s.done)
+
   return (
     <div className="rsn-page">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
@@ -69,6 +128,14 @@ export default async function DashboardPage() {
           <p className="rsn-eyebrow mb-2">Espace connecté</p>
           <h1 className="text-2xl font-extrabold text-[#012A4A]">Tableau de bord</h1>
         </Reveal>
+
+        {/* Onboarding — première ligne du tableau de bord (réseauteur).
+            Masqué une fois toutes les étapes terminées pour ne pas devenir un bruit permanent. */}
+        {role === 'reseauteur' && reseauteur && !onboardingTermine && (
+          <Reveal className="mb-6">
+            <ReseauteurOnboarding steps={onboardingSteps} />
+          </Reveal>
+        )}
 
         {/* Rôle réseauteur */}
         {role === 'reseauteur' && (
@@ -132,40 +199,58 @@ export default async function DashboardPage() {
               </div>
 
               <Reveal delay={140}>
-                <h2 className="rsn-eyebrow mt-8 mb-3">Événements</h2>
+                <h2 className="rsn-eyebrow mt-8 mb-3">Mes adhésions</h2>
               </Reveal>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <Reveal delay={140}>
                   <Link
                     href="/dashboard/participations"
                     className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
                   >
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      Mes participations
+                      Mes adhésions
                     </h3>
                     <p className="text-sm text-[#4E5155]">Signalez votre présence aux événements de vos réseaux.</p>
                     <div className="mt-4">
                       <span className="text-sm text-[#035AA6] font-medium flex items-center gap-1">
-                        Voir mes participations 
+                        Voir mes adhésions
                       </span>
                     </div>
                   </Link>
                 </Reveal>
+              </div>
+
+              {/* Organiser — fonctionnalités Réseauteur Plus.
+                  Pour un compte gratuit, les cartes affichent CE QU'ELLES DÉBLOQUENT
+                  (avantages + CTA) plutôt qu'un simple lien ; pour un Plus, elles
+                  pointent directement vers la fonctionnalité. Gate réel = serveur. */}
+              <Reveal delay={210}>
+                <h2 className="rsn-eyebrow mt-8 mb-3">
+                  Organiser {!plusActif && <span className="text-[#8A6D0B]">· Réseauteur Plus</span>}
+                </h2>
+              </Reveal>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Reveal delay={210}>
-                  <Link
-                    href="/dashboard/plus"
-                    className="rsn-card rsn-lift rsn-linkrow block rounded-2xl p-5 no-underline h-full"
-                  >
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6E7175] mb-3 flex items-center gap-1.5">
-                      Réseauteur Plus
-                    </h3>
-                    <p className="text-sm text-[#4E5155]">Créez vos propres événements avec l&apos;abonnement Réseauteur Plus.</p>
-                    <div className="mt-4">
-                      <span className="text-sm text-[#8A6D0B] font-medium flex items-center gap-1">
-                        Mes événements Plus 
-                      </span>
-                    </div>
-                  </Link>
+                  <PlusFeatureCard
+                    icon={CalendarPlus}
+                    title="Mes événements"
+                    actif={plusActif}
+                    href="/dashboard/mes-evenements"
+                    ctaActif="Gérer mes événements"
+                    descriptionActif="Créez et publiez vos rencontres, gérez la liste des inscrits."
+                    avantages={AVANTAGES_PLUS.slice(0, 3)}
+                  />
+                </Reveal>
+                <Reveal delay={280}>
+                  <PlusFeatureCard
+                    icon={Network}
+                    title="Mes réseaux"
+                    actif={plusActif}
+                    href="/dashboard/mes-reseaux"
+                    ctaActif="Gérer mes réseaux locaux"
+                    descriptionActif="Vos fiches de réseaux locaux et leurs événements."
+                    avantages={AVANTAGES_PLUS.slice(3)}
+                  />
                 </Reveal>
               </div>
               </>

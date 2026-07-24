@@ -1,15 +1,17 @@
 /**
- * seed-reseaux-nationaux.ts — Annuaire de 200 réseaux d'affaires NATIONAUX (2026-07-17).
+ * seed-reseaux-nationaux.ts — 50 réseaux professionnels NATIONAUX curés (2026-07-24).
  *
- * Crée les fiches avec UNIQUEMENT leur nom (aucune ville, description, contact…) :
- *   { nom, niveau: 'national', statut: 'publiee', source: 'importe' }
+ * Remplace l'ancienne liste « 200 noms seuls » par une liste canonique de 50 réseaux
+ * de référence, chacun avec son PUBLIC CIBLE (→ champ `publicConcerne`). Crée les fiches :
+ *   { nom, publicConcerne, niveau: 'national', statut: 'publiee', source: 'importe' }
  *
  * Publiées et orphelines (user null) : elles apparaissent dans l'annuaire /reseaux,
  * sont revendicables par un organisateur (claim flow), et sont SÉLECTIONNABLES comme
  * réseau d'affiliation — par les réseauteurs (réseaux fréquentés), par les réseauteurs
  * Plus (rattachement d'un réseau local — « Mes réseaux ») et par les événements.
  *
- * IDEMPOTENT + ADDITIF (clé : nom exact + niveau non-local). Dry-run par défaut.
+ * IDEMPOTENT + ADDITIF (clé : nom exact + niveau non-local). Enrichit au passage une
+ * fiche déjà présente qui n'aurait pas encore de public cible. Dry-run par défaut.
  *
  * Usage :  pnpm seed:reseaux-nationaux            (aperçu)
  *          pnpm seed:reseaux-nationaux --confirm  (exécution)
@@ -21,207 +23,59 @@ import path from 'path'
 dotenv.config({ path: path.join(process.cwd(), '.env.local') })
 dotenv.config({ path: path.join(process.cwd(), '.env') })
 
-const NOMS: string[] = [
-  'BNI France',
-  'Dynabuy',
-  'Les Cafés Business',
-  'Club ACE',
-  'WinOrWin',
-  'Protéine France',
-  'Réso',
-  'Club Business France',
-  'Business Time Club',
-  'Open Business Club',
-  'CJD',
-  'APM',
-  'DCF',
-  'GERME',
-  'CRA',
-  'Réseau Entreprendre',
-  'Initiative France',
-  'France Active',
-  'BGE',
-  'France Angels',
-  'ADIE',
-  'France Digitale',
-  'French Tech',
-  'Village by CA',
-  'Réseau Mentorat France',
-  'EGEE',
-  'ECTI',
-  'Les Premières',
-  'Moovjee',
-  '60 000 Rebonds',
-  'CPME',
-  'MEDEF',
-  'U2P',
-  'CCI France',
-  'CMA France',
-  'Chambres d\'Agriculture France',
-  'CNCC',
-  'ANDRH',
-  'DFCG',
-  'CERCLECIUM',
-  'Bouge ta Boîte',
-  'FCE France',
-  'Force Femmes',
-  'Femmes des Territoires',
-  'Action\'elles',
-  'Mampreneures',
-  'Les Pionnières',
-  'Women in Tech France',
-  'Financi\'Elles',
-  'Elles bougent',
-  'Rotary France',
-  'Lions Clubs France',
-  'Kiwanis France',
-  'Table Ronde Française',
-  'Ladies Circle France',
-  'Agora Club France',
-  'Round Table International France',
-  'Old Tablers France',
-  'Tangent Club France',
-  'Rotaract France',
-  'Interact France',
-  'Digital League',
-  'Cap Digital',
-  'Systematic Paris-Région',
-  'Aerospace Valley',
-  'Cosmetic Valley',
-  'Minalogic',
-  'Images & Réseaux',
-  'Finance Innovation',
-  'NextMove',
-  'Polymeris',
-  'BioValley France',
-  'Axelera',
-  'SCS',
-  'Eurobiomed',
-  'Aquiti',
-  'Atlanpole',
-  'Paris&Co',
-  'Euratechnologies',
-  'Normandy French Tech',
-  'French Tech Bordeaux',
-  'French Tech Lille',
-  'French Tech Méditerranée',
-  'French Tech Est',
-  'French Tech Rennes Saint-Malo',
-  'French Tech Toulouse',
-  'French Tech Côte d\'Azur',
-  'French Tech Alpes',
-  'French Tech Brest Bretagne Ouest',
-  'French Tech One Lyon Saint-Étienne',
-  'Réseau Com\'Expert',
-  'Club des Entrepreneurs',
-  'Club E6',
-  'CroissancePlus',
-  'Ethic',
-  'Centre des Jeunes Patrons',
-  'Cercle des Dirigeants',
-  'Cercle du Leadership',
-  'Club ETI France',
-  'Pacte PME',
-  'CIGALES',
-  'Réseau Plato',
-  'Entreprendre pour Apprendre',
-  'Fondation Entreprendre',
-  'Réseau Alliances',
-  'Produit en Bretagne',
-  'Dirigeants Responsables',
-  'Entreprises & Progrès',
-  'Réseau Gesat',
-  'Réseau Vrac',
-  'Réseau APIA',
-  'Réseau Commande Publique',
-  'Club Export',
-  'OSCI',
-  'CCEF',
-  'Conseillers du Commerce Extérieur',
-  'Club Décision DSI',
-  'DCF Jeunes',
-  'Réseau RH',
-  'Réseau QVT',
-  'Réseau Entreprendre au Féminin',
-  'Club Innovation',
-  'Club RSE France',
-  'Club Green Business',
-  'Réseau ESS France',
-  'Mouves',
-  'Le Coq Vert',
-  'France Invest',
-  'France Biotech',
-  'Numeum',
-  'Syntec Numérique',
-  'Syntec Conseil',
-  'Syntec Ingénierie',
-  'CINOV',
-  'Fédération Cinov',
-  'France Industrie',
-  'Club Medef International',
-  'Club Export BPI',
-  'Business France',
-  'Team France Export',
-  'Club VIE',
-  'Club Achats',
-  'CNA',
-  'CNAFAL Entreprises',
-  'Réseau HEC',
-  'Réseau ESSEC Alumni',
-  'EM Lyon Forever',
-  'EDHEC Alumni',
-  'Audencia Alumni',
-  'NEOMA Alumni',
-  'SKEMA Alumni',
-  'KEDGE Alumni',
-  'TBS Alumni',
-  'Grenoble EM Alumni',
-  'ESSCA Alumni',
-  'ICN Alumni',
-  'INSEAD Alumni France',
-  'Arts et Métiers Alumni',
-  'CentraleSupélec Alumni',
-  'Mines Alumni',
-  'Polytechnique Alumni',
-  'Club Business Angels',
-  'Femmes Business Angels',
-  'Investessor',
-  'Arts & Métiers Business Angels',
-  'BADGE',
-  'Femmes Business Club',
-  'Réseau Initiative Outre-Mer',
-  'Club PME International',
-  'Réseau Commerce France',
-  'Club Entrepreneurs France',
-  'Club Performance',
-  'Club des Décideurs',
-  'Club Excellence',
-  'Club Horizon',
-  'Club Affaires France',
-  'Cercle Business',
-  'Cercle des Entrepreneurs',
-  'Club Premium',
-  'Club Entreprendre',
-  'Club Réussir',
-  'Club Performance PME',
-  'Club Croissance',
-  'Club Business Network',
-  'Business Network International France',
-  'Business Club Entreprises',
-  'Entrepreneurs & Dirigeants',
-  'Club Pro France',
-  'Club des Indépendants',
-  'Club des Managers',
-  'Club des Créateurs',
-  'Club des Repreneurs',
-  'Club des Startups',
-  'Club Innovation France',
-  'Club des PME',
-  'Club des TPE',
-  'Club des Professionnels',
-  'Club Entreprises France',
-  'Club des Affaires',
-  'Club Réseau France',
+type ReseauSeed = { nom: string; publicCible: string }
+
+const RESEAUX: ReseauSeed[] = [
+  { nom: 'BNI France', publicCible: 'Dirigeants, entrepreneurs' },
+  { nom: 'DCF - Dirigeants Commerciaux de France', publicCible: 'Directeurs commerciaux' },
+  { nom: 'CJD - Centre des Jeunes Dirigeants', publicCible: 'Jeunes dirigeants' },
+  { nom: 'CPME', publicCible: 'PME' },
+  { nom: 'MEDEF', publicCible: 'Entreprises' },
+  { nom: 'U2P', publicCible: 'Artisans, professions libérales' },
+  { nom: 'Réseau Entreprendre', publicCible: 'Créateurs et repreneurs' },
+  { nom: 'Initiative France', publicCible: 'Entrepreneurs' },
+  { nom: 'France Active', publicCible: 'Entrepreneurs' },
+  { nom: 'Femmes Chefs d\'Entreprises (FCE France)', publicCible: 'Femmes dirigeantes' },
+  { nom: 'Les Premières', publicCible: 'Entrepreneuriat féminin' },
+  { nom: 'Bouge ta Boîte', publicCible: 'Femmes entrepreneures' },
+  { nom: 'Action\'elles', publicCible: 'Entrepreneures' },
+  { nom: 'Les Clubs d\'Affaires Protéine France', publicCible: 'Dirigeants' },
+  { nom: 'Dynabuy', publicCible: 'PME' },
+  { nom: 'Les Cafés Business', publicCible: 'Entrepreneurs' },
+  { nom: 'CCI France', publicCible: 'Entreprises' },
+  { nom: 'CMA France', publicCible: 'Artisans' },
+  { nom: 'French Tech', publicCible: 'Start-up' },
+  { nom: 'France Digitale', publicCible: 'Tech & investisseurs' },
+  { nom: 'CroissancePlus', publicCible: 'Entrepreneurs de croissance' },
+  { nom: 'ETHIC', publicCible: 'Dirigeants' },
+  { nom: 'Croissance Premium', publicCible: 'Dirigeants' },
+  { nom: 'APM - Association Progrès du Management', publicCible: 'Dirigeants' },
+  { nom: 'GERME', publicCible: 'Managers' },
+  { nom: 'ANDRH', publicCible: 'Ressources humaines' },
+  { nom: 'DFCG', publicCible: 'Directeurs financiers' },
+  { nom: 'CJD Entrepreneurs', publicCible: 'Jeunes dirigeants' },
+  { nom: 'Lions Clubs France', publicCible: 'Service & réseau' },
+  { nom: 'Rotary France', publicCible: 'Service & business' },
+  { nom: 'Kiwanis France', publicCible: 'Service' },
+  { nom: 'Table Ronde Française', publicCible: 'Jeunes dirigeants' },
+  { nom: 'Centre Français des Lions Clubs', publicCible: 'Réseau' },
+  { nom: 'Club 41 France', publicCible: 'Dirigeants' },
+  { nom: 'Ladies Circle France', publicCible: 'Femmes actives' },
+  { nom: 'JCE - Jeune Chambre Économique Française', publicCible: 'Jeunes actifs' },
+  { nom: 'Dirigeants Responsables de l\'Ouest (DRO)', publicCible: 'Dirigeants' },
+  { nom: 'CCRE France', publicCible: 'Entrepreneurs' },
+  { nom: 'Réseau Mampreneures', publicCible: 'Entrepreneures' },
+  { nom: 'Les Entreprises s\'Engagent', publicCible: 'Entreprises' },
+  { nom: 'Réseau Alumni EM Lyon', publicCible: 'Alumni' },
+  { nom: 'Réseau Alumni HEC', publicCible: 'Alumni' },
+  { nom: 'Réseau Alumni ESSEC', publicCible: 'Alumni' },
+  { nom: 'Réseau Alumni ESCP', publicCible: 'Alumni' },
+  { nom: 'Réseau Alumni EDHEC', publicCible: 'Alumni' },
+  { nom: 'Club E6', publicCible: 'Dirigeants' },
+  { nom: 'Open Networking France', publicCible: 'Entrepreneurs' },
+  { nom: 'Fédération Française des Clubs d\'Entreprises', publicCible: 'Clubs d\'entreprises' },
+  { nom: 'France Invest', publicCible: 'Finance & investisseurs' },
+  { nom: 'Mouvement Impact France', publicCible: 'Entrepreneurs engagés' },
 ]
 
 function dbHost(): string {
@@ -236,14 +90,23 @@ function dbHost(): string {
 
 async function main() {
   const confirm = process.argv.includes('--confirm') || process.env.SEED_DEMO === '1'
-  const noms = [...new Set(NOMS.map((n) => n.trim()).filter(Boolean))]
+
+  // Déduplication de la liste par nom exact (garde la première occurrence).
+  const seen = new Set<string>()
+  const reseaux = RESEAUX.map((r) => ({ nom: r.nom.trim(), publicCible: r.publicCible.trim() }))
+    .filter((r) => r.nom)
+    .filter((r) => {
+      if (seen.has(r.nom)) return false
+      seen.add(r.nom)
+      return true
+    })
 
   console.log('')
-  console.log('=== SEED RÉSEAUX NATIONAUX (annuaire — nom seul) ===')
+  console.log('=== SEED RÉSEAUX NATIONAUX (annuaire curé — nom + public cible) ===')
   console.log(`  Base cible : ${dbHost()}`)
-  console.log(`  Contenu    : ${noms.length} réseaux nationaux (statut publié, source importé)`)
-  if (noms.length !== NOMS.length) {
-    console.log(`  ⚠️ ${NOMS.length - noms.length} doublon(s) dans la liste — dédupliqués.`)
+  console.log(`  Contenu    : ${reseaux.length} réseaux nationaux (statut publié, source importé)`)
+  if (reseaux.length !== RESEAUX.length) {
+    console.log(`  ⚠️ ${RESEAUX.length - reseaux.length} doublon(s) dans la liste — dédupliqués.`)
   }
   console.log('')
 
@@ -263,27 +126,47 @@ async function main() {
   process.env.SEED_DEV = 'true'
 
   let crees = 0
+  let enrichis = 0
   let existants = 0
   const erreurs: string[] = []
 
   try {
-    for (const nom of noms) {
+    for (const { nom, publicCible } of reseaux) {
       try {
-        const { totalDocs } = await payload.count({
+        // Clé d'idempotence : nom exact + niveau non-local (tête de réseau).
+        const { docs } = await payload.find({
           collection: 'reseaux',
           where: {
             and: [{ nom: { equals: nom } }, { niveau: { not_equals: 'local' } }],
           },
+          limit: 1,
+          depth: 0,
           overrideAccess: true,
+          select: { publicConcerne: true } as Record<string, boolean>,
         })
-        if (totalDocs > 0) {
-          existants++
+
+        if (docs.length > 0) {
+          const existing = docs[0]
+          // Enrichissement sûr : ne remplit le public cible que s'il est absent.
+          if (publicCible && !existing.publicConcerne) {
+            await payload.update({
+              collection: 'reseaux',
+              id: existing.id,
+              data: { publicConcerne: publicCible } as never,
+              overrideAccess: true,
+            })
+            enrichis++
+          } else {
+            existants++
+          }
           continue
         }
+
         await payload.create({
           collection: 'reseaux',
           data: {
             nom,
+            publicConcerne: publicCible || undefined,
             niveau: 'national',
             statut: 'publiee',
             source: 'importe',
@@ -301,10 +184,11 @@ async function main() {
   }
 
   console.log('OK — seed réseaux nationaux terminé.')
-  console.log(`  créés               : ${crees}`)
-  console.log(`  existants (ignorés) : ${existants}`)
+  console.log(`  créés                : ${crees}`)
+  console.log(`  enrichis (public cible) : ${enrichis}`)
+  console.log(`  existants (ignorés)  : ${existants}`)
   if (erreurs.length > 0) {
-    console.log(`  erreurs             : ${erreurs.length}`)
+    console.log(`  erreurs              : ${erreurs.length}`)
     for (const e of erreurs.slice(0, 10)) console.log(`    - ${e}`)
   }
   console.log('')

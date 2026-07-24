@@ -32,6 +32,9 @@ export type DashboardNavItem = {
   roles: DashboardRole[]
   /** Affiché uniquement si isNational est vrai (organisateurs d'une tête de réseau) */
   nationalOnly?: boolean
+  /** Fonctionnalité réservée à Réseauteur Plus : la nav affiche un badge « Plus »
+   *  tant que le compte est gratuit (le gate réel reste serveur — ADR-0014/0015). */
+  plusGated?: boolean
 }
 
 export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
@@ -48,25 +51,28 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
     roles: ['reseauteur'],
   },
   {
+    // Route inchangée (/dashboard/participations) — seul le libellé affiché change.
     href: '/dashboard/participations',
-    label: 'Participations',
+    label: 'Mes adhésions',
     icon: CalendarCheck,
     roles: ['reseauteur'],
   },
   {
-    // Réseaux locaux possédés (ADR-0014) — la page gère le gate Plus
+    // Réseaux locaux possédés (ADR-0014) — réservé à Réseauteur Plus.
     href: '/dashboard/mes-reseaux',
     label: 'Mes réseaux',
     icon: Network,
     roles: ['reseauteur'],
+    plusGated: true,
   },
   {
-    // Création/gestion d'événements (Réseauteur Plus) — la page gère le gate :
-    // un réseauteur gratuit atterrit sur /dashboard/plus (présentation de l'offre).
+    // Création/gestion d'événements — réservé à Réseauteur Plus (un compte gratuit
+    // voit l'offre commerciale sur la page cible au lieu d'un accès direct).
     href: '/dashboard/mes-evenements',
     label: 'Mes événements',
     icon: CalendarDays,
     roles: ['reseauteur'],
+    plusGated: true,
   },
   {
     href: '/dashboard/partenaire',

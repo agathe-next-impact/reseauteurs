@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import DashboardSidebarReseauteurs from '@/components/dashboard/DashboardSidebarReseauteurs'
+import { estPlus } from '@/lib/acces-plus'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const hdrs = await headers()
@@ -51,9 +52,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
     isNational = totalDocs > 0
   }
 
+  // Statut Plus (réseauteur) — source unique estPlus, lu sur le user frais.
+  // Alimente le badge « Plus » de la nav sur les items réservés.
+  const up = freshUser as unknown as { plusActif?: boolean; plusExpireAt?: string | null }
+  const plusActif =
+    role === 'reseauteur' &&
+    estPlus({ id: freshUser.id, plusActif: up.plusActif, plusExpireAt: up.plusExpireAt })
+
   return (
     <div className="flex min-h-[calc(100vh-64px)]">
-      <DashboardSidebarReseauteurs role={role} displayName={displayName} isNational={isNational} />
+      <DashboardSidebarReseauteurs
+        role={role}
+        displayName={displayName}
+        isNational={isNational}
+        plusActif={plusActif}
+      />
       <main className="flex-1 bg-[#F2F2F2]/50 overflow-y-auto">
         {children}
       </main>

@@ -17,7 +17,7 @@ import { todayParisDateString } from '@/lib/dates'
 import { ParticipationForm, type ParticipationEventItem } from './ParticipationForm'
 
 export const metadata = {
-  title: 'Mes participations — Tableau de bord | RÉSEAUTEURS',
+  title: 'Mes adhésions — Tableau de bord | RÉSEAUTEURS',
   robots: { index: false },
 }
 
@@ -111,7 +111,7 @@ export default async function ParticipationsPage() {
           </Link>
           <h1 className="text-2xl font-extrabold text-[#012A4A] flex items-center gap-2 mb-2">
             <CalendarCheck size={20} aria-hidden />
-            Mes participations
+            Mes adhésions
           </h1>
           <p className="text-sm text-[#6E7175] mb-8">
             Signalez votre présence aux événements des réseaux que vous fréquentez. Cette

@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { CalendarPlus } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
+import { AVANTAGES_PLUS } from '@/lib/offres-reseauteur'
+import PlusUpsell from '@/components/dashboard/PlusUpsell'
 import { todayParisDateString } from '@/lib/dates'
 import { listerInscritsParEvenements } from '@/lib/inscriptions'
 import {
@@ -41,7 +43,19 @@ export default async function MesEvenementsPage() {
 
   const u = freshUser as unknown as { plusActif?: boolean; plusExpireAt?: string | null }
   const actif = estPlus({ id: freshUser.id, plusActif: u.plusActif, plusExpireAt: u.plusExpireAt })
-  if (!actif) redirect('/dashboard/plus')
+  // Compte gratuit : au lieu d'un redirect muet vers /dashboard/plus, on affiche
+  // l'offre EN CONTEXTE (l'utilisateur reste sur « Mes événements »). Retour avant
+  // toute requête lourde : rien n'est chargé pour un compte qui n'a pas l'accès.
+  if (!actif) {
+    return (
+      <PlusUpsell
+        icon={CalendarPlus}
+        titre="Mes événements"
+        accroche="Créez et publiez vos propres rendez-vous de networking, et gérez la liste des inscrits."
+        avantages={AVANTAGES_PLUS}
+      />
+    )
+  }
 
   // Ses événements (via son profil réseauteur)
   const { docs: profs } = await payload.find({

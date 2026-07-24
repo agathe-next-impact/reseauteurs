@@ -17,6 +17,8 @@ import Link from 'next/link'
 import { Network } from 'lucide-react'
 import Reveal from '@/components/home/Reveal'
 import { estPlus } from '@/lib/acces-plus'
+import { AVANTAGES_PLUS } from '@/lib/offres-reseauteur'
+import PlusUpsell from '@/components/dashboard/PlusUpsell'
 import { MAX_LOCAUX_PLUS } from '@/lib/reseau-hierarchie'
 import { MesReseauxClient, type MonReseauLocal, type TeteLite } from './MesReseauxClient'
 
@@ -42,7 +44,18 @@ export default async function MesReseauxPage() {
 
   const u = freshUser as unknown as { plusActif?: boolean; plusExpireAt?: string | null }
   const actif = estPlus({ id: freshUser.id, plusActif: u.plusActif, plusExpireAt: u.plusExpireAt })
-  if (!actif) redirect('/dashboard/plus')
+  // Compte gratuit : offre EN CONTEXTE plutôt qu'un redirect muet (l'utilisateur
+  // reste sur « Mes réseaux »). Retour avant les requêtes de la page.
+  if (!actif) {
+    return (
+      <PlusUpsell
+        icon={Network}
+        titre="Mes réseaux"
+        accroche="Créez vos fiches de réseaux locaux — affiliées à un réseau national ou indépendantes — et publiez leurs événements."
+        avantages={AVANTAGES_PLUS}
+      />
+    )
+  }
 
   // Réseaux locaux possédés (depth 1 : nom de la tête parente pour le badge « Affilié à »)
   const { docs: locauxDocs } = await payload.find({

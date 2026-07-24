@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 import {
   DASHBOARD_ROLE_LABELS,
   isDashboardNavActive,
@@ -16,9 +16,11 @@ interface DashboardSidebarReseauteursProps {
   displayName: string
   /** ADR-0012 : vrai si l'utilisateur possède un réseau national (dérivé côté serveur, jamais côté client) */
   isNational?: boolean
+  /** Réseauteur Plus actif (dérivé serveur) : sans lui, les items `plusGated` portent un badge « Plus ». */
+  plusActif?: boolean
 }
 
-export default function DashboardSidebarReseauteurs({ role, displayName, isNational = false }: DashboardSidebarReseauteursProps) {
+export default function DashboardSidebarReseauteurs({ role, displayName, isNational = false, plusActif = false }: DashboardSidebarReseauteursProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -63,6 +65,9 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
         {visibleItems.map((item) => {
           const Icon = item.icon
           const isActive = isDashboardNavActive(item.href, pathname)
+          // Fonctionnalité Plus non débloquée : on signale le verrou dès la nav,
+          // pour que l'utilisateur sache avant de cliquer que la section est payante.
+          const verrouille = Boolean(item.plusGated) && !plusActif
           return (
             <Link
               key={item.href}
@@ -75,7 +80,16 @@ export default function DashboardSidebarReseauteurs({ role, displayName, isNatio
               aria-current={isActive ? 'page' : undefined}
             >
               <Icon size={17} aria-hidden />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {verrouille && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full bg-[#F5E050] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#012A4A]"
+                  title="Réservé à Réseauteur Plus"
+                >
+                  <Lock size={9} aria-hidden />
+                  Plus
+                </span>
+              )}
             </Link>
           )
         })}
