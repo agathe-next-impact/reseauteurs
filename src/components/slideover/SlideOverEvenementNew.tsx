@@ -138,7 +138,7 @@ export default function SlideOverEvenementNew({ slug, onClose }: SlideOverEvenem
   }, [slug])
 
   return (
-    <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet>
+    <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet contentKey={slug}>
       {/* Chargement */}
       {loading && (
         <div className="space-y-4 pt-4">

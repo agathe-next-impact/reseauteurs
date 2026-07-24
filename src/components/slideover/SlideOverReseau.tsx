@@ -92,7 +92,7 @@ export default function SlideOverReseau({ slug, onClose }: SlideOverReseauProps)
   const isPartenaire = data?.parentNational?.partenaire === true
 
   return (
-    <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet>
+    <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet contentKey={slug}>
       {/* Chargement */}
       {loading && (
         <div className="space-y-4 pt-6">

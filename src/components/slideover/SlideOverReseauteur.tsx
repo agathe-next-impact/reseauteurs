@@ -91,7 +91,7 @@ export default function SlideOverReseauteur({ slug, onClose }: SlideOverReseaute
   const secteurColor = data?.secteur?.couleur ?? '#035AA6'
 
   return (
-    <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet>
+    <SlideOver isOpen={!!slug} onClose={onClose} mobileBottomSheet contentKey={slug}>
       {/* Chargement */}
       {loading && (
         <div className="space-y-4 pt-6">
